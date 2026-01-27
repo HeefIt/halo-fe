@@ -510,9 +510,9 @@ const nextProblem = () => {
   }
 }
 
-// 返回主界面
+// 返回上一页
 const goBackHome = () => {
-  router.push('/home')
+  router.go(-1)
 }
 
 // 获取题目详情

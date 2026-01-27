@@ -117,6 +117,34 @@ const isAdmin = computed(() => {
 
 // 判断当前路由是否正活动
 const isActive = (path) => {
+  // 特殊处理带有动态参数的路径
+  if (path === '/practice') {
+    // 匹配 /practice 或 /practice/:id
+    return route.path === '/practice' || route.path.startsWith('/practice/')
+  }
+  if (path === '/study-plan') {
+    // 匹配 /study-plan 或 /study-plan/:id
+    return route.path === '/study-plan' || route.path.startsWith('/study-plan/')
+  }
+  if (path === '/ranking') {
+    // 匹配 /ranking 或 /ranking/:id
+    return route.path === '/ranking' || route.path.startsWith('/ranking/')
+  }
+  if (path === '/practice-history') {
+    // 匹配 /practice-history 或 /practice-history/:id
+    return route.path === '/practice-history' || route.path.startsWith('/practice-history/')
+  }
+  
+  // 对于 /home，只匹配确切路径，不匹配 /home/questions
+  if (path === '/home') {
+    return route.path === '/home'
+  }
+  if (path === '/home/questions') {
+    return route.path === '/home/questions' || route.path.startsWith('/home/questions/')
+  }
+  
+  // 其他路径使用 startsWith
+  // 默认情况下使用 startsWith，但对特定路径已有处理
   return route.path.startsWith(path)
 }
 
