@@ -89,6 +89,30 @@ const routes = [
     name: 'PracticeHistoryDetail',
     component: () => import('@/views/modules/practiceHistory/PracticeDetail.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/ai/chatbot',
+    name: 'ChatBot',
+    component: () => import('@/views/modules/ai/ChatBot.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/ai/practice-assistant',
+    name: 'PracticeAssistant',
+    component: () => import('@/views/modules/ai/PracticeAssistant.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/ai/customer-service',
+    name: 'CustomerService',
+    component: () => import('@/views/modules/ai/CustomerService.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/ai/multimodal',
+    name: 'MultimodalParser',
+    component: () => import('@/views/modules/ai/MultimodalParser.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 

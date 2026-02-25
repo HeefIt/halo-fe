@@ -63,6 +63,56 @@
           </el-row>
         </div>
         
+        <!-- AI智能助手区域 -->
+        <div class="ai-section">
+          <div class="section-header">
+            <h2 class="section-title">🤖 AI 智能助手</h2>
+            <p class="section-subtitle">智能AI赋能，提升学习效率</p>
+          </div>
+          
+          <div class="ai-grid">
+            <div class="ai-card" @click="goTo('/ai/chatbot')" role="button" tabindex="0">
+              <div class="ai-card-header">
+                <div class="ai-icon">💬</div>
+                <span class="ai-badge">HOT</span>
+              </div>
+              <h3 class="ai-title">机器人对话</h3>
+              <p class="ai-description">支持会话记忆和历史会话，智能问答对话</p>
+              <div class="ai-arrow">→</div>
+            </div>
+            
+            <div class="ai-card" @click="goTo('/ai/practice-assistant')" role="button" tabindex="0">
+              <div class="ai-card-header">
+                <div class="ai-icon">📝</div>
+                <span class="ai-badge">NEW</span>
+              </div>
+              <h3 class="ai-title">刷题助手</h3>
+              <p class="ai-description">智能推荐题目，个性化学习建议</p>
+              <div class="ai-arrow">→</div>
+            </div>
+            
+            <div class="ai-card" @click="goTo('/ai/customer-service')" role="button" tabindex="0">
+              <div class="ai-card-header">
+                <div class="ai-icon">🎧</div>
+                <span class="ai-badge">24/7</span>
+              </div>
+              <h3 class="ai-title">智能客服</h3>
+              <p class="ai-description">7x24小时智能客服，快速解答疑问</p>
+              <div class="ai-arrow">→</div>
+            </div>
+            
+            <div class="ai-card" @click="goTo('/ai/multimodal')" role="button" tabindex="0">
+              <div class="ai-card-header">
+                <div class="ai-icon">📄</div>
+                <span class="ai-badge">PRO</span>
+              </div>
+              <h3 class="ai-title">多模态解析</h3>
+              <p class="ai-description">支持PDF、图片等多模态文件智能解析</p>
+              <div class="ai-arrow">→</div>
+            </div>
+          </div>
+        </div>
+        
         <!-- 每日统计 -->
         <el-card class="stats-card">
           <template #header>
@@ -162,7 +212,19 @@ const dailyStats = ref({
 
 // 跳转到指定路径
 const goTo = (path) => {
-  router.push(path)
+  console.log('跳转到:', path)
+  console.log('当前用户登录状态:', userStore.isLoggedIn)
+  
+  if (!userStore.isLoggedIn) {
+    ElMessage.warning('请先登录后再使用AI功能')
+    router.push('/login')
+    return
+  }
+  
+  router.push(path).catch(err => {
+    console.error('路由跳转失败:', err)
+    ElMessage.error('页面跳转失败: ' + err.message)
+  })
 }
 
 // 获取每日统计信息
@@ -294,6 +356,116 @@ watch(() => userStore.userInfo, (newUserInfo) => {
   margin: 0;
 }
 
+/* AI 智能助手区域 */
+.ai-section {
+  margin-bottom: 60px;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  color: #666666;
+  margin: 0;
+  font-family: 'Courier New', monospace;
+}
+
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.ai-card {
+  position: relative;
+  background: #ffffff;
+  border: 4px solid #000000;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 8px 8px 0px #000000;
+  font-family: 'Courier New', monospace;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+.ai-card:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 12px 12px 0px #000000;
+  background: #f0f0f0;
+}
+
+.ai-card:active {
+  transform: translate(0, 0);
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.ai-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ai-icon {
+  font-size: 40px;
+  filter: drop-shadow(2px 2px 0px #000000);
+}
+
+.ai-badge {
+  background: #e94560;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 4px 8px;
+  border: 2px solid #000000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ai-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ai-description {
+  font-size: 12px;
+  color: #666666;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.ai-arrow {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 24px;
+  color: #e94560;
+  font-weight: bold;
+  transition: transform 0.2s ease;
+}
+
+.ai-card:hover .ai-arrow {
+  transform: translateX(4px);
+}
+
 .stats-card {
   border-radius: 12px;
 }
@@ -352,6 +524,35 @@ watch(() => userStore.userInfo, (newUserInfo) => {
   
   .stat-value {
     font-size: 20px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+  }
+  
+  .section-subtitle {
+    font-size: 14px;
+  }
+  
+  .ai-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .ai-card {
+    padding: 16px;
+  }
+  
+  .ai-icon {
+    font-size: 32px;
+  }
+  
+  .ai-title {
+    font-size: 14px;
+  }
+  
+  .ai-description {
+    font-size: 10px;
   }
 }
 </style>

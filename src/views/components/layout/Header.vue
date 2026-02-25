@@ -55,6 +55,14 @@
           >
             我的练习
           </span>
+          <span 
+            class="nav-item ai-nav-item" 
+            :class="{ active: isActive('/ai/') }"
+            @click="navigateTo('/ai/chatbot')"
+          >
+            <el-icon class="ai-icon"><ChatLineRound /></el-icon>
+            AI助手
+          </span>
           
           <!-- 管理后台按钮 (仅管理员可见) -->
           <el-button 
@@ -99,7 +107,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ArrowDown } from '@element-plus/icons-vue'
+import { ArrowDown, ChatLineRound } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -143,15 +151,23 @@ const isActive = (path) => {
     return route.path === '/home/questions' || route.path.startsWith('/home/questions/')
   }
   
+  // 对于 /ai/ 路径
+  if (path === '/ai/') {
+    return route.path.startsWith('/ai/')
+  }
+  
   // 其他路径使用 startsWith
   // 默认情况下使用 startsWith，但对特定路径已有处理
   return route.path.startsWith(path)
 }
 
-// 车下跳转方法
+// 路由跳转方法
 const navigateTo = (path) => {
+  console.log('Header跳转到:', path)
   if (route.path !== path) {
-    router.push(path)
+    router.push(path).catch(err => {
+      console.error('路由跳转失败:', err)
+    })
   }
 }
 
@@ -254,6 +270,39 @@ const logout = () => {
   background-color: var(--el-color-primary-light-9);
   color: var(--el-color-primary);
   font-weight: 600;
+}
+
+/* AI 导航项样式 */
+.ai-nav-item {
+  background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+  color: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 3px 3px 0px #000000;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+}
+
+.ai-nav-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000000;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ffa07a 100%);
+}
+
+.ai-nav-item.active {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.ai-icon {
+  font-size: 16px;
+  font-weight: bold;
 }
 
 /* 管理后台按钮 */
