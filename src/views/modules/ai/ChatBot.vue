@@ -15,7 +15,7 @@
     <!-- 左侧会话列表 -->
     <div class="chat-sidebar" :class="{ collapsed: isSidebarCollapsed }">
       <div class="sidebar-header">
-        <button class="new-chat-btn" @click="createNewChat">
+        <button class="new-chat-btn" @click="createNewChatWithCustomTitle">
           <el-icon><Plus /></el-icon>
           <span v-if="!isSidebarCollapsed">新对话</span>
         </button>
@@ -24,24 +24,39 @@
           <el-icon v-else><Fold /></el-icon>
         </button>
       </div>
-      
+
       <div class="chat-list">
-        <div 
-          v-for="session in sessions" 
+        <div
+          v-for="session in sessions"
           :key="session.sessionId"
           class="chat-item"
           :class="{ active: currentSessionId === session.sessionId }"
           @click="selectChat(session.sessionId)"
+          :data-session-id="session.sessionId"
         >
           <div class="chat-icon">
             <el-icon><ChatDotRound /></el-icon>
           </div>
           <div class="chat-info" v-if="!isSidebarCollapsed">
-            <div class="chat-title">{{ "新对话:"+getSessionDisplayTitle(session) }}</div>
+            <div
+              class="chat-title"
+              @dblclick="startEditingTitle(session)"
+              v-if="!session.editingTitle"
+            >
+              {{ getSessionDisplayTitle(session) }}
+            </div>
+            <el-input
+              v-else
+              v-model="session.tempTitle"
+              size="small"
+              @blur="finishEditingTitle(session)"
+              @keyup.enter="finishEditingTitle(session)"
+              class="title-edit-input"
+            />
             <div class="chat-time">{{ formatTime(session.updatedAt) }}</div>
           </div>
-          <button 
-            class="delete-chat-btn" 
+          <button
+            class="delete-chat-btn"
             @click.stop="deleteChat(session.sessionId)"
             v-if="!isSidebarCollapsed"
           >
@@ -50,7 +65,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 右侧聊天区域 -->
     <div class="chat-main">
       <!-- 聊天消息区域 -->
@@ -62,16 +77,16 @@
           <h2 class="empty-title">开始新的对话</h2>
           <p class="empty-description">输入您的问题，我将为您提供智能回答</p>
         </div>
-        
+
         <div v-if="isLoading && currentMessages.length === 0" class="loading-state">
           <div class="loading-spinner">
             <el-icon :size="32" spin><Loading /></el-icon>
           </div>
           <p>正在加载会话数据...</p>
         </div>
-        
-        <div 
-          v-for="(message, index) in currentMessages" 
+
+        <div
+          v-for="(message, index) in currentMessages"
           :key="`${currentSessionId}-${index}`"
           class="message-wrapper"
           :class="{ 'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant' }"
@@ -89,7 +104,7 @@
             <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
           </div>
         </div>
-        
+
         <!-- 发送消息时的加载状态 -->
         <div v-if="isLoading && currentMessages.length > 0" class="message-wrapper assistant-message">
           <div class="message-avatar">
@@ -106,7 +121,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 输入区域 -->
       <div class="chat-input-area">
         <div class="input-container">
@@ -119,8 +134,8 @@
             @keydown.enter.prevent="handleSendMessage"
             class="message-input"
           />
-          <button 
-            class="send-btn" 
+          <button
+            class="send-btn"
             @click="handleSendMessage"
             :disabled="!inputMessage.trim() || isLoading"
           >
@@ -129,8 +144,19 @@
           </button>
         </div>
         <div class="input-actions">
-          <button 
-            class="clear-session-btn" 
+          <!-- 添加流式/阻塞模式切换 -->
+          <div class="mode-toggle">
+            <label class="mode-label">
+              <input
+                type="checkbox"
+                v-model="isStreamingMode"
+                class="mode-checkbox"
+              />
+              <span class="mode-text">流式输出</span>
+            </label>
+          </div>
+          <button
+            class="clear-session-btn"
             @click="clearCurrentSession"
             :disabled="!currentSessionId || currentMessages.length === 0"
           >
@@ -150,90 +176,89 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { 
-  Plus, 
-  Fold, 
-  Expand, 
-  ChatDotRound, 
-  ChatLineRound, 
-  Delete, 
-  Avatar, 
-  Promotion, 
-  Loading 
+import {
+  Plus,
+  Fold,
+  Expand,
+  ChatDotRound,
+  ChatLineRound,
+  Delete,
+  Avatar,
+  Promotion,
+  Loading
 } from '@element-plus/icons-vue'
+import { ElInput } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as aiApi from '@/api/ai'
 
 const router = useRouter()
 const userStore = useUserStore()
 
+// 状态变量
 const isSidebarCollapsed = ref(false)
-const currentChatId = ref(null)
 const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref(null)
+// 添加流式输出控制开关
+const isStreamingMode = ref(true)  // 默认启用流式输出
 
 // 会话管理相关
 const sessions = ref([])
 const currentSessionId = ref(null)
 const currentSession = ref(null)
 
+// 计算属性：当前会话的消息列表
 const currentMessages = computed(() => {
-  // 添加isLoading依赖，确保加载状态变化时重新计算
-  isLoading.value
-  
   if (!currentSession.value) return []
-  
-  // 确保消息数组存在且为数组
+
   if (!currentSession.value.messages) {
-    console.warn('当前会话消息数组为空，创建新的空数组')
     currentSession.value.messages = []
   }
-  
-  const messages = Array.isArray(currentSession.value.messages) 
-    ? currentSession.value.messages 
-    : []
-  
-  console.log('计算当前消息，会话ID:', currentSessionId.value, '消息数量:', messages.length)
-  
+
+  const messages = Array.isArray(currentSession.value.messages)
+      ? currentSession.value.messages
+      : []
+
+  console.log('计算当前消息，会话ID:', currentSessionId.value, '消息数量:', messages.length, '消息内容:', messages)
+
   // 按时间戳排序确保正确显示顺序
-  return [...messages].sort((a, b) => {
+  const sortedMessages = [...messages].sort((a, b) => {
     const timeA = new Date(a.timestamp || 0).getTime()
     const timeB = new Date(b.timestamp || 0).getTime()
     return timeA - timeB
   })
+
+  console.log('排序后的消息:', sortedMessages)
+  return sortedMessages
 })
 
+// 方法：切换侧边栏
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
 }
 
-// 会话管理方法
+// 方法：加载会话列表
 const loadSessions = async () => {
   try {
     console.log('开始加载会话列表，userId:', userStore.userInfo?.id)
     const response = await aiApi.getUserSessions(userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value = response.data || []
-      
+
       console.log('从服务器获取到会话列表，数量:', sessions.value.length)
-      sessions.value.forEach((session, index) => {
-        console.log(`会话${index + 1}:`, session.sessionId, '标题:', session.title, '消息数量:', session.messages?.length || 0)
-      })
-      
+
       // 确保每个会话的消息数组存在并按时间排序
       sessions.value.forEach(session => {
         if (!session.messages || !Array.isArray(session.messages)) {
           session.messages = []
         }
-        // 按时间戳排序消息
         session.messages.sort((a, b) => {
           const timeA = new Date(a.timestamp || 0).getTime()
           const timeB = new Date(b.timestamp || 0).getTime()
           return timeA - timeB
         })
       })
-      
+
       console.log('加载会话列表成功，共', sessions.value.length, '个会话')
     }
   } catch (error) {
@@ -242,12 +267,13 @@ const loadSessions = async () => {
   }
 }
 
+// 方法：创建新会话
 const createNewSession = async () => {
   try {
     const response = await aiApi.createSession('', userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value.unshift(response.data)
-      selectSession(response.data.sessionId)
+      await selectSession(response.data.sessionId)
       ElMessage.success('新会话创建成功')
     }
   } catch (error) {
@@ -256,6 +282,7 @@ const createNewSession = async () => {
   }
 }
 
+// 方法：选择会话
 const selectSession = async (sessionId) => {
   // 如果已经是当前会话，直接返回
   if (currentSessionId.value === sessionId) {
@@ -263,38 +290,38 @@ const selectSession = async (sessionId) => {
     scrollToBottom()
     return
   }
-  
+
   try {
     // 显示加载状态
     isLoading.value = true
-    
+
     // 先保存当前会话状态（如果存在）
     if (currentSessionId.value && currentSession.value) {
       await saveCurrentSessionState()
     }
-    
+
     const response = await aiApi.getSession(sessionId, userStore.userInfo?.id)
     if (response.code === 200) {
       // 更新状态
       currentSessionId.value = sessionId
       currentSession.value = response.data
-      
+
       // 确保消息数组存在且为数组
       if (!currentSession.value.messages || !Array.isArray(currentSession.value.messages)) {
         currentSession.value.messages = []
       }
-      
+
       // 更新会话列表中的该会话信息
       const sessionIndex = sessions.value.findIndex(s => s.sessionId === sessionId)
       if (sessionIndex !== -1) {
         // 使用响应式更新，保持对象引用一致
         Object.assign(sessions.value[sessionIndex], response.data)
       }
-      
+
       // 强制触发UI更新
       await nextTick()
       scrollToBottom()
-      
+
       console.log('会话切换成功:', sessionId, '消息数量:', currentSession.value.messages.length)
     }
   } catch (error) {
@@ -305,6 +332,7 @@ const selectSession = async (sessionId) => {
   }
 }
 
+// 方法：删除会话
 const deleteSession = async (sessionId) => {
   try {
     await ElMessageBox.confirm('确定要删除这个会话吗？删除后将无法恢复。', '确认删除', {
@@ -312,21 +340,21 @@ const deleteSession = async (sessionId) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const response = await aiApi.deleteSession(sessionId, userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value = sessions.value.filter(s => s.sessionId !== sessionId)
-      
+
       // 如果删除的是当前会话，切换到其他会话或创建新会话
       if (currentSessionId.value === sessionId) {
         if (sessions.value.length > 0) {
-          selectSession(sessions.value[0].sessionId)
+          await selectSession(sessions.value[0].sessionId)
         } else {
           currentSessionId.value = null
           currentSession.value = null
         }
       }
-      
+
       ElMessage.success('会话已删除')
     }
   } catch (error) {
@@ -337,16 +365,17 @@ const deleteSession = async (sessionId) => {
   }
 }
 
+// 方法：清空当前会话
 const clearCurrentSession = async () => {
   if (!currentSessionId.value) return
-  
+
   try {
     await ElMessageBox.confirm('确定要清空当前会话的所有消息吗？', '确认清空', {
       confirmButtonText: '确定清空',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    
+
     const response = await aiApi.clearSessionMessages(currentSessionId.value, userStore.userInfo?.id)
     if (response.code === 200) {
       currentSession.value.messages = []
@@ -360,8 +389,8 @@ const clearCurrentSession = async () => {
   }
 }
 
+// 方法：创建新对话（不带自定义标题）
 const createNewChat = async () => {
-  // 确保用户已登录
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
     router.push('/login')
@@ -370,19 +399,74 @@ const createNewChat = async () => {
   await createNewSession()
 }
 
-const selectChat = async (sessionId) => {
-  // 确保用户已登录
+// 方法：创建带自定义标题的新会话
+const createNewChatWithCustomTitle = async () => {
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
     router.push('/login')
     return
   }
-  
+
+  try {
+    const title = await showCustomInputDialog('请输入会话标题', '新对话')
+    if (title !== null) {
+      await createNewSessionWithTitle(title)
+    }
+  } catch (error) {
+    console.log('用户取消了标题输入')
+  }
+}
+
+// 方法：弹出自定义输入对话框
+const showCustomInputDialog = (title, defaultValue) => {
+  return new Promise((resolve) => {
+    ElMessageBox.prompt('请输入会话标题:', title, {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputValue: defaultValue,
+      inputPlaceholder: '输入会话标题...',
+      inputValidator: (value) => {
+        if (!value) return '标题不能为空'
+        if (value.trim().length > 50) return '标题不能超过50个字符'
+        return true
+      },
+      inputErrorMessage: '标题格式不正确'
+    }).then(({ value }) => {
+      resolve(value.trim())
+    }).catch(() => {
+      resolve(null)
+    })
+  })
+}
+
+// 方法：创建带指定标题的新会话
+const createNewSessionWithTitle = async (title) => {
+  try {
+    const response = await aiApi.createSession(title, userStore.userInfo?.id)
+    if (response.code === 200) {
+      sessions.value.unshift(response.data)
+      await selectSession(response.data.sessionId)
+      ElMessage.success('新会话创建成功')
+    }
+  } catch (error) {
+    console.error('创建会话失败:', error)
+    ElMessage.error('创建会话失败')
+  }
+}
+
+// 方法：选择聊天（供模板调用）
+const selectChat = async (sessionId) => {
+  if (!userStore.userInfo?.id) {
+    ElMessage.error('请先登录')
+    router.push('/login')
+    return
+  }
+
   await selectSession(sessionId)
 }
 
+// 方法：删除聊天（供模板调用）
 const deleteChat = async (sessionId) => {
-  // 确保用户已登录
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
     router.push('/login')
@@ -391,68 +475,92 @@ const deleteChat = async (sessionId) => {
   await deleteSession(sessionId)
 }
 
+// 方法：处理发送消息
 const handleSendMessage = async () => {
   const message = inputMessage.value.trim()
   if (!message || isLoading.value) return
-  
-  // 确保用户已登录
+
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
     router.push('/login')
     return
   }
-  
+
   if (!currentSessionId.value) {
     await createNewSession()
     if (!currentSessionId.value) return
   }
-  
+
   const userMessage = {
     role: 'user',
     content: message,
     timestamp: new Date().toISOString()
   }
-  
-  // 添加用户消息到当前会话
+
   if (!currentSession.value.messages) {
     currentSession.value.messages = []
   }
   currentSession.value.messages.push(userMessage)
   console.log('添加用户消息，当前会话消息总数:', currentSession.value.messages.length)
   inputMessage.value = ''
-  
-  // 如果是第一条消息，更新会话标题
+
+  // 如果是第一条消息，自动设置会话标题
   if (currentSession.value.messages.length === 1) {
-    currentSession.value.title = message.substring(0, 20) + (message.length > 20 ? '...' : '')
+    const newTitle = message.substring(0, 20) + (message.length > 20 ? '...' : '')
+    currentSession.value.title = newTitle
+
+    const sessionInList = sessions.value.find(s => s.sessionId === currentSessionId.value)
+    if (sessionInList) {
+      sessionInList.title = newTitle
+    }
+
+    try {
+      const sessionData = {
+        sessionId: currentSessionId.value,
+        userId: userStore.userInfo?.id,
+        title: newTitle,
+        messages: currentSession.value.messages,
+        createdAt: currentSession.value.createdAt,
+        updatedAt: new Date().toISOString()
+      }
+
+      await aiApi.updateSession(currentSessionId.value, sessionData, userStore.userInfo?.id)
+    } catch (error) {
+      console.error('自动更新标题失败:', error)
+    }
   }
-  
+
   scrollToBottom()
-  
   isLoading.value = true
-  
+
   try {
-    const response = await sendMessageToAI(currentSession.value.messages)
-    
-    const assistantMessage = {
-      role: 'assistant',
-      content: response,
-      timestamp: new Date().toISOString()
+    const response = await sendMessageToAI(currentSessionId.value, message)
+
+    // 在阻塞模式下，我们需要手动添加AI回复消息
+    if (!isStreamingMode.value) {
+      const assistantMessage = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date().toISOString()
+      }
+
+      currentSession.value.messages.push(assistantMessage)
+      currentSession.value.updatedAt = new Date().toISOString()
+
+      console.log('添加AI回复消息，当前会话消息总数:', currentSession.value.messages.length)
+
+      const sessionIndex = sessions.value.findIndex(s => s.sessionId === currentSessionId.value)
+      if (sessionIndex !== -1) {
+        Object.assign(sessions.value[sessionIndex], currentSession.value)
+      }
     }
-    
-    currentSession.value.messages.push(assistantMessage)
-    currentSession.value.updatedAt = new Date().toISOString()
-    
-    console.log('添加AI回复消息，当前会话消息总数:', currentSession.value.messages.length)
-    
-    // 更新会话列表中的该会话
-    const sessionIndex = sessions.value.findIndex(s => s.sessionId === currentSessionId.value)
-    if (sessionIndex !== -1) {
-      Object.assign(sessions.value[sessionIndex], currentSession.value)
-    }
-    
-    // 立即保存会话状态到后端
+
     await saveCurrentSessionState()
-    
+
+    // 如果是第一条消息，尝试让AI生成一个合适的标题
+    if (currentSession.value.messages.length === 2) {
+      await generateTitleFromFirstExchange()
+    }
   } catch (error) {
     ElMessage.error('发送消息失败: ' + error.message)
   } finally {
@@ -461,31 +569,118 @@ const handleSendMessage = async () => {
   }
 }
 
-const sendMessageToAI = async (messages) => {
-  try {
-    const response = await aiApi.sendChatMessage(messages, userStore.userInfo?.id)
-    if (response.code === 200) {
-      return response.data.reply
-    } else {
-      throw new Error(response.message || '请求失败')
+// 方法：发送消息到AI
+const sendMessageToAI = async (sessionId, content) => {
+  if (isStreamingMode.value) {
+    // 使用流式API
+    return new Promise((resolve, reject) => {
+      let fullResponse = '';
+      let hasAddedMessage = false; // 标记是否已添加消息
+
+      aiApi.sendChatMessageStream(
+        sessionId,
+        content,
+        userStore.userInfo?.id,
+        // onMessage - 每次接收到数据时调用
+        (data) => {
+          console.log('收到流式数据:', data);
+
+          // 处理不同的数据格式
+          let replyContent = '';
+          if (data && typeof data === 'object') {
+            // 如果是对象格式，尝试不同的字段
+            replyContent = data.reply || data.content || data.message || '';
+          } else if (typeof data === 'string') {
+            // 如果是字符串格式
+            replyContent = data;
+          }
+
+          if (replyContent) {
+            // 将新的响应片段追加到完整响应中
+            fullResponse += replyContent;
+
+            // 确保消息数组存在
+            if (!currentSession.value.messages) {
+              currentSession.value.messages = [];
+            }
+
+            // 检查是否需要添加新的AI消息
+            if (!hasAddedMessage) {
+              const assistantMessage = {
+                role: 'assistant',
+                content: fullResponse,
+                timestamp: new Date().toISOString()
+              };
+              currentSession.value.messages.push(assistantMessage);
+              hasAddedMessage = true;
+              console.log('添加初始AI消息');
+            } else {
+              // 更新最后一条AI消息
+              const lastMessageIndex = currentSession.value.messages.length - 1;
+              if (lastMessageIndex >= 0 && currentSession.value.messages[lastMessageIndex].role === 'assistant') {
+                // 使用Vue.set确保响应式更新
+                currentSession.value.messages[lastMessageIndex].content = fullResponse;
+                console.log('更新AI消息内容，长度:', fullResponse.length);
+              }
+            }
+
+            // 强制更新UI
+            nextTick(() => {
+              scrollToBottom();
+            });
+          }
+        },
+        // onError - 出错时调用
+        (error) => {
+          console.error('AI流式请求错误:', error);
+          reject(error);
+        },
+        // onComplete - 完成时调用
+        () => {
+          console.log('AI流式响应完成，总长度:', fullResponse.length);
+          // 确保最后更新一次
+          if (hasAddedMessage && currentSession.value.messages.length > 0) {
+            const lastMessage = currentSession.value.messages[currentSession.value.messages.length - 1];
+            if (lastMessage.role === 'assistant') {
+              lastMessage.content = fullResponse;
+            }
+          }
+          resolve(fullResponse);
+        }
+      ).catch(error => {
+        console.error('流式请求失败:', error);
+        reject(error);
+      });
+    });
+  } else {
+    // 使用传统的阻塞API
+    try {
+      const response = await aiApi.sendChatMessage(sessionId, content, userStore.userInfo?.id)
+      if (response.code === 200) {
+        return response.data.reply
+      } else {
+        throw new Error(response.message || '请求失败')
+      }
+    } catch (error) {
+      console.error('AI请求错误:', error)
+      return '抱歉，我遇到了一些问题，请稍后再试。'
     }
-  } catch (error) {
-    console.error('AI请求错误:', error)
-    return '抱歉，我遇到了一些问题，请稍后再试。'
   }
 }
 
+// 方法：格式化消息内容
 const formatMessage = (content) => {
   return content
-    .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
 }
 
+// 方法：格式化时间
 const formatTime = (date) => {
   const now = new Date()
   const diff = now - new Date(date)
-  
+
   if (diff < 60000) {
     return '刚刚'
   } else if (diff < 3600000) {
@@ -497,6 +692,7 @@ const formatTime = (date) => {
   }
 }
 
+// 方法：格式化消息时间
 const formatMessageTime = (timestamp) => {
   return new Date(timestamp).toLocaleTimeString('zh-CN', {
     hour: '2-digit',
@@ -504,15 +700,130 @@ const formatMessageTime = (timestamp) => {
   })
 }
 
-// 获取会话显示标题
+// 方法：获取会话显示标题
 const getSessionDisplayTitle = (session) => {
-  // 如果是默认标题"新对话"，显示会话ID的前8位
   if (session.title === '新对话' || !session.title) {
     return session.sessionId ? session.sessionId.substring(0, 8) : '未知会话'
   }
   return session.title
 }
 
+// 方法：开始编辑标题
+const startEditingTitle = (session) => {
+  session.tempTitle = session.title
+  session.editingTitle = true
+
+  nextTick(() => {
+    setTimeout(() => {
+      const container = document.querySelector(`[data-session-id="${session.sessionId}"]`)
+      if (container) {
+        const inputElement = container.querySelector('.title-edit-input input')
+        if (inputElement) {
+          inputElement.focus()
+          inputElement.select()
+        }
+      }
+    }, 50)
+  })
+}
+
+// 方法：完成编辑标题
+const finishEditingTitle = async (session) => {
+  const newTitle = session.tempTitle?.trim()
+
+  if (newTitle && newTitle !== session.title) {
+    session.title = newTitle
+
+    if (currentSessionId.value === session.sessionId && currentSession.value) {
+      currentSession.value.title = newTitle
+    }
+
+    try {
+      const sessionData = {
+        sessionId: session.sessionId,
+        userId: userStore.userInfo?.id,
+        title: newTitle,
+        messages: session.messages || [],
+        createdAt: session.createdAt,
+        updatedAt: new Date().toISOString()
+      }
+
+      const response = await aiApi.updateSession(session.sessionId, sessionData, userStore.userInfo?.id)
+      if (response.code === 200) {
+        ElMessage.success('标题更新成功')
+      } else {
+        ElMessage.error('标题更新失败: ' + response.message)
+      }
+    } catch (error) {
+      console.error('更新标题失败:', error)
+      ElMessage.error('标题更新失败')
+    }
+  }
+
+  session.editingTitle = false
+}
+
+// 方法：从首次对话生成标题
+const generateTitleFromFirstExchange = async () => {
+  if (currentSession.value.title &&
+      !currentSession.value.title.includes('新对话') &&
+      currentSession.value.title !== currentSession.value.sessionId?.substring(0, 8)) {
+    return
+  }
+
+  try {
+    const userMessage = currentSession.value.messages.find(msg => msg.role === 'user')
+    const assistantMessage = currentSession.value.messages.find(msg => msg.role === 'assistant')
+
+    if (userMessage && assistantMessage) {
+      const titleGenerationPrompt = `请根据以下对话内容生成一个简洁的标题（不超过15个字），只需要返回标题内容，不要有任何其他文字：\n用户: ${userMessage.content}\nAI: ${assistantMessage.content}`
+
+      const response = await aiApi.sendChatMessage(
+          currentSessionId.value,
+          titleGenerationPrompt,
+          userStore.userInfo?.id
+      )
+
+      if (response.code === 200) {
+        let generatedTitle = response.data.reply.trim()
+        generatedTitle = generatedTitle.replace(/^"|"$/g, '').replace(/^'|'$/g, '')
+
+        if (generatedTitle.length > 30) {
+          generatedTitle = generatedTitle.substring(0, 30) + '...'
+        }
+
+        if (generatedTitle && generatedTitle !== currentSession.value.title) {
+          currentSession.value.title = generatedTitle
+
+          const sessionInList = sessions.value.find(s => s.sessionId === currentSessionId.value)
+          if (sessionInList) {
+            sessionInList.title = generatedTitle
+          }
+
+          try {
+            const sessionData = {
+              sessionId: currentSessionId.value,
+              userId: userStore.userInfo?.id,
+              title: generatedTitle,
+              messages: currentSession.value.messages,
+              createdAt: currentSession.value.createdAt,
+              updatedAt: new Date().toISOString()
+            }
+
+            await aiApi.updateSession(currentSessionId.value, sessionData, userStore.userInfo?.id)
+            console.log('AI生成标题成功:', generatedTitle)
+          } catch (error) {
+            console.error('保存AI生成的标题失败:', error)
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('生成标题失败:', error)
+  }
+}
+
+// 方法：滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
     if (messagesContainer.value) {
@@ -521,12 +832,11 @@ const scrollToBottom = () => {
   })
 }
 
-// 保存当前会话状态到后端
+// 方法：保存当前会话状态到后端
 const saveCurrentSessionState = async () => {
   if (!currentSessionId.value || !currentSession.value) return
-  
+
   try {
-    // 构造完整的会话数据
     const sessionData = {
       sessionId: currentSessionId.value,
       userId: userStore.userInfo?.id,
@@ -535,15 +845,9 @@ const saveCurrentSessionState = async () => {
       createdAt: currentSession.value.createdAt,
       updatedAt: new Date().toISOString()
     }
-    
+
     console.log('准备保存会话状态:', currentSessionId.value, '消息数量:', sessionData.messages.length)
-    console.log('用户信息:', userStore.userInfo)
-    console.log('用户ID字段:', userStore.userInfo?.id)
-    console.log('用户loginId字段:', userStore.userInfo?.loginId)
-    console.log('发送的userId:', userStore.userInfo?.id || userStore.userInfo?.loginId)
-    console.log('会话数据:', JSON.stringify(sessionData, null, 2))
-    
-    // 调用后端更新接口
+
     const response = await aiApi.updateSession(currentSessionId.value, sessionData, userStore.userInfo?.id)
     if (response.code === 200) {
       console.log('会话状态保存成功:', currentSessionId.value)
@@ -556,10 +860,9 @@ const saveCurrentSessionState = async () => {
       }
       localStorage.setItem(`ai_session_backup_${currentSessionId.value}`, JSON.stringify(localData))
     }
-    
+
   } catch (error) {
     console.error('保存会话状态失败:', error)
-    // 出错时也保存到本地存储作为备份
     try {
       const sessionData = {
         sessionId: currentSessionId.value,
@@ -581,67 +884,80 @@ const saveCurrentSessionState = async () => {
   }
 }
 
+// 方法：保存会话状态到本地存储
 const saveSessionState = () => {
   const data = {
     currentSessionId: currentSessionId.value,
-    sessions: sessions.value
+    sessions: sessions.value.map(s => ({
+      sessionId: s.sessionId,
+      title: s.title,
+      updatedAt: s.updatedAt,
+      createdAt: s.createdAt
+    }))
   }
   localStorage.setItem('ai_session_state', JSON.stringify(data))
 }
 
+// 方法：从本地存储加载会话状态
 const loadSessionState = () => {
   const saved = localStorage.getItem('ai_session_state')
   if (saved) {
     try {
       const data = JSON.parse(saved)
       currentSessionId.value = data.currentSessionId || null
-      sessions.value = data.sessions || []
+      // 注意：这里只加载会话列表的元数据，不加载完整消息
+      if (data.sessions) {
+        sessions.value = data.sessions
+      }
     } catch (error) {
       console.error('加载会话状态失败:', error)
     }
   }
 }
 
+// 生命周期钩子：组件挂载
 onMounted(async () => {
   console.log('ChatBot组件挂载开始')
-  
-  // 确保用户已登录
+  console.log('用户信息:', userStore.userInfo)
+  console.log('用户登录状态:', userStore.isLoggedIn)
+
   if (!userStore.userInfo?.id) {
     console.log('用户未登录，跳转到登录页')
     ElMessage.error('请先登录')
     router.push('/login')
     return
   }
-  
-  console.log('用户ID:', userStore.userInfo?.id)
-  
+
   try {
-    // 先从服务器加载最新的会话列表
+    console.log('开始加载会话列表...')
     await loadSessions()
-    console.log('服务器会话列表加载完成，会话数量:', sessions.value.length)
-    
-    // 然后加载本地保存的会话状态
+    console.log('会话列表加载完成:', sessions.value)
+
+    // 加载本地保存的会话状态
     loadSessionState()
-    console.log('本地会话状态加载完成，currentSessionId:', currentSessionId.value)
-    
-    // 如果有保存的当前会话ID且该会话仍然存在，加载该会话的详细信息
-    if (currentSessionId.value && sessions.value.some(s => s.sessionId === currentSessionId.value)) {
-      console.log('加载保存的会话:', currentSessionId.value)
-      await selectSession(currentSessionId.value)
-    } else if (sessions.value.length > 0) {
-      // 如果没有保存的会话或会话已不存在，选择第一个会话
-      console.log('选择第一个会话:', sessions.value[0].sessionId)
-      await selectSession(sessions.value[0].sessionId)
+
+    // 检查是否有会话
+    if (sessions.value.length === 0) {
+      console.log('没有会话，创建新会话')
+      await createNewSession()
+    } else {
+      console.log('已有会话，选择第一个')
+      // 如果有保存的当前会话ID且该会话仍然存在，加载该会话
+      if (currentSessionId.value && sessions.value.some(s => s.sessionId === currentSessionId.value)) {
+        await selectSession(currentSessionId.value)
+      } else {
+        await selectSession(sessions.value[0].sessionId)
+      }
     }
-    
   } catch (error) {
     console.error('初始化失败:', error)
     ElMessage.error('初始化失败: ' + error.message)
   }
-  
+
   console.log('ChatBot组件挂载完成')
 })
 
+// 监听器：保存会话状态
 watch([currentSessionId, sessions], () => {
   saveSessionState()
 }, { deep: true })
@@ -794,6 +1110,19 @@ watch([currentSessionId, sessions], () => {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.title-edit-input {
+  width: calc(100% - 20px);
+  margin-bottom: 4px;
+}
+
+.title-edit-input :deep(.el-input__wrapper) {
+  border-radius: 0;
+  border: 2px solid #000000;
+  padding: 2px 8px;
+  font-size: 14px;
   font-family: 'Courier New', monospace;
 }
 
@@ -1057,6 +1386,34 @@ watch([currentSessionId, sessions], () => {
   align-items: center;
   gap: 16px;
   margin-top: 12px;
+}
+
+/* 新增模式切换样式 */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666666;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+}
+
+.mode-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #000000; /* 黑色主题样式 */
+}
+
+.mode-text {
+  user-select: none;
 }
 
 .clear-session-btn {
