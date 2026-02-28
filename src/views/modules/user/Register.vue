@@ -196,7 +196,14 @@ const handleRegister = async () => {
 <style scoped>
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #ffffff;
+  background-image: 
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+  background-size: 4px 4px;
+  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,21 +215,23 @@ const handleRegister = async () => {
   width: 100%;
   max-width: 1000px;
   min-height: 600px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 0;
+  box-shadow: 8px 8px 0px #000000;
   overflow: hidden;
 }
 
 /* 左侧装饰区域 */
 .register-banner {
   flex: 1;
-  background: linear-gradient(135deg, #11998e, #38ef7d);
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 60px 40px;
-  color: white;
+  color: #ffffff;
+  border-right: 4px solid #000000;
 }
 
 .banner-content {
@@ -231,14 +240,18 @@ const handleRegister = async () => {
 
 .banner-title {
   font-size: 36px;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 16px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
 }
 
 .banner-subtitle {
   font-size: 18px;
   opacity: 0.9;
   margin-bottom: 40px;
+  font-family: 'Courier New', monospace;
 }
 
 .banner-stats {
@@ -253,13 +266,18 @@ const handleRegister = async () => {
 
 .stat-number {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 4px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .stat-label {
   font-size: 14px;
   opacity: 0.8;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
 }
 
 /* 右侧表单区域 */
@@ -269,6 +287,7 @@ const handleRegister = async () => {
   align-items: center;
   justify-content: center;
   padding: 60px 40px;
+  background: #ffffff;
 }
 
 .form-container {
@@ -283,20 +302,31 @@ const handleRegister = async () => {
 
 .form-header h2 {
   font-size: 28px;
-  font-weight: bold;
-  color: var(--text-primary);
+  font-weight: 700;
+  color: #000000;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .form-header p {
-  color: var(--text-regular);
+  color: #666666;
   font-size: 16px;
+  font-family: 'Courier New', monospace;
 }
 
 .form-footer {
   text-align: center;
   margin-top: 24px;
-  color: var(--text-secondary);
+  color: #666666;
+  font-family: 'Courier New', monospace;
+}
+
+.form-footer .el-button {
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
 }
 
 .back-home {
@@ -309,6 +339,52 @@ const handleRegister = async () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Element Plus 组件样式 */
+.el-button[type='primary'] {
+  background-color: #000000 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.el-button[type='primary']:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.el-button[type='primary'].link {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #000000 !important;
+  text-decoration: underline !important;
+}
+
+.el-input {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.el-input__wrapper {
+  border: none !important;
+  box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+.el-input__inner {
+  font-family: 'Courier New', monospace !important;
+  color: #000000 !important;
+}
+
+.el-input__prefix {
+  color: #000000 !important;
 }
 
 /* 响应式设计 */

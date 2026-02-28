@@ -305,18 +305,26 @@ const carouselImages = ref([
 <style scoped>
 .landing-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #ffffff;
+  background-image: 
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+  background-size: 4px 4px;
+  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+  color: #000000;
 }
 
 /* 头部导航 */
 .header {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: #ffffff;
   position: fixed;
   width: 100%;
   top: 0;
   z-index: 1000;
+  border-bottom: 4px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
 }
 
 .nav-content {
@@ -328,8 +336,12 @@ const carouselImages = ref([
 
 .logo h1 {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 700;
   margin: 0;
+  color: #000000;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .nav-menu {
@@ -339,22 +351,60 @@ const carouselImages = ref([
 }
 
 .nav-item {
-  color: white;
+  color: #000000;
   text-decoration: none;
   font-size: 16px;
-  transition: opacity 0.3s;
+  transition: all 0.2s ease;
   padding: 8px 16px;
-  border-radius: 8px;
+  border: 2px solid #000000;
+  border-radius: 0;
   cursor: pointer;
+  background: #ffffff;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #000000;
+  color: #ffffff;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #000000;
 }
 
 .nav-item-dropdown {
-  color: white;
+  color: #000000;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.auth-buttons .el-button {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.auth-buttons .el-button:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.auth-buttons .el-button--primary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.auth-buttons .el-button--primary.plain {
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 .el-dropdown-link {
@@ -374,30 +424,40 @@ const carouselImages = ref([
 .question-bank-info {
   padding: 16px;
   max-width: 300px;
+  background: #ffffff;
+  border: 2px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
 }
 
 .question-bank-info h3 {
-  color: var(--el-text-color-primary);
+  color: #000000;
   margin: 0 0 12px 0;
   font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
 }
 
 .bank-stats {
-  color: var(--el-text-color-secondary);
+  color: #666666;
   margin: 0 0 12px 0;
   font-size: 14px;
+  font-family: 'Courier New', monospace;
 }
 
 .bank-stats strong {
-  color: var(--el-color-primary);
+  color: #000000;
   font-size: 16px;
+  font-weight: 700;
 }
 
 .bank-categories {
-  color: var(--el-text-color-secondary);
+  color: #666666;
   font-size: 12px;
   padding-left: 16px;
   margin: 0 0 16px 0;
+  font-family: 'Courier New', monospace;
 }
 
 .bank-categories li {
@@ -406,27 +466,44 @@ const carouselImages = ref([
 }
 
 .bank-cta {
-  color: var(--el-text-color-secondary);
+  color: #666666;
   font-size: 12px;
   margin: 0;
   text-align: center;
   line-height: 1.5;
+  font-family: 'Courier New', monospace;
 }
 
 .resource-item {
   padding: 8px 0;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.resource-item:hover {
+  background-color: #f0f0f0;
+  border: 2px solid #000000;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #000000;
 }
 
 .resource-item .dropdown-link {
   font-weight: 500;
   margin-bottom: 4px;
+  color: #000000 !important;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  font-size: 14px;
 }
 
 .resource-desc {
   font-size: 12px;
-  color: var(--el-text-color-secondary);
+  color: #666666;
   margin: 0;
   line-height: 1.4;
+  font-family: 'Courier New', monospace;
 }
 
 /* 主要内容 */
@@ -437,25 +514,88 @@ const carouselImages = ref([
 .banner-section {
   padding: 120px 0 80px;
   text-align: center;
+  background: #ffffff;
+  border: 4px solid #000000;
+  box-shadow: 8px 8px 0px #000000;
+  margin: 40px 0;
+  padding: 80px 40px;
 }
 
 .banner-title {
   font-size: 48px;
   font-weight: 700;
   margin-bottom: 24px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #000000;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
 }
 
 .banner-subtitle {
   font-size: 24px;
   margin-bottom: 48px;
-  opacity: 0.9;
+  color: #666666;
+  font-family: 'Courier New', monospace;
 }
 
 .banner-actions {
   display: flex;
   justify-content: center;
   gap: 24px;
+}
+
+.banner-actions .el-button {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  font-size: 16px !important;
+  padding: 16px 32px !important;
+}
+
+.banner-actions .el-button:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.banner-actions .el-button--primary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.banner-actions .el-button:not(.el-button--primary) {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.banner-actions .el-button {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  font-size: 16px !important;
+  padding: 16px 32px !important;
+}
+
+.banner-actions .el-button:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.banner-actions .el-button--primary {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.banner-actions .el-button:not(.el-button--primary) {
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
 /* 图片展示区域 */
@@ -507,33 +647,56 @@ const carouselImages = ref([
 }
 
 .feature-card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: #ffffff;
+  border: 4px solid #000000;
+  border-radius: 0;
   padding: 32px;
   text-align: center;
-  transition: transform 0.3s ease;
+  transition: all 0.2s ease;
+  box-shadow: 6px 6px 0px #000000;
 }
 
 .feature-card:hover {
-  transform: translateY(-8px);
+  transform: translate(-4px, -4px);
+  box-shadow: 10px 10px 0px #000000;
 }
 
 .feature-icon {
   font-size: 48px;
   margin-bottom: 24px;
+  color: #000000;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid #000000;
+  background: #ffffff;
+  margin: 0 auto 24px;
+  border-radius: 0;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 6px 6px 0px #000000;
 }
 
 .feature-title {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 16px;
+  color: #000000;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .feature-desc {
   font-size: 16px;
-  opacity: 0.9;
+  color: #666666;
   line-height: 1.6;
+  font-family: 'Courier New', monospace;
 }
 
 /* 数据统计 */
@@ -543,27 +706,51 @@ const carouselImages = ref([
   gap: 32px;
   padding: 80px 0;
   text-align: center;
+  background: #ffffff;
+  border: 4px solid #000000;
+  box-shadow: 8px 8px 0px #000000;
+  padding: 40px;
+  margin: 40px 0;
 }
 
 .stat-item {
   padding: 32px;
+  border: 2px solid #000000;
+  background: #ffffff;
+  transition: all 0.2s ease;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.stat-item:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
 }
 
 .stat-number {
   font-size: 48px;
   font-weight: 700;
   margin-bottom: 16px;
+  color: #000000;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
 }
 
 .stat-label {
   font-size: 18px;
-  opacity: 0.9;
+  color: #666666;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* 页脚 */
 .footer {
-  background: rgba(0, 0, 0, 0.2);
+  background: #000000;
+  color: #ffffff;
   padding: 40px 0;
+  border-top: 4px solid #000000;
+  box-shadow: 0 -4px 0px #000000;
 }
 
 .footer-content {
@@ -574,36 +761,51 @@ const carouselImages = ref([
 
 .footer-left h3 {
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 8px;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .footer-left p,
 .footer-right p {
-  opacity: 0.8;
+  color: #cccccc;
   margin: 0;
+  font-family: 'Courier New', monospace;
 }
 
 /* 对话框内容 */
 .dialog-content h3 {
-  color: var(--el-text-color-primary);
+  color: #000000;
   margin-bottom: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
 }
 
 .dialog-content h4 {
-  color: var(--el-text-color-primary);
+  color: #000000;
   margin: 20px 0 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
 }
 
 .dialog-content p {
-  color: var(--el-text-color-secondary);
+  color: #666666;
   line-height: 1.6;
   margin-bottom: 10px;
+  font-family: 'Courier New', monospace;
 }
 
 .dialog-content ul {
-  color: var(--el-text-color-secondary);
+  color: #666666;
   padding-left: 20px;
+  font-family: 'Courier New', monospace;
 }
 
 .dialog-content li {
@@ -613,6 +815,101 @@ const carouselImages = ref([
 
 .contact-info p {
   margin: 8px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.el-dialog {
+  border: 4px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0px #000000 !important;
+}
+
+.el-dialog__header {
+  background: #000000;
+  color: #ffffff;
+  padding: 20px;
+  border-bottom: 2px solid #000000;
+}
+
+.el-dialog__title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-family: 'Courier New', monospace !important;
+  letter-spacing: 1px !important;
+}
+
+.el-dialog__body {
+  padding: 30px;
+  background: #ffffff;
+}
+
+.el-dialog__footer {
+  padding: 20px;
+  background: #f0f0f0;
+  border-top: 2px solid #000000;
+}
+
+.el-dialog__footer .el-button {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.el-dialog__footer .el-button:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+}
+
+.el-dialog {
+  border: 4px solid #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: 8px 8px 0px #000000 !important;
+}
+
+.el-dialog__header {
+  background: #000000;
+  color: #ffffff;
+  padding: 20px;
+  border-bottom: 2px solid #000000;
+}
+
+.el-dialog__title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  font-family: 'Courier New', monospace !important;
+  letter-spacing: 1px !important;
+}
+
+.el-dialog__body {
+  padding: 30px;
+  background: #ffffff;
+}
+
+.el-dialog__footer {
+  padding: 20px;
+  background: #f0f0f0;
+  border-top: 2px solid #000000;
+}
+
+.el-dialog__footer .el-button {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  font-family: 'Courier New', monospace !important;
+  text-transform: uppercase !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+}
+
+.el-dialog__footer .el-button:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 6px 6px 0px #000000 !important;
 }
 
 /* 响应式设计 */

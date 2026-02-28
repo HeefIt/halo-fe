@@ -585,11 +585,11 @@ const sendMessageToAI = async (sessionId, content) => {
         (data) => {
           console.log('收到流式数据:', data);
 
-          // 处理不同的数据格式
+          // 处理不同的数据格式 - 优先使用增量内容
           let replyContent = '';
           if (data && typeof data === 'object') {
-            // 如果是对象格式，尝试不同的字段
-            replyContent = data.reply || data.content || data.message || '';
+            // 优先使用增量内容（reply字段），如果没有则使用完整内容
+            replyContent = data.reply || data.fullReply || data.content || data.fullContent || data.message || '';
           } else if (typeof data === 'string') {
             // 如果是字符串格式
             replyContent = data;
@@ -613,14 +613,14 @@ const sendMessageToAI = async (sessionId, content) => {
               };
               currentSession.value.messages.push(assistantMessage);
               hasAddedMessage = true;
-              console.log('添加初始AI消息');
+              console.log('添加初始AI消息，内容长度:', fullResponse.length);
             } else {
               // 更新最后一条AI消息
               const lastMessageIndex = currentSession.value.messages.length - 1;
               if (lastMessageIndex >= 0 && currentSession.value.messages[lastMessageIndex].role === 'assistant') {
                 // 使用Vue.set确保响应式更新
                 currentSession.value.messages[lastMessageIndex].content = fullResponse;
-                console.log('更新AI消息内容，长度:', fullResponse.length);
+                console.log('更新AI消息内容，总长度:', fullResponse.length, '新增内容长度:', replyContent.length);
               }
             }
 
@@ -668,12 +668,27 @@ const sendMessageToAI = async (sessionId, content) => {
   }
 }
 
-// 方法：格式化消息内容
+// 导入Markdown相关依赖
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github-dark.css'
+
+// 配置marked
+marked.setOptions({
+  highlight: function(code, lang) {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  },
+  breaks: true,
+  gfm: true
+})
+
+// 方法：格式化消息内容（支持完整Markdown渲染）
 const formatMessage = (content) => {
-  return content
-      .replace(/\n/g, '<br>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
+  if (!content) return ''
+  // 使用marked解析Markdown，然后用DOMPurify进行安全过滤
+  return DOMPurify.sanitize(marked.parse(content))
 }
 
 // 方法：格式化时间
@@ -1451,6 +1466,116 @@ watch([currentSessionId, sessions], () => {
   font-size: 12px;
   color: #666666;
   font-family: 'Courier New', monospace;
+}
+
+/* Markdown渲染样式 */
+.message-text {
+  line-height: 1.6;
+}
+
+/* 代码块样式 */
+.message-text pre {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+  border: 1px solid #333;
+}
+
+.message-text code {
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 14px;
+  background: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #333;
+}
+
+.message-text pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+/* 表格样式 */
+.message-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.message-text th,
+.message-text td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.message-text th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.message-text tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* 引用块样式 */
+.message-text blockquote {
+  border-left: 4px solid #007acc;
+  margin: 12px 0;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  color: #555;
+  border-radius: 0 4px 4px 0;
+}
+
+/* 列表样式 */
+.message-text ul,
+.message-text ol {
+  padding-left: 24px;
+  margin: 12px 0;
+}
+
+.message-text li {
+  margin: 8px 0;
+}
+
+/* 标题样式 */
+.message-text h1,
+.message-text h2,
+.message-text h3,
+.message-text h4,
+.message-text h5,
+.message-text h6 {
+  margin: 16px 0 12px 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.message-text h1 { font-size: 24px; }
+.message-text h2 { font-size: 22px; }
+.message-text h3 { font-size: 20px; }
+.message-text h4 { font-size: 18px; }
+.message-text h5 { font-size: 16px; }
+.message-text h6 { font-size: 14px; }
+
+/* 链接样式 */
+.message-text a {
+  color: #007acc;
+  text-decoration: none;
+  border-bottom: 1px dotted #007acc;
+}
+
+.message-text a:hover {
+  color: #005a9e;
+  border-bottom: 1px solid #005a9e;
 }
 
 /* 响应式设计 */
