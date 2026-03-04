@@ -1,352 +1,413 @@
 <template>
   <div class="practice-history-page">
-    <!-- 顶部导航栏 -->
     <Header />
     
-    <!-- 主内容区 -->
     <main class="main-content">
       <div class="container">
         <div class="page-header">
-          <h1>我的练习</h1>
+          <div class="header-left">
+            <h1 class="page-title">我的练习</h1>
+            <p class="page-subtitle">回顾每一次练习，见证成长的足迹</p>
+          </div>
+          <button class="export-btn" @click="exportHistory">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            导出记录
+          </button>
         </div>
-        
-        <!-- 筛选和统计区域 -->
-        <el-card class="filter-stats-card">
-          <el-row :gutter="20">
-            <el-col :span="16">
-              <div class="filter-section">
-                <el-form :inline="true" :model="filterForm" class="filter-form">
-                  <el-form-item label="练习时间">
-                    <el-date-picker
-                      v-model="filterForm.dateRange"
-                      type="daterange"
-                      range-separator="至"
-                      start-placeholder="开始日期"
-                      end-placeholder="结束日期"
-                      value-format="YYYY-MM-DD"
-                    />
-                  </el-form-item>
-                  <el-form-item label="题目类型">
-                    <el-select v-model="filterForm.subjectType" placeholder="请选择题目类型" clearable>
-                      <el-option label="单选题" :value="1" />
-                      <el-option label="多选题" :value="2" />
-                      <el-option label="判断题" :value="3" />
-                      <el-option label="简答题" :value="4" />
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item>
-                    <el-button type="primary" @click="fetchPracticeHistory">搜索</el-button>
-                    <el-button @click="resetFilters">重置</el-button>
-                  </el-form-item>
-                </el-form>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="stats-summary">
-                <div class="stat-item">
-                  <div class="stat-label">总练习次数</div>
-                  <div class="stat-value">{{ stats.totalPracticeCount }}</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-label">总答题数</div>
-                  <div class="stat-value">{{ stats.totalSubjectCount }}</div>
-                </div>
-                <div class="stat-item">
-                  <div class="stat-label">平均正确率</div>
-                  <div class="stat-value">{{ stats.averageAccuracy }}%</div>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-        </el-card>
-        
-        <!-- 练习记录列表 -->
-        <el-card class="history-card">
-          <template #header>
-            <div class="history-header">
-              <span>练习记录</span>
-              <div class="header-actions">
-                <el-button @click="exportHistory" :icon="Download">导出记录</el-button>
+
+        <div class="stats-overview">
+          <div class="stat-card">
+            <div class="stat-visual">
+              <svg viewBox="0 0 100 100" class="stat-circle">
+                <circle cx="50" cy="50" r="45" class="circle-bg"/>
+                <circle cx="50" cy="50" r="45" class="circle-fill" :style="{ strokeDashoffset: 283 - (283 * stats.averageAccuracy / 100) }"/>
+              </svg>
+              <div class="stat-center">
+                <span class="stat-number">{{ stats.averageAccuracy }}</span>
+                <span class="stat-unit">%</span>
               </div>
             </div>
-          </template>
-          
-          <el-table 
-            :data="practiceHistory" 
-            style="width: 100%" 
-            v-loading="loading"
-            @row-dblclick="viewPracticeDetail"
-          >
-            <el-table-column prop="id" label="记录ID" width="80" />
-            <el-table-column prop="practiceDate" label="练习时间" width="180">
-              <template #default="scope">
-                {{ formatDate(scope.row.practiceDate) }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="subjectCount" label="题目数量" width="100" />
-            <el-table-column prop="correctCount" label="正确题数" width="100" />
-            <el-table-column label="正确率" width="100">
-              <template #default="scope">
-                <el-progress 
-                  :percentage="Math.round((scope.row.correctCount / scope.row.subjectCount) * 100)" 
-                  :stroke-width="12"
-                  :color="getAccuracyColor(scope.row.correctCount, scope.row.subjectCount)"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column prop="timeSpent" label="用时" width="100">
-              <template #default="scope">
-                {{ formatTime(scope.row.timeSpent) }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="subjectType" label="题目类型" width="100">
-              <template #default="scope">
-                {{ getSubjectTypeLabel(scope.row.subjectType) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="150">
-              <template #default="scope">
-                <el-button size="small" @click="viewPracticeDetail(scope.row)">查看详情</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          
-          <!-- 分页 -->
-          <div class="pagination-wrapper">
-            <el-pagination
-              v-model:current-page="pagination.pageNo"
-              v-model:page-size="pagination.pageSize"
-              :total="pagination.total"
-              :page-sizes="[10, 20, 50, 100]"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleSizeChange"
-              @current-change="handleCurrentChange"
-            />
+            <div class="stat-info">
+              <span class="stat-label">平均正确率</span>
+            </div>
           </div>
-          
-          <!-- 空状态 -->
-          <el-empty v-if="!loading && practiceHistory.length === 0" description="暂无练习记录" />
-        </el-card>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-practice">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-value">{{ stats.totalPracticeCount }}</span>
+              <span class="stat-label">总练习次数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-questions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-value">{{ stats.totalSubjectCount }}</span>
+              <span class="stat-label">总答题数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-icon-time">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <span class="stat-value">{{ formatTotalTime(stats.totalTime) }}</span>
+              <span class="stat-label">累计用时</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">练习时间</label>
+              <div class="date-range-picker">
+                <input 
+                  type="date" 
+                  v-model="filterForm.startDate"
+                  class="date-input"
+                />
+                <span class="date-separator">至</span>
+                <input 
+                  type="date" 
+                  v-model="filterForm.endDate"
+                  class="date-input"
+                />
+              </div>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">题目类型</label>
+              <div class="type-select" @click="showTypeDropdown = !showTypeDropdown">
+                <span class="selected-type">{{ getSubjectTypeLabel(filterForm.subjectType) || '全部类型' }}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+                <div class="type-dropdown" v-if="showTypeDropdown">
+                  <div class="dropdown-item" @click.stop="selectType('')">全部类型</div>
+                  <div class="dropdown-item" @click.stop="selectType(1)">单选题</div>
+                  <div class="dropdown-item" @click.stop="selectType(2)">多选题</div>
+                  <div class="dropdown-item" @click.stop="selectType(3)">判断题</div>
+                  <div class="dropdown-item" @click.stop="selectType(4)">简答题</div>
+                </div>
+              </div>
+            </div>
+            <div class="filter-actions">
+              <button class="search-btn" @click="fetchPracticeHistory">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                搜索
+              </button>
+              <button class="reset-btn" @click="resetFilters">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+                重置
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="history-list-card">
+          <div class="card-header">
+            <h3 class="card-title">练习记录</h3>
+            <span class="record-count">共 {{ pagination.total }} 条记录</span>
+          </div>
+
+          <div class="history-table" v-loading="loading">
+            <div class="table-header">
+              <div class="col col-id">ID</div>
+              <div class="col col-date">练习时间</div>
+              <div class="col col-count">题目数</div>
+              <div class="col col-correct">正确</div>
+              <div class="col col-accuracy">正确率</div>
+              <div class="col col-time">用时</div>
+              <div class="col col-type">类型</div>
+              <div class="col col-action">操作</div>
+            </div>
+
+            <div class="table-body">
+              <div 
+                v-for="record in practiceHistory" 
+                :key="record.id"
+                class="table-row"
+                @dblclick="viewPracticeDetail(record)"
+              >
+                <div class="col col-id">
+                  <span class="record-id">#{{ record.id }}</span>
+                </div>
+                <div class="col col-date">
+                  <div class="date-cell">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>{{ formatDate(record.practiceDate) }}</span>
+                  </div>
+                </div>
+                <div class="col col-count">
+                  <span class="count-value">{{ record.subjectCount }}</span>
+                </div>
+                <div class="col col-correct">
+                  <span class="correct-value">{{ record.correctCount }}</span>
+                </div>
+                <div class="col col-accuracy">
+                  <div class="accuracy-cell">
+                    <div class="accuracy-bar">
+                      <div 
+                        class="accuracy-fill"
+                        :class="getAccuracyClass(record.correctCount, record.subjectCount)"
+                        :style="{ width: `${(record.correctCount / record.subjectCount) * 100}%` }"
+                      ></div>
+                    </div>
+                    <span class="accuracy-value">{{ Math.round((record.correctCount / record.subjectCount) * 100) }}%</span>
+                  </div>
+                </div>
+                <div class="col col-time">
+                  <div class="time-cell">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>{{ formatTime(record.timeSpent) }}</span>
+                  </div>
+                </div>
+                <div class="col col-type">
+                  <span class="type-tag" :class="`type-${record.subjectType}`">
+                    {{ getSubjectTypeLabel(record.subjectType) }}
+                  </span>
+                </div>
+                <div class="col col-action">
+                  <button class="detail-btn" @click="viewPracticeDetail(record)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    详情
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" v-if="!loading && practiceHistory.length === 0">
+            <svg viewBox="0 0 200 200" fill="none">
+              <circle cx="100" cy="100" r="80" stroke="url(#emptyGradient)" stroke-width="2" stroke-dasharray="8 4"/>
+              <path d="M70 90 L85 105 L70 120" stroke="url(#emptyGradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M130 90 L115 105 L130 120" stroke="url(#emptyGradient)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M85 130 Q100 145 115 130" stroke="url(#emptyGradient)" stroke-width="3" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="emptyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#f43f5e"/>
+                  <stop offset="100%" stop-color="#ec4899"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <h4>暂无练习记录</h4>
+            <p>开始你的第一次练习吧！</p>
+          </div>
+
+          <div class="pagination" v-if="pagination.total > 0">
+            <div class="page-info">
+              显示 {{ (pagination.pageNo - 1) * pagination.pageSize + 1 }} - 
+              {{ Math.min(pagination.pageNo * pagination.pageSize, pagination.total) }} 
+              条，共 {{ pagination.total }} 条
+            </div>
+            <div class="page-controls">
+              <button 
+                class="page-btn" 
+                :disabled="pagination.pageNo === 1"
+                @click="changePage(pagination.pageNo - 1)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+              <div class="page-numbers">
+                <button 
+                  v-for="page in visiblePages" 
+                  :key="page"
+                  class="page-num"
+                  :class="{ active: page === pagination.pageNo }"
+                  @click="changePage(page)"
+                >
+                  {{ page }}
+                </button>
+              </div>
+              <button 
+                class="page-btn" 
+                :disabled="pagination.pageNo >= totalPages"
+                @click="changePage(pagination.pageNo + 1)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+            <div class="page-size-select">
+              <select v-model="pagination.pageSize" @change="handleSizeChange">
+                <option :value="10">10条/页</option>
+                <option :value="20">20条/页</option>
+                <option :value="50">50条/页</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
-    
-    <!-- 练习详情对话框 -->
-    <el-dialog 
-      v-model="showDetailDialog" 
-      title="练习详情" 
-      width="80%"
-      @close="handleDialogClose"
-    >
-      <div v-if="selectedPractice" class="practice-detail">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="记录ID">{{ selectedPractice.id }}</el-descriptions-item>
-          <el-descriptions-item label="练习时间">{{ formatDate(selectedPractice.practiceDate) }}</el-descriptions-item>
-          <el-descriptions-item label="题目数量">{{ selectedPractice.subjectCount }}</el-descriptions-item>
-          <el-descriptions-item label="正确题数">{{ selectedPractice.correctCount }}</el-descriptions-item>
-          <el-descriptions-item label="正确率">{{ Math.round((selectedPractice.correctCount / selectedPractice.subjectCount) * 100) }}%</el-descriptions-item>
-          <el-descriptions-item label="用时">{{ formatTime(selectedPractice.timeSpent) }}</el-descriptions-item>
-          <el-descriptions-item label="题目类型">{{ getSubjectTypeLabel(selectedPractice.subjectType) }}</el-descriptions-item>
-        </el-descriptions>
+
+    <div class="modal-overlay" v-if="showDetailDialog" @click="showDetailDialog = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3 class="modal-title">练习详情</h3>
+          <button class="modal-close" @click="showDetailDialog = false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
         
-        <h3 style="margin-top: 20px;">题目详情</h3>
-        <el-table :data="selectedPractice.questions" style="width: 100%" max-height="400">
-          <el-table-column prop="id" label="题目ID" width="80" />
-          <el-table-column prop="title" label="题目标题" />
-          <el-table-column label="用户答案" width="150">
-            <template #default="scope">
-              <span :class="{ 'incorrect-answer': !scope.row.isCorrect }">{{ scope.row.userAnswer }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="是否正确" width="100">
-            <template #default="scope">
-              <el-tag :type="scope.row.isCorrect ? 'success' : 'danger'">
-                {{ scope.row.isCorrect ? '正确' : '错误' }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="正确答案" width="150">
-            <template #default="scope">
-              {{ scope.row.correctAnswer }}
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="modal-body" v-if="selectedPractice">
+          <div class="detail-summary">
+            <div class="summary-item">
+              <span class="summary-label">记录ID</span>
+              <span class="summary-value">#{{ selectedPractice.id }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">练习时间</span>
+              <span class="summary-value">{{ formatDate(selectedPractice.practiceDate) }}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">题目数量</span>
+              <span class="summary-value">{{ selectedPractice.subjectCount }} 题</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">正确题数</span>
+              <span class="summary-value correct">{{ selectedPractice.correctCount }} 题</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">正确率</span>
+              <span class="summary-value highlight">{{ Math.round((selectedPractice.correctCount / selectedPractice.subjectCount) * 100) }}%</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">用时</span>
+              <span class="summary-value">{{ formatTime(selectedPractice.timeSpent) }}</span>
+            </div>
+          </div>
+
+          <div class="questions-section">
+            <h4 class="section-title">题目详情</h4>
+            <div class="questions-list">
+              <div 
+                v-for="(question, index) in selectedPractice.questions" 
+                :key="question.id"
+                class="question-item"
+                :class="{ correct: question.isCorrect, incorrect: !question.isCorrect }"
+              >
+                <div class="question-header">
+                  <span class="question-number">Q{{ index + 1 }}</span>
+                  <span class="question-status" :class="{ correct: question.isCorrect }">
+                    <svg v-if="question.isCorrect" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </span>
+                </div>
+                <div class="question-title">{{ question.title }}</div>
+                <div class="question-answers">
+                  <div class="answer-row">
+                    <span class="answer-label">你的答案：</span>
+                    <span class="answer-value" :class="{ wrong: !question.isCorrect }">{{ question.userAnswer }}</span>
+                  </div>
+                  <div class="answer-row" v-if="!question.isCorrect">
+                    <span class="answer-label">正确答案：</span>
+                    <span class="answer-value correct">{{ question.correctAnswer }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="close-btn" @click="showDetailDialog = false">关闭</button>
+        </div>
       </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="showDetailDialog = false">关闭</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Download } from '@element-plus/icons-vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import Header from '@/views/components/layout/Header.vue'
 
-// 加载状态
 const loading = ref(false)
+const showTypeDropdown = ref(false)
+const showDetailDialog = ref(false)
+const selectedPractice = ref(null)
 
-// 筛选表单
 const filterForm = reactive({
-  dateRange: [],
+  startDate: '',
+  endDate: '',
   subjectType: ''
 })
 
-// 统计数据
 const stats = ref({
   totalPracticeCount: 25,
   totalSubjectCount: 320,
-  averageAccuracy: 82.5
+  averageAccuracy: 82.5,
+  totalTime: 45000
 })
 
-// 分页数据
 const pagination = reactive({
   pageNo: 1,
   pageSize: 10,
   total: 0
 })
 
-// 练习历史记录
 const practiceHistory = ref([])
 
-// 显示详情对话框
-const showDetailDialog = ref(false)
+const totalPages = computed(() => {
+  return Math.ceil(pagination.total / pagination.pageSize)
+})
 
-// 选中的练习记录
-const selectedPractice = ref(null)
-
-// 获取练习历史数据
-const fetchPracticeHistory = () => {
-  loading.value = true
-  
-  // 模拟API请求延迟
-  setTimeout(() => {
-    // Mock数据
-    practiceHistory.value = [
-      {
-        id: 1001,
-        practiceDate: '2025-11-25T14:30:00',
-        subjectCount: 20,
-        correctCount: 18,
-        timeSpent: 1800, // 30分钟
-        subjectType: 1
-      },
-      {
-        id: 1002,
-        practiceDate: '2025-11-24T10:15:00',
-        subjectCount: 15,
-        correctCount: 12,
-        timeSpent: 1200, // 20分钟
-        subjectType: 2
-      },
-      {
-        id: 1003,
-        practiceDate: '2025-11-23T16:45:00',
-        subjectCount: 25,
-        correctCount: 22,
-        timeSpent: 2100, // 35分钟
-        subjectType: 3
-      },
-      {
-        id: 1004,
-        practiceDate: '2025-11-22T09:00:00',
-        subjectCount: 18,
-        correctCount: 15,
-        timeSpent: 1500, // 25分钟
-        subjectType: 1
-      },
-      {
-        id: 1005,
-        practiceDate: '2025-11-21T13:20:00',
-        subjectCount: 22,
-        correctCount: 19,
-        timeSpent: 1980, // 33分钟
-        subjectType: 4
-      }
-    ]
-    
-    pagination.total = practiceHistory.value.length
-    loading.value = false
-  }, 500)
-}
-
-// 重置筛选条件
-const resetFilters = () => {
-  filterForm.dateRange = []
-  filterForm.subjectType = ''
-  fetchPracticeHistory()
-}
-
-// 查看练习详情
-const viewPracticeDetail = (row) => {
-  selectedPractice.value = {
-    ...row,
-    questions: [
-      {
-        id: 1,
-        title: 'Java中String是不可变的吗？',
-        userAnswer: '是',
-        correctAnswer: '是',
-        isCorrect: true
-      },
-      {
-        id: 2,
-        title: 'Java中int和Integer有什么区别？',
-        userAnswer: 'int是基本类型，Integer是包装类',
-        correctAnswer: 'int是基本类型，Integer是包装类',
-        isCorrect: true
-      },
-      {
-        id: 3,
-        title: 'Java中final关键字的作用是什么？',
-        userAnswer: '用于修饰不可变的变量',
-        correctAnswer: '用于修饰不可变的变量、方法和类',
-        isCorrect: false
-      }
-    ]
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, pagination.pageNo - 2)
+  const end = Math.min(totalPages.value, pagination.pageNo + 2)
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
   }
-  showDetailDialog.value = true
-}
+  return pages
+})
 
-// 处理对话框关闭
-const handleDialogClose = () => {
-  selectedPractice.value = null
-}
-
-// 导出练习记录
-const exportHistory = () => {
-  ElMessage.info('导出功能正在开发中...')
-}
-
-// 处理分页大小变化
-const handleSizeChange = (val) => {
-  pagination.pageSize = val
-  fetchPracticeHistory()
-}
-
-// 处理当前页变化
-const handleCurrentChange = (val) => {
-  pagination.pageNo = val
-  fetchPracticeHistory()
-}
-
-// 格式化日期
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-}
-
-// 格式化时间
-const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
-  return `${mins}分${secs}秒`
-}
-
-// 获取题目类型标签
 const getSubjectTypeLabel = (type) => {
   const typeMap = {
     1: '单选题',
@@ -354,18 +415,94 @@ const getSubjectTypeLabel = (type) => {
     3: '判断题',
     4: '简答题'
   }
-  return typeMap[type] || '未知'
+  return typeMap[type] || ''
 }
 
-// 获取正确率颜色
-const getAccuracyColor = (correct, total) => {
+const selectType = (type) => {
+  filterForm.subjectType = type
+  showTypeDropdown.value = false
+}
+
+const getAccuracyClass = (correct, total) => {
   const accuracy = correct / total
-  if (accuracy >= 0.9) return '#67c23a' // 绿色
-  if (accuracy >= 0.7) return '#e6a23c' // 黄色
-  return '#f56c6c' // 红色
+  if (accuracy >= 0.9) return 'high'
+  if (accuracy >= 0.7) return 'medium'
+  return 'low'
 }
 
-// 组件挂载时获取数据
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+const formatTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}分${secs}秒`
+}
+
+const formatTotalTime = (seconds) => {
+  const hours = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  if (hours > 0) {
+    return `${hours}h${mins}m`
+  }
+  return `${mins}分钟`
+}
+
+const fetchPracticeHistory = () => {
+  loading.value = true
+  setTimeout(() => {
+    practiceHistory.value = [
+      { id: 1001, practiceDate: '2025-11-25T14:30:00', subjectCount: 20, correctCount: 18, timeSpent: 1800, subjectType: 1 },
+      { id: 1002, practiceDate: '2025-11-24T10:15:00', subjectCount: 15, correctCount: 12, timeSpent: 1200, subjectType: 2 },
+      { id: 1003, practiceDate: '2025-11-23T16:45:00', subjectCount: 25, correctCount: 22, timeSpent: 2100, subjectType: 3 },
+      { id: 1004, practiceDate: '2025-11-22T09:00:00', subjectCount: 18, correctCount: 15, timeSpent: 1500, subjectType: 1 },
+      { id: 1005, practiceDate: '2025-11-21T13:20:00', subjectCount: 22, correctCount: 19, timeSpent: 1980, subjectType: 4 },
+      { id: 1006, practiceDate: '2025-11-20T15:00:00', subjectCount: 30, correctCount: 27, timeSpent: 2400, subjectType: 1 },
+      { id: 1007, practiceDate: '2025-11-19T11:30:00', subjectCount: 12, correctCount: 10, timeSpent: 900, subjectType: 2 },
+      { id: 1008, practiceDate: '2025-11-18T14:45:00', subjectCount: 28, correctCount: 24, timeSpent: 2200, subjectType: 3 }
+    ]
+    pagination.total = practiceHistory.value.length
+    loading.value = false
+  }, 500)
+}
+
+const resetFilters = () => {
+  filterForm.startDate = ''
+  filterForm.endDate = ''
+  filterForm.subjectType = ''
+  fetchPracticeHistory()
+}
+
+const viewPracticeDetail = (record) => {
+  selectedPractice.value = {
+    ...record,
+    questions: [
+      { id: 1, title: 'Java中String是不可变的吗？', userAnswer: '是', correctAnswer: '是', isCorrect: true },
+      { id: 2, title: 'Java中int和Integer有什么区别？', userAnswer: 'int是基本类型，Integer是包装类', correctAnswer: 'int是基本类型，Integer是包装类', isCorrect: true },
+      { id: 3, title: 'Java中final关键字的作用是什么？', userAnswer: '用于修饰不可变的变量', correctAnswer: '用于修饰不可变的变量、方法和类', isCorrect: false }
+    ]
+  }
+  showDetailDialog.value = true
+}
+
+const exportHistory = () => {
+  console.log('导出记录')
+}
+
+const changePage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    pagination.pageNo = page
+    fetchPracticeHistory()
+  }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNo = 1
+  fetchPracticeHistory()
+}
+
 onMounted(() => {
   fetchPracticeHistory()
 })
@@ -374,100 +511,955 @@ onMounted(() => {
 <style scoped>
 .practice-history-page {
   min-height: 100vh;
-  background-color: var(--background-color);
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
 }
 
-/* 主内容区 */
 .main-content {
-  padding: 24px 0;
+  padding: 100px 24px 48px;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
 }
 
-.page-header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
+.page-title {
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px 0;
+  letter-spacing: -1px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
 }
 
-.filter-stats-card {
-  margin-bottom: 24px;
-}
-
-.filter-section {
+.export-btn {
   display: flex;
   align-items: center;
-  height: 100%;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.filter-form :deep(.el-form-item) {
-  margin-right: 20px;
-  margin-bottom: 0;
+.export-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(244, 63, 94, 0.3);
+  color: white;
 }
 
-.stats-summary {
+.export-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: 200px repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
-  justify-content: space-around;
+  flex-direction: column;
   align-items: center;
-  height: 100%;
+  transition: all 0.3s ease;
 }
 
-.stat-item {
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(244, 63, 94, 0.2);
+}
+
+.stat-visual {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin-bottom: 12px;
+}
+
+.stat-circle {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 8;
+}
+
+.circle-fill {
+  fill: none;
+  stroke: url(#gradient);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  transition: stroke-dashoffset 1s ease;
+}
+
+.stat-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+.stat-unit {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stat-info {
   text-align: center;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-icon-practice {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%);
+  color: #f43f5e;
+}
+
+.stat-icon-questions {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  color: #3b82f6;
+}
+
+.stat-icon-time {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+  color: #22c55e;
+}
+
+.stat-content {
+  text-align: center;
 }
 
 .stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--primary-color);
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
 }
 
-.history-card {
-  margin-top: 20px;
+.filter-section {
+  margin-bottom: 24px;
 }
 
-.history-header {
+.filter-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.date-range-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-input {
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.date-input:focus {
+  border-color: rgba(244, 63, 94, 0.5);
+}
+
+.date-separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 14px;
+}
+
+.type-select {
+  position: relative;
+  min-width: 140px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+}
+
+.type-select:hover {
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.selected-type {
+  font-size: 14px;
+  color: white;
+}
+
+.type-select svg {
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.type-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.dropdown-item {
+  padding: 12px 14px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background: rgba(244, 63, 94, 0.1);
+  color: white;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.search-btn, .reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  border: none;
+  color: white;
+}
+
+.search-btn:hover {
+  box-shadow: 0 4px 20px rgba(244, 63, 94, 0.4);
+}
+
+.reset-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.search-btn svg, .reset-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.history-list-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.pagination-wrapper {
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.record-count {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 80px 180px 80px 80px 160px 100px 100px 100px;
+  padding: 14px 28px;
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.table-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.table-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 80px 180px 80px 80px 160px 100px 100px 100px;
+  padding: 16px 28px;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.col {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+  align-items: center;
 }
 
-.incorrect-answer {
-  color: #f56c6c;
+.record-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.date-cell svg {
+  width: 16px;
+  height: 16px;
+  color: rgba(244, 63, 94, 0.6);
+}
+
+.count-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+}
+
+.correct-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #22c55e;
+}
+
+.accuracy-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accuracy-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.accuracy-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.accuracy-fill.high {
+  background: linear-gradient(90deg, #22c55e, #10b981);
+}
+
+.accuracy-fill.medium {
+  background: linear-gradient(90deg, #f59e0b, #eab308);
+}
+
+.accuracy-fill.low {
+  background: linear-gradient(90deg, #ef4444, #f43f5e);
+}
+
+.accuracy-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  min-width: 40px;
+}
+
+.time-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.time-cell svg {
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.type-tag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.type-tag.type-1 {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+}
+
+.type-tag.type-2 {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+}
+
+.type-tag.type-3 {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.type-tag.type-4 {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+}
+
+.detail-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  border-radius: 8px;
+  color: #f43f5e;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.detail-btn:hover {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.detail-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state svg {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 24px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-state h4 {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.page-info {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-num {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.page-num:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.page-num.active {
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  color: white;
+}
+
+.page-size-select select {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.modal-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+}
+
+.detail-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summary-item {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.summary-label {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.summary-value.correct {
+  color: #22c55e;
+}
+
+.summary-value.highlight {
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.questions-section {
+  margin-top: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 16px 0;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.question-item {
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.question-item.correct {
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.question-item.incorrect {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.question-number {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.question-status {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.question-status.correct {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.question-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.question-title {
+  font-size: 15px;
+  color: white;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.question-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.answer-row {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.answer-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.answer-value {
+  color: white;
+}
+
+.answer-value.wrong {
+  color: #ef4444;
   text-decoration: line-through;
 }
 
+.answer-value.correct {
+  color: #22c55e;
+}
+
+.modal-footer {
+  padding: 20px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-btn {
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 1200px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .table-header,
+  .table-row {
+    grid-template-columns: 60px 140px 60px 60px 140px 80px 80px 80px;
+    padding: 12px 16px;
+  }
+}
+
 @media (max-width: 768px) {
-  .filter-stats-card :deep(.el-row) {
+  .page-header {
     flex-direction: column;
+    gap: 20px;
   }
-  
-  .filter-section {
-    margin-bottom: 20px;
+
+  .page-title {
+    font-size: 32px;
   }
-  
-  .stats-summary {
-    flex-direction: row;
+
+  .stats-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .filter-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .search-btn, .reset-btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .detail-summary {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

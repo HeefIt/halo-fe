@@ -1,92 +1,216 @@
-<!--
-  Statistics 数据统计组件
-  功能描述：管理员查看系统数据统计的组件
-  主要功能：
-    - 整体统计卡片：显示稀有用户数、题目总数、在线用户数、总提交数
-    - 用户学习增长趣势：按上选一孜7天或一个一30天查帋
-    - 题目涉親趣势：按上选一孜7天或一个一30天查帋
-    - ECharts图表：使用ECharts组件部分圈閯越越司数据
-  使用位置：Admin.vue的"数据统计"上
--->
 <template>
-  <div class="tab-content">
-    <h2>数据统计</h2>
-    
-    <div class="stats-cards">
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.totalUsers }}</div>
-          <div class="stat-label">总用户数</div>
-        </div>
-        <el-icon class="stat-icon"><User /></el-icon>
-      </el-card>
-      
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.totalProblems }}</div>
-          <div class="stat-label">题目总数</div>
-        </div>
-        <el-icon class="stat-icon"><Collection /></el-icon>
-      </el-card>
-      
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.onlineUsers }}</div>
-          <div class="stat-label">在线用户</div>
-        </div>
-        <el-icon class="stat-icon"><Avatar /></el-icon>
-      </el-card>
-      
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.totalSubmissions }}</div>
-          <div class="stat-label">总提交数</div>
-        </div>
-        <el-icon class="stat-icon"><DataAnalysis /></el-icon>
-      </el-card>
+  <div class="statistics-page">
+    <div class="management-header">
+      <div class="header-info">
+        <h2>数据统计</h2>
+        <p>系统运营数据概览与趋势分析</p>
+      </div>
     </div>
-    
-    <div class="charts">
-      <el-card class="chart-card">
-        <template #header>
-          <div class="chart-header">
-            <span>用户增长趋势</span>
-            <el-radio-group v-model="userTrendDays" @change="fetchUserGrowthTrend" size="small">
-              <el-radio-button label="7">7天</el-radio-button>
-              <el-radio-button label="30">30天</el-radio-button>
-            </el-radio-group>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon users">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ animatedStats.totalUsers }}</span>
+          <span class="stat-label">总用户数</span>
+        </div>
+        <div class="stat-trend up">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+          +12%
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon problems">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ animatedStats.totalProblems }}</span>
+          <span class="stat-label">题目总数</span>
+        </div>
+        <div class="stat-trend up">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+          +8%
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon online">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ animatedStats.onlineUsers }}</span>
+          <span class="stat-label">在线用户</span>
+        </div>
+        <div class="stat-indicator">
+          <span class="pulse-dot"></span>
+          实时
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon submissions">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">{{ animatedStats.totalSubmissions }}</span>
+          <span class="stat-label">总提交数</span>
+        </div>
+        <div class="stat-trend up">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+          +23%
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            用户增长趋势
           </div>
-        </template>
+          <div class="chart-tabs">
+            <button 
+              v-for="period in periodOptions" 
+              :key="period.value"
+              class="tab-btn"
+              :class="{ active: userTrendDays === period.value }"
+              @click="userTrendDays = period.value; fetchUserGrowthTrend()"
+            >
+              {{ period.label }}
+            </button>
+          </div>
+        </div>
         <div ref="userChartContainer" class="chart-container"></div>
-      </el-card>
-      
-      <el-card class="chart-card">
-        <template #header>
-          <div class="chart-header">
-            <span>题目提交趋势</span>
-            <el-radio-group v-model="submissionTrendDays" @change="fetchSubmissionTrend" size="small">
-              <el-radio-button label="7">7天</el-radio-button>
-              <el-radio-button label="30">30天</el-radio-button>
-            </el-radio-group>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+            </svg>
+            题目提交趋势
           </div>
-        </template>
+          <div class="chart-tabs">
+            <button 
+              v-for="period in periodOptions" 
+              :key="period.value"
+              class="tab-btn"
+              :class="{ active: submissionTrendDays === period.value }"
+              @click="submissionTrendDays = period.value; fetchSubmissionTrend()"
+            >
+              {{ period.label }}
+            </button>
+          </div>
+        </div>
         <div ref="submissionChartContainer" class="chart-container"></div>
-      </el-card>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="info-card">
+        <div class="info-header">
+          <h3>热门题目 TOP 5</h3>
+          <span class="badge">本周</span>
+        </div>
+        <div class="ranking-list">
+          <div class="ranking-item" v-for="(item, index) in topProblems" :key="index">
+            <span class="rank" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
+            <span class="problem-name">{{ item.name }}</span>
+            <span class="problem-count">{{ item.count }} 次提交</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-header">
+          <h3>活跃用户 TOP 5</h3>
+          <span class="badge">本周</span>
+        </div>
+        <div class="user-list">
+          <div class="user-item" v-for="(user, index) in activeUsers" :key="index">
+            <div class="user-avatar" :style="{ background: getAvatarColor(index) }">
+              {{ user.name.charAt(0) }}
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="user-stats">{{ user.problems }} 题 · {{ user.accuracy }}% 正确率</span>
+            </div>
+            <span class="user-score">{{ user.score }} 分</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-header">
+          <h3>系统状态</h3>
+          <span class="status-badge online">
+            <span class="status-dot"></span>
+            运行正常
+          </span>
+        </div>
+        <div class="status-list">
+          <div class="status-item">
+            <span class="status-label">服务器响应时间</span>
+            <span class="status-value good">32ms</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">数据库连接</span>
+            <span class="status-value good">正常</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">缓存命中率</span>
+            <span class="status-value">98.5%</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">今日请求量</span>
+            <span class="status-value">12,847</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { 
-  User, Collection, Avatar, 
-  DataAnalysis, DataLine, PieChart 
-} from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
 import { getStatistics, getUserGrowthTrend, getSubmissionTrend } from '@/api/subject'
 import { ElMessage } from 'element-plus'
 
-// 统计数据
 const stats = ref({
   totalUsers: 0,
   totalProblems: 0,
@@ -94,27 +218,83 @@ const stats = ref({
   totalSubmissions: 0
 })
 
-// 用户增长趋势天数
-const userTrendDays = ref('7')
-// 题目提交趋势天数
-const submissionTrendDays = ref('7')
+const animatedStats = reactive({
+  totalUsers: 0,
+  totalProblems: 0,
+  onlineUsers: 0,
+  totalSubmissions: 0
+})
 
-// 图表容器ref
+const periodOptions = [
+  { label: '7天', value: 7 },
+  { label: '30天', value: 30 }
+]
+
+const userTrendDays = ref(7)
+const submissionTrendDays = ref(7)
+
 const userChartContainer = ref(null)
 const submissionChartContainer = ref(null)
 
-// 图表实例
 let userChart = null
 let submissionChart = null
+let animationTimer = null
 
-// 获取统计数据
+const topProblems = ref([
+  { name: 'Java面向对象编程基础', count: 1234 },
+  { name: 'Spring Boot自动配置原理', count: 987 },
+  { name: 'MySQL索引优化实践', count: 856 },
+  { name: 'Redis缓存策略设计', count: 743 },
+  { name: '分布式事务解决方案', count: 621 }
+])
+
+const activeUsers = ref([
+  { name: '张三', problems: 156, accuracy: 89, score: 2340 },
+  { name: '李四', problems: 142, accuracy: 92, score: 2180 },
+  { name: '王五', problems: 138, accuracy: 85, score: 2050 },
+  { name: '赵六', problems: 125, accuracy: 88, score: 1920 },
+  { name: '钱七', problems: 118, accuracy: 91, score: 1850 }
+])
+
+const getAvatarColor = (index) => {
+  const colors = [
+    'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)',
+    'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)',
+    'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+    'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+    'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'
+  ]
+  return colors[index % colors.length]
+}
+
+const animateValue = (key, target) => {
+  const duration = 1500
+  const start = animatedStats[key]
+  const startTime = performance.now()
+  
+  const animate = (currentTime) => {
+    const elapsed = currentTime - startTime
+    const progress = Math.min(elapsed / duration, 1)
+    const easeOut = 1 - Math.pow(1 - progress, 3)
+    animatedStats[key] = Math.floor(start + (target - start) * easeOut)
+    
+    if (progress < 1) {
+      requestAnimationFrame(animate)
+    }
+  }
+  
+  requestAnimationFrame(animate)
+}
+
 const fetchStatistics = async () => {
   try {
-    console.log('[DEBUG] 开始获取统计数据')
     const res = await getStatistics()
     if (res.code === 200) {
       stats.value = res.data
-      console.log('[DEBUG] 统计数据获取成功:', res.data)
+      animateValue('totalUsers', res.data.totalUsers || 0)
+      animateValue('totalProblems', res.data.totalProblems || 0)
+      animateValue('onlineUsers', res.data.onlineUsers || 0)
+      animateValue('totalSubmissions', res.data.totalSubmissions || 0)
     } else {
       ElMessage.error(res.message || '获取统计数据失败')
     }
@@ -124,14 +304,10 @@ const fetchStatistics = async () => {
   }
 }
 
-// 获取用户增长趋势
 const fetchUserGrowthTrend = async () => {
   try {
-    console.log('[DEBUG] 开始获取用户增长趋势, days:', userTrendDays.value)
-    const res = await getUserGrowthTrend(parseInt(userTrendDays.value))
-    
+    const res = await getUserGrowthTrend(userTrendDays.value)
     if (res.code === 200) {
-      console.log('[DEBUG] 用户增长趋势获取成功:', res.data)
       renderUserGrowthChart(res.data)
     } else {
       ElMessage.error(res.message || '获取用户增长趋势失败')
@@ -142,14 +318,10 @@ const fetchUserGrowthTrend = async () => {
   }
 }
 
-// 获取题目提交趋势
 const fetchSubmissionTrend = async () => {
   try {
-    console.log('[DEBUG] 开始获取题目提交趋势, days:', submissionTrendDays.value)
-    const res = await getSubmissionTrend(parseInt(submissionTrendDays.value))
-    
+    const res = await getSubmissionTrend(submissionTrendDays.value)
     if (res.code === 200) {
-      console.log('[DEBUG] 题目提交趋势获取成功:', res.data)
       renderSubmissionTrendChart(res.data)
     } else {
       ElMessage.error(res.message || '获取题目提交趋势失败')
@@ -160,282 +332,673 @@ const fetchSubmissionTrend = async () => {
   }
 }
 
-// 渲染用户增长趋势图表
 const renderUserGrowthChart = (trendData) => {
-  try {
-    if (!userChartContainer.value) {
-      console.error('[ERROR] userChartContainer 容器不存在')
-      return
-    }
-    
-    const dates = trendData.map(item => item.date)
-    const counts = trendData.map(item => item.count)
-    
-    // 计算累计数据
-    let total = 0
-    const totals = counts.map(count => {
-      total += count
-      return total
-    })
-    
-    const option = {
-      title: {
-        text: ''
+  if (!userChartContainer.value) return
+  
+  const dates = trendData.map(item => item.date)
+  const counts = trendData.map(item => item.count)
+  
+  let total = 0
+  const totals = counts.map(count => {
+    total += count
+    return total
+  })
+
+  if (userChart) userChart.dispose()
+  
+  userChart = echarts.init(userChartContainer.value)
+  userChart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(30, 41, 59, 0.95)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      textStyle: { color: '#fff' },
+      axisPointer: { type: 'cross' }
+    },
+    legend: {
+      data: ['新增用户', '累计用户'],
+      textStyle: { color: 'rgba(255, 255, 255, 0.6)' },
+      top: 0
+    },
+    grid: {
+      left: '3%',
+      right: '8%',
+      bottom: '3%',
+      top: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } },
+      axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '新增',
+        position: 'left',
+        axisLine: { show: false },
+        splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
+        axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
       },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'cross'
-        }
-      },
-      grid: {
-        left: '3%',
-        right: '10%',
-        bottom: '3%',
-        top: '15%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: dates,
-        boundaryGap: true
-      },
-      yAxis: [
-        {
-          type: 'value',
-          name: '新增用户数',
-          position: 'left',
-          axisLabel: {
-            formatter: '{value}'
-          }
+      {
+        type: 'value',
+        name: '累计',
+        position: 'right',
+        axisLine: { show: false },
+        splitLine: { show: false },
+        axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
+      }
+    ],
+    series: [
+      {
+        name: '新增用户',
+        type: 'bar',
+        data: counts,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#8b5cf6' },
+            { offset: 1, color: 'rgba(139, 92, 246, 0.2)' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
         },
-        {
-          type: 'value',
-          name: '累计用户数',
-          position: 'right',
-          axisLabel: {
-            formatter: '{value}'
-          }
-        }
-      ],
-      series: [
-        {
-          name: '新增用户数',
-          type: 'bar',
-          data: counts,
-          itemStyle: {
-            color: '#409eff'
-          },
-          yAxisIndex: 0
+        yAxisIndex: 0
+      },
+      {
+        name: '累计用户',
+        type: 'line',
+        data: totals,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: { width: 3, color: '#22c55e' },
+        itemStyle: { color: '#22c55e' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(34, 197, 94, 0.3)' },
+            { offset: 1, color: 'rgba(34, 197, 94, 0)' }
+          ])
         },
-        {
-          name: '累计用户数',
-          type: 'line',
-          data: totals,
-          smooth: true,
-          lineStyle: {
-            width: 3
-          },
-          symbolSize: 6,
-          itemStyle: {
-            color: '#f56c6c'
-          },
-          yAxisIndex: 1
-        }
-      ]
-    }
-    
-    if (userChart) {
-      userChart.dispose()
-    }
-    
-    userChart = echarts.init(userChartContainer.value)
-    userChart.setOption(option)
-    
-    console.log('[DEBUG] 用户增长趋势图表渲染成功')
-  } catch (error) {
-    console.error('[ERROR] 用户增长趋势图表渲染失败:', error)
-  }
+        yAxisIndex: 1
+      }
+    ]
+  })
 }
 
-// 渲染题目提交趋势图表
 const renderSubmissionTrendChart = (trendData) => {
-  try {
-    if (!submissionChartContainer.value) {
-      console.error('[ERROR] submissionChartContainer 容器不存在')
-      return
-    }
-    
-    const dates = trendData.map(item => item.date)
-    const counts = trendData.map(item => item.count)
-    
-    // 计算累计数据
-    let total = 0
-    const totals = counts.map(count => {
-      total += count
-      return total
-    })
-    
-    const option = {
-      title: {
-        text: ''
+  if (!submissionChartContainer.value) return
+  
+  const dates = trendData.map(item => item.date)
+  const counts = trendData.map(item => item.count)
+  
+  let total = 0
+  const totals = counts.map(count => {
+    total += count
+    return total
+  })
+
+  if (submissionChart) submissionChart.dispose()
+  
+  submissionChart = echarts.init(submissionChartContainer.value)
+  submissionChart.setOption({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: 'rgba(30, 41, 59, 0.95)',
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      textStyle: { color: '#fff' },
+      axisPointer: { type: 'cross' }
+    },
+    legend: {
+      data: ['日均提交', '累计提交'],
+      textStyle: { color: 'rgba(255, 255, 255, 0.6)' },
+      top: 0
+    },
+    grid: {
+      left: '3%',
+      right: '8%',
+      bottom: '3%',
+      top: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } },
+      axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '日均',
+        position: 'left',
+        axisLine: { show: false },
+        splitLine: { lineStyle: { color: 'rgba(255, 255, 255, 0.05)' } },
+        axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
       },
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'cross'
-        }
-      },
-      grid: {
-        left: '3%',
-        right: '10%',
-        bottom: '3%',
-        top: '15%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: dates,
-        boundaryGap: true
-      },
-      yAxis: [
-        {
-          type: 'value',
-          name: '日均提交数',
-          position: 'left',
-          axisLabel: {
-            formatter: '{value}'
-          }
+      {
+        type: 'value',
+        name: '累计',
+        position: 'right',
+        axisLine: { show: false },
+        splitLine: { show: false },
+        axisLabel: { color: 'rgba(255, 255, 255, 0.5)' }
+      }
+    ],
+    series: [
+      {
+        name: '日均提交',
+        type: 'bar',
+        data: counts,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#f59e0b' },
+            { offset: 1, color: 'rgba(245, 158, 11, 0.2)' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
         },
-        {
-          type: 'value',
-          name: '累计提交数',
-          position: 'right',
-          axisLabel: {
-            formatter: '{value}'
-          }
-        }
-      ],
-      series: [
-        {
-          name: '日均提交数',
-          type: 'bar',
-          data: counts,
-          itemStyle: {
-            color: '#67c23a'
-          },
-          yAxisIndex: 0
+        yAxisIndex: 0
+      },
+      {
+        name: '累计提交',
+        type: 'line',
+        data: totals,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: { width: 3, color: '#ef4444' },
+        itemStyle: { color: '#ef4444' },
+        areaStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(239, 68, 68, 0.3)' },
+            { offset: 1, color: 'rgba(239, 68, 68, 0)' }
+          ])
         },
-        {
-          name: '累计提交数',
-          type: 'line',
-          data: totals,
-          smooth: true,
-          lineStyle: {
-            width: 3
-          },
-          symbolSize: 6,
-          itemStyle: {
-            color: '#e6a23c'
-          },
-          yAxisIndex: 1
-        }
-      ]
-    }
-    
-    if (submissionChart) {
-      submissionChart.dispose()
-    }
-    
-    submissionChart = echarts.init(submissionChartContainer.value)
-    submissionChart.setOption(option)
-    
-    console.log('[DEBUG] 题目提交趋势图表渲染成功')
-  } catch (error) {
-    console.error('[ERROR] 题目提交趋势图表渲染失败:', error)
-  }
+        yAxisIndex: 1
+      }
+    ]
+  })
+}
+
+const handleResize = () => {
+  userChart?.resize()
+  submissionChart?.resize()
 }
 
 onMounted(() => {
-  console.log('[DEBUG] Statistics组件已挂载')
   fetchStatistics()
-  // 需要下一个汪拆案，等待DOM渲染
   setTimeout(() => {
     fetchUserGrowthTrend()
     fetchSubmissionTrend()
   }, 100)
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  userChart?.dispose()
+  submissionChart?.dispose()
 })
 </script>
 
 <style scoped>
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+.statistics-page {
+  display: flex;
+  flex-direction: column;
   gap: 24px;
-  margin-bottom: 32px;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-info h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 4px 0;
+}
+
+.header-info p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 .stat-card {
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-4px);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card:nth-child(1) { --accent-color: #8b5cf6; }
+.stat-card:nth-child(2) { --accent-color: #22c55e; }
+.stat-card:nth-child(3) { --accent-color: #f59e0b; }
+.stat-card:nth-child(4) { --accent-color: #ef4444; }
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+}
+
+.stat-icon.users {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.stat-icon.problems {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.stat-icon.online {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.stat-icon.submissions {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
 }
 
 .stat-content {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin-bottom: 8px;
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
 }
 
 .stat-label {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.stat-icon {
-  font-size: 48px;
-  color: var(--primary-color);
-  opacity: 0.3;
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  width: fit-content;
 }
 
-/* 图表区域 */
-.charts {
+.stat-trend.up {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.stat-trend.down {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.stat-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
 }
 
 .chart-card {
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
 }
 
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.chart-title svg {
+  color: #a78bfa;
+}
+
+.chart-tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tab-btn {
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  color: white;
+}
+
+.tab-btn.active {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
 }
 
 .chart-container {
   width: 100%;
-  height: 400px;
-  border-radius: 8px;
+  height: 300px;
 }
 
-/* 响应式设计 */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.info-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.badge {
+  padding: 4px 10px;
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #a78bfa;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.online {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.ranking-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.rank.rank-1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+  color: white;
+}
+
+.rank.rank-2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #a9a9a9 100%);
+  color: white;
+}
+
+.rank.rank-3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
+  color: white;
+}
+
+.problem-name {
+  flex: 1;
+  font-size: 14px;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.problem-count {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.user-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+}
+
+.user-stats {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.user-score {
+  font-size: 16px;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.status-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.status-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.status-value.good {
+  color: #4ade80;
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bottom-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
-  .charts {
+  .stats-grid {
     grid-template-columns: 1fr;
   }
   
-  .chart-container {
-    height: 300px;
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
   }
 }
 </style>
