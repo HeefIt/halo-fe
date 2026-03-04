@@ -1,397 +1,484 @@
-<!--
-  Header 组件
-  功能描述：项目顶部导航栏组件
-  主要功能：
-    - 显示应用Logo和应用名称
-    - 提供主导航菜单（首页、题库、学习计划、排行榜、我的练习）
-    - 显示用户头像和用户信息下拉菜单
-    - 管理员用户显示"管理后台"按钮
-    - 处理路由导航和用户退出登录
-  使用位置：App.vue（全局页头）
--->
 <template>
   <header class="header">
-    <div class="container">
-      <div class="nav-content">
-        <!-- Logo -->
-        <div class="logo" @click="goHome">
-          <h1>Halo 刷题网</h1>
-        </div>
+    <div class="header-inner">
+      <a class="logo" @click="goHome">
+        <span class="logo-icon">H</span>
+        <span class="logo-text">Halo</span>
+      </a>
+      
+      <nav class="nav">
+        <button 
+          class="nav-item" 
+          :class="{ active: isActive('/home') }"
+          @click="navigateTo('/home')"
+        >
+          首页
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: isActive('/home/questions') }"
+          @click="navigateTo('/home/questions')"
+        >
+          题库
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: isActive('/study-plan') }"
+          @click="navigateTo('/study-plan')"
+        >
+          学习计划
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: isActive('/ranking') }"
+          @click="navigateTo('/ranking')"
+        >
+          排行榜
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: isActive('/practice-history') }"
+          @click="navigateTo('/practice-history')"
+        >
+          练习记录
+        </button>
+        <button 
+          class="nav-item nav-item-ai" 
+          :class="{ active: isActive('/ai/') }"
+          @click="navigateTo('/ai/chatbot')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
+          </svg>
+          AI助手
+        </button>
+      </nav>
+      
+      <div class="header-actions">
+        <button 
+          v-if="isAdmin" 
+          class="btn-admin"
+          @click="navigateTo('/admin')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5l-4.24 4.24m-2.52 2.52L5.5 18.5m13 0l-4.24-4.24m-2.52-2.52L5.5 5.5"/>
+          </svg>
+          管理后台
+        </button>
         
-        <!-- 导航菜单 -->
-        <nav class="nav-menu">
-          <span 
-            class="nav-item" 
-            :class="{ active: isActive('/home') }"
-            @click="navigateTo('/home')"
-          >
-            首页
-          </span>
-          <span 
-            class="nav-item" 
-            :class="{ active: isActive('/home/questions') }"
-            @click="navigateTo('/home/questions')"
-          >
-            题库
-          </span>
-          <span 
-            class="nav-item" 
-            :class="{ active: isActive('/study-plan') }"
-            @click="navigateTo('/study-plan')"
-          >
-            学习计划
-          </span>
-          <span 
-            class="nav-item" 
-            :class="{ active: isActive('/ranking') }"
-            @click="navigateTo('/ranking')"
-          >
-            排行榜
-          </span>
-          <span 
-            class="nav-item" 
-            :class="{ active: isActive('/practice-history') }"
-            @click="navigateTo('/practice-history')"
-          >
-            我的练习
-          </span>
-          <span 
-            class="nav-item ai-nav-item" 
-            :class="{ active: isActive('/ai/') }"
-            @click="navigateTo('/ai/chatbot')"
-          >
-            <el-icon class="ai-icon"><ChatLineRound /></el-icon>
-            AI助手
-          </span>
-          
-          <!-- 管理后台按钮 (仅管理员可见) -->
-          <el-button 
-            v-if="isAdmin" 
-            type="primary" 
-            @click="navigateTo('/admin')"
-            class="admin-button"
-          >
-            管理后台
-          </el-button>
-        </nav>
-        
-        <!-- 用户信息 -->
-        <div class="user-section">
-          <el-dropdown>
-            <div class="user-info">
-              <el-avatar 
-                :src="userStore.userAvatar" 
-                :size="32"
-                class="user-avatar"
-              >
-                {{ userStore.userName?.charAt(0) || '用户' }}
-              </el-avatar>
-              <span class="user-name">{{ userStore.userName || '用户' }}</span>
-              <el-icon class="dropdown-icon"><arrow-down /></el-icon>
+        <div class="user-menu">
+          <button class="user-trigger" @click="showUserMenu = !showUserMenu">
+            <div class="user-avatar">
+              <img v-if="userStore.userAvatar" :src="userStore.userAvatar" alt="avatar" class="avatar-img" />
+              <span v-else>{{ userStore.userName?.charAt(0) || 'U' }}</span>
             </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="navigateTo('/profile')">个人中心</el-dropdown-item>
-                <el-dropdown-item v-if="isAdmin" divided @click="navigateTo('/admin')">管理后台</el-dropdown-item>
-                <el-dropdown-item divided @click="logout">退出登录</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+            <span class="user-name">{{ userStore.userName || '用户' }}</span>
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              stroke-width="2"
+              :class="{ rotated: showUserMenu }"
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          
+          <Transition name="dropdown">
+            <div v-if="showUserMenu" class="user-dropdown">
+              <button class="dropdown-item" @click="handleProfile">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                个人中心
+              </button>
+              <button v-if="isAdmin" class="dropdown-item" @click="handleAdmin">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v6m0 6v6"/>
+                </svg>
+                管理后台
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item dropdown-item-danger" @click="logout">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                退出登录
+              </button>
+            </div>
+          </Transition>
         </div>
       </div>
     </div>
+    
+    <div v-if="showUserMenu" class="dropdown-backdrop" @click="showUserMenu = false"></div>
   </header>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ArrowDown, ChatLineRound } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
-// 计算是否为管理员
-// 基于username判断
+const showUserMenu = ref(false)
+
 const isAdmin = computed(() => {
   if (!userStore.userInfo) return false
-  
   const userName = userStore.userInfo.userName || ''
   return userName.toLowerCase().includes('admin')
 })
 
-// 判断当前路由是否正活动
 const isActive = (path) => {
-  // 特殊处理带有动态参数的路径
-  if (path === '/practice') {
-    // 匹配 /practice 或 /practice/:id
-    return route.path === '/practice' || route.path.startsWith('/practice/')
-  }
-  if (path === '/study-plan') {
-    // 匹配 /study-plan 或 /study-plan/:id
-    return route.path === '/study-plan' || route.path.startsWith('/study-plan/')
-  }
-  if (path === '/ranking') {
-    // 匹配 /ranking 或 /ranking/:id
-    return route.path === '/ranking' || route.path.startsWith('/ranking/')
-  }
-  if (path === '/practice-history') {
-    // 匹配 /practice-history 或 /practice-history/:id
-    return route.path === '/practice-history' || route.path.startsWith('/practice-history/')
-  }
-  
-  // 对于 /home，只匹配确切路径，不匹配 /home/questions
   if (path === '/home') {
     return route.path === '/home'
   }
   if (path === '/home/questions') {
     return route.path === '/home/questions' || route.path.startsWith('/home/questions/')
   }
-  
-  // 对于 /ai/ 路径
   if (path === '/ai/') {
     return route.path.startsWith('/ai/')
   }
-  
-  // 其他路径使用 startsWith
-  // 默认情况下使用 startsWith，但对特定路径已有处理
   return route.path.startsWith(path)
 }
 
-// 路由跳转方法
 const navigateTo = (path) => {
-  console.log('Header跳转到:', path)
   if (route.path !== path) {
     router.push(path).catch(err => {
       console.error('路由跳转失败:', err)
     })
   }
+  showUserMenu.value = false
 }
 
-// 回到首页
 const goHome = () => {
   router.push('/home')
+  showUserMenu.value = false
 }
 
-// 退出登录
+const handleProfile = () => {
+  navigateTo('/profile')
+}
+
+const handleAdmin = () => {
+  navigateTo('/admin')
+}
+
 const logout = () => {
+  showUserMenu.value = false
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
     userStore.logout()
-    router.push('/login')
-  }).catch(() => {
-    // 取消退出
-  })
+    router.push('/')
+  }).catch(() => {})
 }
+
+const handleClickOutside = (e) => {
+  if (!e.target.closest('.user-menu')) {
+    showUserMenu.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
 .header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
   position: fixed;
-  width: 100%;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid var(--el-border-color-light);
+  z-index: var(--z-fixed);
+  height: 64px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.container {
-  max-width: 1400px;
+.header-inner {
+  max-width: 1440px;
+  height: 100%;
   margin: 0 auto;
-  padding: 0 24px;
-}
-
-.nav-content {
+  padding: 0 var(--spacing-lg);
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 64px;
-  gap: 24px;
-  position: relative;
+  justify-content: space-between;
+  gap: var(--spacing-xl);
 }
 
-/* Logo 样式 */
 .logo {
-  position: absolute;
-  left: 24px;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .logo:hover {
-  transform: scale(1.05);
+  opacity: 0.8;
 }
 
-.logo h1 {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0;
-  color: var(--el-color-primary);
-  letter-spacing: 1px;
-}
-
-/* 导航菜单样式 */
-.nav-menu {
+.logo-icon {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  justify-content: center;
+  background: var(--gradient-primary);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-base);
+  border-radius: var(--radius-sm);
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .nav-item {
-  color: var(--el-text-color-primary);
-  text-decoration: none;
-  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
   font-weight: 500;
-  transition: all 0.3s ease;
-  padding: 8px 16px;
-  border-radius: 6px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
+  transition: all var(--transition-fast);
   white-space: nowrap;
 }
 
 .nav-item:hover {
-  background-color: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
 }
 
 .nav-item.active {
-  background-color: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-accent-light);
 }
 
-/* AI 导航项样式 */
-.ai-nav-item {
-  background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
-  color: #ffffff;
-  border: 2px solid #000000;
-  box-shadow: 3px 3px 0px #000000;
-  font-family: 'Courier New', monospace;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  transition: all 0.2s ease;
+.nav-item-ai {
+  background: var(--gradient-primary);
+  color: white;
+}
+
+.nav-item-ai:hover {
+  opacity: 0.9;
+  color: white;
+  background: var(--gradient-primary);
+}
+
+.nav-item-ai.active {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-}
-
-.ai-nav-item:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px #000000;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ffa07a 100%);
-}
-
-.ai-nav-item.active {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px #000000;
-}
-
-.ai-icon {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-/* 管理后台按钮 */
-.admin-button {
-  margin-left: 12px;
-}
-
-.admin-button :deep(.el-button) {
-  height: 36px;
-}
-
-/* 用户信息区 */
-.user-section {
-  position: absolute;
-  right: 24px;
+  gap: var(--spacing-md);
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
 }
 
-.user-info {
+.btn-admin {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
-.user-info:hover {
-  background-color: var(--el-color-primary-light-9);
+.btn-admin:hover {
+  color: var(--color-text);
+  background: var(--color-bg-muted);
+  border-color: var(--color-border-hover);
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.user-trigger:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-hover);
 }
 
 .user-avatar {
-  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-primary);
+  color: white;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--el-text-color-primary);
-  max-width: 100px;
+  color: var(--color-text);
+  max-width: 80px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dropdown-icon {
-  font-size: 14px;
-  color: var(--el-text-color-primary);
-  transition: transform 0.3s ease;
+.user-trigger svg {
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
 }
 
-.user-info:hover .dropdown-icon {
-  color: var(--el-color-primary);
+.user-trigger svg.rotated {
+  transform: rotate(180deg);
 }
 
-/* 响应式设计 */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  padding: var(--spacing-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+.dropdown-item-danger:hover {
+  color: var(--color-error);
+  background: var(--color-error-light);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-sm) 0;
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all var(--transition-fast);
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 @media (max-width: 1024px) {
-  .nav-menu {
-    gap: 8px;
+  .nav {
+    gap: 0;
   }
-
+  
   .nav-item {
-    padding: 6px 12px;
-    font-size: 14px;
+    padding: var(--spacing-sm);
+    font-size: var(--text-xs);
   }
-
-  .logo h1 {
-    font-size: 20px;
-  }
-
+  
   .user-name {
-    max-width: 80px;
+    display: none;
   }
 }
 
 @media (max-width: 768px) {
-  .nav-menu {
+  .nav {
     display: none;
   }
-
-  .nav-content {
-    justify-content: space-between;
-  }
-
-  .logo h1 {
-    font-size: 18px;
+  
+  .btn-admin {
+    display: none;
   }
 }
 </style>
