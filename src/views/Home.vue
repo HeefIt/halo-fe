@@ -1,208 +1,229 @@
-3<!--
-  Home 首页组件
-  功能描述：应用首页，登录后的欢迎页面
-  主要功能：
-    - 显示欢迎信息
-    - 提供四个功能导航卡片（题库练习、学习计划、排行榜、我的练习）
-    - 展示今日刷题统计信息（刷题数、耗时、正确率、得分）
-    - 自动加载每日统计数据
-  使用位置：路由 /home
--->
 <template>
-  <div class="home-page">
-    <!-- 顶部导航栏 -->
+  <div class="home">
     <Header />
     
-    <!-- 主内容区 -->
-    <main class="main-content">
+    <main class="main">
       <div class="container">
-        <div class="welcome-section">
-          <h1 class="welcome-title">欢迎来到 Halo 刷题网</h1>
-          <p class="welcome-subtitle">选择一个功能开始您的学习之旅</p>
-        </div>
-        
-        <!-- 功能导航网格 -->
-        <div class="features-grid">
-          <el-row :gutter="30">
-            <el-col :span="12" :md="6">
-              <div class="feature-card" @click="goTo('/home/questions')">
-                <div class="feature-icon">
-                  <el-icon><Collection /></el-icon>
+        <section class="welcome animate-slide-up">
+          <div class="welcome-content">
+            <h1 class="welcome-title">
+              下午好，<span class="text-gradient">{{ userStore.userName || '学习者' }}</span>
+            </h1>
+            <p class="welcome-subtitle">今天想学点什么？</p>
+          </div>
+          <div class="welcome-date">
+            <span class="date-day">{{ currentDay }}</span>
+            <span class="date-month">{{ currentMonth }}</span>
+          </div>
+        </section>
+
+        <section class="stats animate-slide-up" style="animation-delay: 100ms">
+          <div class="stats-card">
+            <div class="stats-header">
+              <span class="stats-title">今日学习</span>
+              <span class="stats-badge">每日凌晨1点结算</span>
+            </div>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-icon stat-icon-primary">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
                 </div>
-                <h3 class="feature-title">题库练习</h3>
-                <p class="feature-description">海量题目随时练习</p>
-              </div>
-            </el-col>
-            <el-col :span="12" :md="6">
-              <div class="feature-card" @click="goTo('/study-plan')">
-                <div class="feature-icon">
-                  <el-icon><Calendar /></el-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ dailyStats.problemCount }}</span>
+                  <span class="stat-label">刷题数</span>
                 </div>
-                <h3 class="feature-title">学习计划</h3>
-                <p class="feature-description">制定专属学习计划</p>
               </div>
-            </el-col>
-            <el-col :span="12" :md="6">
-              <div class="feature-card" @click="goTo('/ranking')">
-                <div class="feature-icon">
-                  <el-icon><Trophy /></el-icon>
+              
+              <div class="stat-item">
+                <div class="stat-icon stat-icon-success">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
                 </div>
-                <h3 class="feature-title">排行榜</h3>
-                <p class="feature-description">查看学习排名</p>
-              </div>
-            </el-col>
-            <el-col :span="12" :md="6">
-              <div class="feature-card" @click="goTo('/practice-history')">
-                <div class="feature-icon">
-                  <el-icon><Document /></el-icon>
+                <div class="stat-content">
+                  <span class="stat-value">{{ formatTime(dailyStats.totalTime) }}</span>
+                  <span class="stat-label">学习时长</span>
                 </div>
-                <h3 class="feature-title">我的练习</h3>
-                <p class="feature-description">查看练习历史记录</p>
               </div>
-            </el-col>
-          </el-row>
-        </div>
-        
-        <!-- AI智能助手区域 -->
-        <div class="ai-section">
+              
+              <div class="stat-item">
+                <div class="stat-icon stat-icon-warning">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-value">{{ dailyStats.accuracy }}%</span>
+                  <span class="stat-label">正确率</span>
+                </div>
+              </div>
+              
+              <div class="stat-item">
+                <div class="stat-icon stat-icon-accent">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-value">{{ dailyStats.totalScore }}</span>
+                  <span class="stat-label">今日得分</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="features animate-slide-up" style="animation-delay: 200ms">
           <div class="section-header">
-            <h2 class="section-title">🤖 AI 智能助手</h2>
-            <p class="section-subtitle">智能AI赋能，提升学习效率</p>
+            <h2 class="section-title">快速开始</h2>
+            <p class="section-desc">选择一个功能开始你的学习之旅</p>
+          </div>
+          
+          <div class="features-grid">
+            <button class="feature-card" @click="goTo('/home/questions')">
+              <div class="feature-icon feature-icon-primary">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  <path d="M8 7h8M8 11h8M8 15h4"/>
+                </svg>
+              </div>
+              <div class="feature-content">
+                <h3 class="feature-title">题库练习</h3>
+                <p class="feature-desc">海量题目随时练习</p>
+              </div>
+              <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            
+            <button class="feature-card" @click="goTo('/study-plan')">
+              <div class="feature-icon feature-icon-success">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div class="feature-content">
+                <h3 class="feature-title">学习计划</h3>
+                <p class="feature-desc">制定专属学习计划</p>
+              </div>
+              <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            
+            <button class="feature-card" @click="goTo('/ranking')">
+              <div class="feature-icon feature-icon-warning">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/>
+                  <circle cx="12" cy="8" r="7"/>
+                </svg>
+              </div>
+              <div class="feature-content">
+                <h3 class="feature-title">排行榜</h3>
+                <p class="feature-desc">查看学习排名</p>
+              </div>
+              <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            
+            <button class="feature-card" @click="goTo('/practice-history')">
+              <div class="feature-icon feature-icon-accent">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+              </div>
+              <div class="feature-content">
+                <h3 class="feature-title">练习记录</h3>
+                <p class="feature-desc">查看历史记录</p>
+              </div>
+              <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <section class="ai-section animate-slide-up" style="animation-delay: 300ms">
+          <div class="section-header">
+            <div class="section-header-left">
+              <h2 class="section-title">AI 智能助手</h2>
+              <p class="section-desc">智能AI赋能，提升学习效率</p>
+            </div>
+            <span class="section-tag">NEW</span>
           </div>
           
           <div class="ai-grid">
-            <div class="ai-card" @click="goTo('/ai/chatbot')" role="button" tabindex="0">
-              <div class="ai-card-header">
-                <div class="ai-icon">💬</div>
-                <span class="ai-badge">HOT</span>
+            <button class="ai-card" @click="goTo('/ai/chatbot')">
+              <div class="ai-header">
+                <span class="ai-icon">💬</span>
+                <span class="ai-badge ai-badge-hot">HOT</span>
               </div>
               <h3 class="ai-title">机器人对话</h3>
-              <p class="ai-description">支持会话记忆和历史会话，智能问答对话</p>
+              <p class="ai-desc">支持会话记忆和历史会话，智能问答对话</p>
               <div class="ai-arrow">→</div>
-            </div>
+            </button>
             
-            <div class="ai-card" @click="goTo('/ai/practice-assistant')" role="button" tabindex="0">
-              <div class="ai-card-header">
-                <div class="ai-icon">📝</div>
-                <span class="ai-badge">NEW</span>
+            <button class="ai-card" @click="goTo('/ai/practice-assistant')">
+              <div class="ai-header">
+                <span class="ai-icon">📝</span>
+                <span class="ai-badge ai-badge-new">NEW</span>
               </div>
               <h3 class="ai-title">刷题助手</h3>
-              <p class="ai-description">智能推荐题目，个性化学习建议</p>
+              <p class="ai-desc">智能推荐题目，个性化学习建议</p>
               <div class="ai-arrow">→</div>
-            </div>
+            </button>
             
-            <div class="ai-card" @click="goTo('/ai/customer-service')" role="button" tabindex="0">
-              <div class="ai-card-header">
-                <div class="ai-icon">🎧</div>
-                <span class="ai-badge">24/7</span>
+            <button class="ai-card" @click="goTo('/ai/customer-service')">
+              <div class="ai-header">
+                <span class="ai-icon">🎧</span>
+                <span class="ai-badge ai-badge-default">24/7</span>
               </div>
               <h3 class="ai-title">智能客服</h3>
-              <p class="ai-description">7x24小时智能客服，快速解答疑问</p>
+              <p class="ai-desc">7x24小时智能客服，快速解答疑问</p>
               <div class="ai-arrow">→</div>
-            </div>
+            </button>
             
-            <div class="ai-card" @click="goTo('/ai/multimodal')" role="button" tabindex="0">
-              <div class="ai-card-header">
-                <div class="ai-icon">📄</div>
-                <span class="ai-badge">PRO</span>
+            <button class="ai-card" @click="goTo('/ai/multimodal')">
+              <div class="ai-header">
+                <span class="ai-icon">📄</span>
+                <span class="ai-badge ai-badge-pro">PRO</span>
               </div>
               <h3 class="ai-title">多模态解析</h3>
-              <p class="ai-description">支持PDF、图片等多模态文件智能解析</p>
+              <p class="ai-desc">支持PDF、图片等多模态文件智能解析</p>
               <div class="ai-arrow">→</div>
-            </div>
+            </button>
           </div>
-        </div>
-        
-        <!-- 每日统计 -->
-        <el-card class="stats-card">
-          <template #header>
-            <div class="stats-header">
-              <span>今日刷题统计 (每日凌晨1点结算)</span>
-            </div>
-          </template>
-          
-          <div class="stats-content">
-            <el-skeleton :loading="dailyStatsLoading" animated>
-              <template #template>
-                <el-row :gutter="20">
-                  <el-col :span="6">
-                    <div class="stat-skeleton">
-                      <el-skeleton-item variant="text" style="width: 60%; height: 20px; margin-bottom: 8px;" />
-                      <el-skeleton-item variant="text" style="width: 80%; height: 16px;" />
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-skeleton">
-                      <el-skeleton-item variant="text" style="width: 60%; height: 20px; margin-bottom: 8px;" />
-                      <el-skeleton-item variant="text" style="width: 80%; height: 16px;" />
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-skeleton">
-                      <el-skeleton-item variant="text" style="width: 60%; height: 20px; margin-bottom: 8px;" />
-                      <el-skeleton-item variant="text" style="width: 80%; height: 16px;" />
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-skeleton">
-                      <el-skeleton-item variant="text" style="width: 60%; height: 20px; margin-bottom: 8px;" />
-                      <el-skeleton-item variant="text" style="width: 80%; height: 16px;" />
-                    </div>
-                  </el-col>
-                </el-row>
-              </template>
-              <template #default>
-                <el-row :gutter="20">
-                  <el-col :span="6">
-                    <div class="stat-item">
-                      <div class="stat-label">刷题数</div>
-                      <div class="stat-value">{{ dailyStats.problemCount }}</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-item">
-                      <div class="stat-label">刷题时间</div>
-                      <div class="stat-value">{{ formatTime(dailyStats.totalTime) }}</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-item">
-                      <div class="stat-label">正确率</div>
-                      <div class="stat-value">{{ dailyStats.accuracy }}%</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="6">
-                    <div class="stat-item">
-                      <div class="stat-label">今日得分</div>
-                      <div class="stat-value">{{ dailyStats.totalScore }}</div>
-                    </div>
-                  </el-col>
-                </el-row>
-              </template>
-            </el-skeleton>
-          </div>
-        </el-card>
+        </section>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getDailyStatistics } from '@/api/subject'
-import { Collection, Calendar, Trophy, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import Header from '@/views/components/layout/Header.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-// 加载状态
-const dailyStatsLoading = ref(false)
-
-// 每日统计信息
 const dailyStats = ref({
   problemCount: 0,
   totalTime: 0,
@@ -210,68 +231,52 @@ const dailyStats = ref({
   totalScore: 0
 })
 
-// 跳转到指定路径
+const currentDay = computed(() => {
+  return new Date().getDate()
+})
+
+const currentMonth = computed(() => {
+  const months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+  return months[new Date().getMonth()]
+})
+
 const goTo = (path) => {
-  console.log('跳转到:', path)
-  console.log('当前用户登录状态:', userStore.isLoggedIn)
-  
   if (!userStore.isLoggedIn) {
-    ElMessage.warning('请先登录后再使用AI功能')
+    ElMessage.warning('请先登录')
     router.push('/login')
     return
   }
-  
   router.push(path).catch(err => {
     console.error('路由跳转失败:', err)
-    ElMessage.error('页面跳转失败: ' + err.message)
+    ElMessage.error('页面跳转失败')
   })
 }
 
-// 获取每日统计信息
 const fetchDailyStatistics = async () => {
-  dailyStatsLoading.value = true
   try {
     const res = await getDailyStatistics(userStore.userInfo.id)
     if (res.code === 200) {
       dailyStats.value = res.data
-    } else {
-      ElMessage.error(res.message || '获取每日统计信息失败')
     }
   } catch (err) {
-    ElMessage.error('获取每日统计信息失败: ' + err.message)
-  } finally {
-    dailyStatsLoading.value = false
+    console.error('获取每日统计信息失败:', err)
   }
 }
 
-// 格式化时间显示
 const formatTime = (seconds) => {
-  if (!seconds) return '0秒'
-  
+  if (!seconds) return '0分钟'
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
-  const remainingSeconds = seconds % 60
-  
   let result = ''
-  if (hours > 0) {
-    result += `${hours}小时`
-  }
-  if (minutes > 0) {
-    result += `${minutes}分钟`
-  }
-  if (remainingSeconds > 0 || result === '') {
-    result += `${remainingSeconds}秒`
-  }
-  
-  return result
+  if (hours > 0) result += `${hours}小时`
+  if (minutes > 0) result += `${minutes}分钟`
+  return result || '0分钟'
 }
 
-// 组件挂载时初始化数据
-onMounted(async () => {
-  await fetchDailyStatistics()
+onMounted(() => {
+  fetchDailyStatistics()
 })
 
-// 监听用户信息变化，重新获取每日统计信息
 watch(() => userStore.userInfo, (newUserInfo) => {
   if (newUserInfo && newUserInfo.id) {
     fetchDailyStatistics()
@@ -280,279 +285,409 @@ watch(() => userStore.userInfo, (newUserInfo) => {
 </script>
 
 <style scoped>
-.home-page {
+.home {
   min-height: 100vh;
-  background-color: var(--background-color);
+  background: var(--color-bg);
 }
 
-/* 主内容区 */
-.main-content {
-  padding: 88px 24px 24px 24px;
-  margin-top: 0;
+.main {
+  padding: 88px 0 var(--spacing-2xl);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--spacing-lg);
 }
 
-.welcome-section {
-  text-align: center;
-  margin-bottom: 40px;
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .welcome-title {
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
 }
 
 .welcome-subtitle {
-  font-size: 18px;
-  color: var(--text-secondary);
-  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
 }
 
-.features-grid {
-  margin-bottom: 40px;
+.welcome-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
-.feature-card {
-  background: white;
-  border-radius: 12px;
-  padding: 30px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--border-color);
-  height: 100%;
+.date-day {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-color);
+.date-month {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-xs);
 }
 
-.feature-icon {
-  font-size: 48px;
-  color: var(--primary-color);
-  margin-bottom: 20px;
+.stats {
+  margin-bottom: var(--spacing-3xl);
 }
 
-.feature-title {
-  font-size: 20px;
+.stats-card {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.stats-title {
+  font-size: var(--text-lg);
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
+  color: var(--color-text);
 }
 
-.feature-description {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0;
+.stats-badge {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
 }
 
-/* AI 智能助手区域 */
-.ai-section {
-  margin-bottom: 60px;
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.stat-icon-primary {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.stat-icon-success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.stat-icon-warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.stat-icon-accent {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  color: var(--color-accent);
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
 }
 
 .section-header {
-  text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--spacing-xl);
 }
 
 .section-title {
-  font-size: 32px;
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
   font-weight: 700;
-  color: #000000;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
 }
 
-.section-subtitle {
-  font-size: 16px;
-  color: #666666;
-  margin: 0;
-  font-family: 'Courier New', monospace;
+.section-desc {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+}
+
+.features {
+  margin-bottom: var(--spacing-3xl);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: left;
+}
+
+.feature-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+}
+
+.feature-icon-primary {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.feature-icon-success {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.feature-icon-warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.feature-icon-accent {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+  color: var(--color-accent);
+}
+
+.feature-content {
+  flex: 1;
+}
+
+.feature-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.feature-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.feature-arrow {
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.feature-card:hover .feature-arrow {
+  transform: translateX(4px);
+  color: var(--color-accent);
+}
+
+.ai-section {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.ai-section .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-tag {
+  padding: var(--spacing-xs) var(--spacing-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: white;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-full);
 }
 
 .ai-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
 .ai-card {
   position: relative;
-  background: #ffffff;
-  border: 4px solid #000000;
-  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-xl);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 8px 8px 0px #000000;
-  font-family: 'Courier New', monospace;
-  z-index: 1;
-  pointer-events: auto;
+  transition: all var(--transition-base);
+  text-align: left;
 }
 
 .ai-card:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: 12px 12px 0px #000000;
-  background: #f0f0f0;
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(99, 102, 241, 0.1);
+  transform: translateY(-4px);
 }
 
-.ai-card:active {
-  transform: translate(0, 0);
-  box-shadow: 8px 8px 0px #000000;
-}
-
-.ai-card-header {
+.ai-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
 }
 
 .ai-icon {
-  font-size: 40px;
-  filter: drop-shadow(2px 2px 0px #000000);
+  font-size: 28px;
 }
 
 .ai-badge {
-  background: #e94560;
-  color: #ffffff;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 4px 8px;
-  border: 2px solid #000000;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+
+.ai-badge-hot {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.ai-badge-new {
+  background: #f0fdf4;
+  color: #10b981;
+}
+
+.ai-badge-default {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.ai-badge-pro {
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
 }
 
 .ai-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #000000;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-sm);
 }
 
-.ai-description {
-  font-size: 12px;
-  color: #666666;
-  margin: 0 0 16px 0;
-  line-height: 1.6;
+.ai-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
 }
 
 .ai-arrow {
   position: absolute;
-  right: 20px;
-  bottom: 20px;
-  font-size: 24px;
-  color: #e94560;
-  font-weight: bold;
-  transition: transform 0.2s ease;
+  right: var(--spacing-lg);
+  bottom: var(--spacing-lg);
+  font-size: var(--text-xl);
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
 }
 
 .ai-card:hover .ai-arrow {
+  color: var(--color-accent);
   transform: translateX(4px);
 }
 
-.stats-card {
-  border-radius: 12px;
-}
-
-.stats-header {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.stat-item {
-  text-align: center;
-  padding: 20px 0;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--primary-color);
-}
-
-.stat-skeleton {
-  padding: 20px 0;
-}
-
-@media (max-width: 768px) {
-  .welcome-title {
-    font-size: 24px;
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .welcome-subtitle {
-    font-size: 16px;
-  }
-  
-  .feature-card {
-    padding: 20px 15px;
-  }
-  
-  .feature-icon {
-    font-size: 36px;
-  }
-  
-  .feature-title {
-    font-size: 18px;
-  }
-  
-  .stat-item {
-    padding: 15px 0;
-  }
-  
-  .stat-value {
-    font-size: 20px;
-  }
-  
-  .section-title {
-    font-size: 24px;
-  }
-  
-  .section-subtitle {
-    font-size: 14px;
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .ai-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
   }
   
-  .ai-card {
-    padding: 16px;
+  .welcome-title {
+    font-size: var(--text-2xl);
   }
   
-  .ai-icon {
-    font-size: 32px;
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
   
-  .ai-title {
-    font-size: 14px;
+  .features-grid {
+    grid-template-columns: 1fr;
   }
   
-  .ai-description {
-    font-size: 10px;
+  .ai-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .ai-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 }
 </style>
