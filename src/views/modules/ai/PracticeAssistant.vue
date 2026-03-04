@@ -1,60 +1,206 @@
-<!--
-  刷题助手页面（开发中）
-  功能描述：AI刷题助手，提供智能题目推荐和解析
-  主要功能：
-    - 智能推荐题目
-    - 提供题目解析
-    - 个性化学习建议
-  使用位置：路由 /ai/practice-assistant
--->
 <template>
-  <div class="practice-assistant-page">
-    <div class="ai-nav">
-      <div class="ai-nav-container">
-        <div class="ai-nav-content">
-          <div class="ai-logo" @click="goHome">
-            <div class="logo-icon">
-              <el-icon :size="24"><ChatDotRound /></el-icon>
-            </div>
-            <span class="logo-title">AI 智能助手</span>
+  <div class="practice-assistant-container">
+    <header class="assistant-header">
+      <div class="header-content">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
           </div>
-          
-          <nav class="ai-nav-menu">
-            <span class="ai-nav-item" @click="navigateTo('chatbot')">
-              <el-icon><ChatLineRound /></el-icon>
-              <span>机器人对话</span>
-            </span>
-            <span class="ai-nav-item active">
-              <el-icon><Edit /></el-icon>
-              <span>刷题助手</span>
-            </span>
-            <span class="ai-nav-item" @click="navigateTo('customer-service')">
-              <el-icon><Service /></el-icon>
-              <span>智能客服</span>
-            </span>
-            <span class="ai-nav-item" @click="navigateTo('multimodal')">
-              <el-icon><Picture /></el-icon>
-              <span>多模态解析</span>
-            </span>
-          </nav>
-          
-          <div class="back-home" @click="goHome">
-            <el-icon><HomeFilled /></el-icon>
-            <span>返回首页</span>
+          <div class="brand-text">
+            <h1>AI 刷题助手</h1>
+            <span class="tagline">智能推荐 · 精准解析 · 高效学习</span>
+          </div>
+        </div>
+        <nav class="header-nav">
+          <button class="nav-item" @click="navigateTo('chatbot')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>AI对话</span>
+          </button>
+          <button class="nav-item active">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>刷题助手</span>
+          </button>
+          <button class="nav-item" @click="navigateTo('customer-service')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"></path>
+            </svg>
+            <span>客服</span>
+          </button>
+          <button class="nav-item" @click="navigateTo('multimodal')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>多模态</span>
+          </button>
+        </nav>
+        <button class="home-btn" @click="goHome">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>返回首页</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="assistant-main">
+      <div class="hero-section">
+        <div class="hero-content">
+          <div class="hero-badge">智能学习伙伴</div>
+          <h1 class="hero-title">让刷题变得更高效</h1>
+          <p class="hero-desc">
+            AI 智能分析你的学习情况，精准推荐题目，提供深度解析，
+            帮助你快速提升编程能力
+          </p>
+          <div class="hero-actions">
+            <button class="primary-btn" @click="startPractice">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              开始智能刷题
+            </button>
+            <button class="secondary-btn" @click="navigateTo('chatbot')">
+              先体验 AI 对话
+            </button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="visual-card main-card">
+            <div class="card-header">
+              <span class="card-badge">今日推荐</span>
+              <span class="card-difficulty medium">中等难度</span>
+            </div>
+            <h3 class="card-title">二叉树的层序遍历</h3>
+            <p class="card-desc">给你一个二叉树，请你返回其按 层序遍历 得到的节点值...</p>
+            <div class="card-tags">
+              <span class="tag">树</span>
+              <span class="tag">BFS</span>
+              <span class="tag">队列</span>
+            </div>
+            <div class="card-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 68%"></div>
+              </div>
+              <span class="progress-text">68% 用户已掌握</span>
+            </div>
+          </div>
+          <div class="floating-cards">
+            <div class="float-card card-1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              已完成 128 题
+            </div>
+            <div class="float-card card-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+              正确率 85%
+            </div>
+            <div class="float-card card-3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              连续学习 7 天
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <main class="main-content">
-      <div class="container">
-        <div class="coming-soon">
-          <div class="coming-soon-icon">
-            <el-icon :size="80"><Edit /></el-icon>
+
+      <div class="features-section">
+        <h2 class="section-title">核心功能</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon recommend">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+              </svg>
+            </div>
+            <h3>智能推荐</h3>
+            <p>基于你的学习历史和薄弱点，AI 精准推荐最适合你的题目</p>
           </div>
-          <h2 class="coming-soon-title">刷题助手</h2>
-          <p class="coming-soon-description">AI智能刷题助手正在开发中，敬请期待...</p>
-          <button class="action-btn" @click="navigateTo('chatbot')">先去体验机器人对话</button>
+          <div class="feature-card">
+            <div class="feature-icon analysis">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <h3>深度解析</h3>
+            <p>每道题目都有详细的解题思路和多种解法对比，帮你真正理解</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon track">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <h3>进度追踪</h3>
+            <p>可视化学习数据，清晰了解自己的成长轨迹和待提升领域</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon plan">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <h3>学习计划</h3>
+            <p>AI 为你定制个性化学习计划，科学安排每日学习任务</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stat-card">
+          <div class="stat-number">10,000+</div>
+          <div class="stat-label">精选题目</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">知识标签</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">98%</div>
+          <div class="stat-label">用户好评</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">AI 在线</div>
+        </div>
+      </div>
+
+      <div class="cta-section">
+        <div class="cta-content">
+          <h2>准备好开始了吗？</h2>
+          <p>加入数万名学习者，让 AI 助力你的编程之路</p>
+          <button class="cta-btn" @click="startPractice">
+            立即开始
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
         </div>
       </div>
     </main>
@@ -63,100 +209,83 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { ChatDotRound, ChatLineRound, Edit, Service, Picture, HomeFilled } from '@element-plus/icons-vue'
 
 const router = useRouter()
 
 const navigateTo = (feature) => {
-  try {
-    router.push(`/ai/${feature}`)
-  } catch (error) {
-    console.error('路由跳转失败:', error)
-  }
+  router.push(`/ai/${feature}`)
 }
 
 const goHome = () => {
   router.push('/home')
 }
+
+const startPractice = () => {
+  router.push('/home/questions')
+}
 </script>
 
 <style scoped>
-.practice-assistant-page {
+.practice-assistant-container {
   min-height: 100vh;
-  background: #ffffff;
-  background-image: 
-    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-  background-size: 4px 4px;
-  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fffbeb 100%);
+  display: flex;
+  flex-direction: column;
 }
 
-.ai-nav {
-  background: #ffffff;
-  position: fixed;
-  width: 100%;
+.assistant-header {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(249, 115, 22, 0.1);
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  border-bottom: 4px solid #000000;
-  box-shadow: 4px 4px 0px #000000;
+  z-index: 100;
 }
 
-.ai-nav-container {
+.header-content {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
-}
-
-.ai-nav-content {
+  padding: 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
-  gap: 24px;
+  height: 72px;
+  gap: 32px;
 }
 
-.ai-logo {
+.brand {
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 8px 16px;
-  border: 2px solid transparent;
+  gap: 14px;
 }
 
-.ai-logo:hover {
-  background-color: #f0f0f0;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
-  border: 2px solid #000000;
-}
-
-.logo-icon {
+.brand-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: #000000;
-  color: #ffffff;
-  border-radius: 0;
+  color: white;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
-.logo-title {
+.brand-text h1 {
   font-size: 20px;
   font-weight: 700;
-  color: #000000;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.3px;
 }
 
-.ai-nav-menu {
+.tagline {
+  font-size: 12px;
+  color: #9a3412;
+  font-weight: 500;
+}
+
+.header-nav {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -164,125 +293,487 @@ const goHome = () => {
   justify-content: center;
 }
 
-.ai-nav-item {
+.nav-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #000000;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  padding: 10px 20px;
-  border: 2px solid #000000;
-  border-radius: 0;
-  cursor: pointer;
-  white-space: nowrap;
-  background: #ffffff;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-}
-
-.ai-nav-item .el-icon {
-  font-size: 18px;
-}
-
-.ai-nav-item:hover {
-  background-color: #000000;
-  color: #ffffff;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
-}
-
-.ai-nav-item.active {
-  background-color: #000000;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 4px 4px 0px #000000;
-  transform: translate(-2px, -2px);
-}
-
-.back-home {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #000000;
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #64748b;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s ease;
-  padding: 10px 20px;
-  border: 2px solid #000000;
-  border-radius: 0;
   cursor: pointer;
-  white-space: nowrap;
-  background: #ffffff;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
+  transition: all 0.3s ease;
 }
 
-.back-home:hover {
-  background-color: #000000;
-  color: #ffffff;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
+.nav-item:hover {
+  background: rgba(249, 115, 22, 0.08);
+  color: #c2410c;
 }
 
-.main-content {
-  padding: 108px 24px 24px 24px;
+.nav-item.active {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
 }
 
-.container {
-  max-width: 1200px;
+.home-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 10px;
+  color: #c2410c;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+  background: rgba(249, 115, 22, 0.1);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.assistant-main {
+  flex: 1;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 48px 32px;
+  width: 100%;
 }
 
-.coming-soon {
-  background: #ffffff;
-  padding: 80px 40px;
-  border: 4px solid #000000;
-  text-align: center;
-  box-shadow: 8px 8px 0px #000000;
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  margin-bottom: 80px;
 }
 
-.coming-soon-icon {
-  color: #000000;
-  margin-bottom: 24px;
-  opacity: 0.6;
+.hero-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(251, 146, 60, 0.1) 100%);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #c2410c;
+  margin-bottom: 20px;
 }
 
-.coming-soon-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #000000;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 2px;
+.hero-title {
+  font-size: 48px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 20px 0;
+  line-height: 1.1;
+  letter-spacing: -1px;
 }
 
-.coming-soon-description {
+.hero-desc {
   font-size: 18px;
-  color: #666666;
-  margin-bottom: 32px;
-  font-family: 'Courier New', monospace;
+  color: #64748b;
+  line-height: 1.7;
+  margin: 0 0 32px 0;
 }
 
-.action-btn {
-  padding: 12px 32px;
-  background: #000000;
-  color: #ffffff;
-  border: 2px solid #000000;
-  border-radius: 0;
-  font-size: 14px;
-  font-weight: 500;
+.hero-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.primary-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
 }
 
-.action-btn:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+.secondary-btn {
+  padding: 14px 28px;
+  background: white;
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 12px;
+  color: #c2410c;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(249, 115, 22, 0.05);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.hero-visual {
+  position: relative;
+}
+
+.visual-card {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+.main-card {
+  position: relative;
+  z-index: 2;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.card-badge {
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.card-difficulty {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.card-difficulty.medium {
+  background: rgba(234, 179, 8, 0.1);
+  color: #a16207;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.card-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tag {
+  padding: 4px 12px;
+  background: rgba(249, 115, 22, 0.08);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #c2410c;
+  font-weight: 500;
+}
+
+.card-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border-radius: 3px;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.floating-cards {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.float-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  font-weight: 600;
+  color: #0f172a;
+  animation: float 3s ease-in-out infinite;
+}
+
+.card-1 {
+  top: -20px;
+  right: -40px;
+  animation-delay: 0s;
+}
+
+.card-2 {
+  bottom: 60px;
+  left: -50px;
+  animation-delay: 0.5s;
+}
+
+.card-3 {
+  bottom: -20px;
+  right: 20px;
+  animation-delay: 1s;
+}
+
+.float-card svg {
+  color: #f97316;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.features-section {
+  margin-bottom: 80px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
+  margin: 0 0 48px 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  text-align: center;
+  border: 1px solid rgba(249, 115, 22, 0.08);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.2);
+}
+
+.feature-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-icon.recommend {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(251, 146, 60, 0.1) 100%);
+  color: #f97316;
+}
+
+.feature-icon.analysis {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(74, 222, 128, 0.1) 100%);
+  color: #22c55e;
+}
+
+.feature-icon.track {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(96, 165, 250, 0.1) 100%);
+  color: #3b82f6;
+}
+
+.feature-icon.plan {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(192, 132, 252, 0.1) 100%);
+  color: #a855f7;
+}
+
+.feature-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 80px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border-radius: 20px;
+  padding: 32px;
+  text-align: center;
+  color: white;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.cta-section {
+  background: white;
+  border-radius: 24px;
+  padding: 64px;
+  text-align: center;
+  border: 1px solid rgba(249, 115, 22, 0.1);
+}
+
+.cta-content h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+}
+
+.cta-content p {
+  font-size: 18px;
+  color: #64748b;
+  margin: 0 0 32px 0;
+}
+
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .hero-visual {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .header-nav {
+    display: none;
+  }
+
+  .assistant-main {
+    padding: 32px 16px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-section {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cta-section {
+    padding: 40px 24px;
+  }
 }
 </style>
