@@ -408,7 +408,7 @@ const createNewChatWithCustomTitle = async () => {
   }
 
   try {
-    const title = await showCustomInputDialog('请输入会话标题', '新对话')
+    const title = await showCustomInputDialog('请输入会话标题', 'new session')
     if (title !== null) {
       await createNewSessionWithTitle(title)
     }
@@ -504,31 +504,7 @@ const handleSendMessage = async () => {
   console.log('添加用户消息，当前会话消息总数:', currentSession.value.messages.length)
   inputMessage.value = ''
 
-  // 如果是第一条消息，自动设置会话标题
-  if (currentSession.value.messages.length === 1) {
-    const newTitle = message.substring(0, 20) + (message.length > 20 ? '...' : '')
-    currentSession.value.title = newTitle
-
-    const sessionInList = sessions.value.find(s => s.sessionId === currentSessionId.value)
-    if (sessionInList) {
-      sessionInList.title = newTitle
-    }
-
-    try {
-      const sessionData = {
-        sessionId: currentSessionId.value,
-        userId: userStore.userInfo?.id,
-        title: newTitle,
-        messages: currentSession.value.messages,
-        createdAt: currentSession.value.createdAt,
-        updatedAt: new Date().toISOString()
-      }
-
-      await aiApi.updateSession(currentSessionId.value, sessionData, userStore.userInfo?.id)
-    } catch (error) {
-      console.error('自动更新标题失败:', error)
-    }
-  }
+  // 不再自动设置会话标题，保持默认的 "会话"+ID 格式
 
   scrollToBottom()
   isLoading.value = true
@@ -557,10 +533,7 @@ const handleSendMessage = async () => {
 
     await saveCurrentSessionState()
 
-    // 如果是第一条消息，尝试让AI生成一个合适的标题
-    if (currentSession.value.messages.length === 2) {
-      await generateTitleFromFirstExchange()
-    }
+    // 不再使用AI生成标题，保持默认的 "会话"+ID 格式
   } catch (error) {
     ElMessage.error('发送消息失败: ' + error.message)
   } finally {
@@ -717,10 +690,11 @@ const formatMessageTime = (timestamp) => {
 
 // 方法：获取会话显示标题
 const getSessionDisplayTitle = (session) => {
-  if (session.title === '新对话' || !session.title) {
-    return session.sessionId ? session.sessionId.substring(0, 8) : '未知会话'
+  // 始终显示为 "会话"+会话ID的形式
+  if (session.sessionId) {
+    return '会话' + session.sessionId.substring(0, 8)
   }
-  return session.title
+  return '未知会话'
 }
 
 // 方法：开始编辑标题
