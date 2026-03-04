@@ -20,6 +20,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  publicDir: 'favicon',
   server: {
     port: 2444,
     open: true,
