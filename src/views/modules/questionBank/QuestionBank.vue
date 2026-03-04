@@ -440,6 +440,7 @@ const clearAllFilters = () => {
 
 // 处理难度变化
 const handleDifficultyChange = (difficulty, isSelected) => {
+  isDifficultySelected[difficulty] = isSelected
   if (isSelected) {
     filters.subjectDifficult = difficulty
     // 取消其他难度的选择
@@ -456,6 +457,7 @@ const handleDifficultyChange = (difficulty, isSelected) => {
 
 // 处理类型变化
 const handleTypeChange = (type, isSelected) => {
+  isTypeSelected[type] = isSelected
   if (isSelected) {
     filters.subjectType = type
     // 取消其他类型的选择
