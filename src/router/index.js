@@ -113,6 +113,36 @@ const routes = [
     name: 'MultimodalParser',
     component: () => import('@/views/modules/ai/MultimodalParser.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/blog',
+    name: 'BlogHome',
+    component: () => import('@/views/modules/blog/BlogHome.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/blog/list',
+    name: 'BlogList',
+    component: () => import('@/views/modules/blog/BlogList.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/blog/article/:id',
+    name: 'BlogDetail',
+    component: () => import('@/views/modules/blog/BlogDetail.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/blog/write',
+    name: 'BlogWrite',
+    component: () => import('@/views/modules/blog/BlogWrite.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/blog/edit/:id',
+    name: 'BlogEdit',
+    component: () => import('@/views/modules/blog/BlogWrite.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
