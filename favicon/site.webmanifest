@@ -1,6 +1,6 @@
 {
-  "name": "Halo Java八股文",
-  "short_name": "Halo",
+  "name": "halo coding do",
+  "short_name": "hcd",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -16,6 +16,6 @@
     }
   ],
   "theme_color": "#10b981",
-  "background_color": "#050505",
+  "background_color": "#f7f3ea",
   "display": "standalone"
 }

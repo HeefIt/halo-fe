@@ -1,0 +1,5 @@
+<svg width="256" height="216" viewBox="0 0 256 216" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M56 166C36 157 22 137 22 114C22 94 33 76 50 66C56 32 86 8 122 8C143 8 162 16 176 30C186 26 197 24 208 24C235 24 258 46 258 74C258 86 254 98 247 108" transform="translate(-12 0)" stroke="#082B72" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M70 188C85 201 105 208 128 208C149 208 168 201 183 189" stroke="#082B72" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="127" y="136" text-anchor="middle" fill="#082B72" font-size="112" font-weight="700" font-family="'Brush Script MT','Segoe Script','Snell Roundhand',cursive">hcd</text>
+</svg>
