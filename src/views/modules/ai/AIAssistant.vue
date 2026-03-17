@@ -17,7 +17,7 @@
             <div class="logo-icon">
               <el-icon :size="24"><ChatDotRound /></el-icon>
             </div>
-            <span class="logo-title">AI 智能助手</span>
+            <span class="logo-title">AI 协作中心</span>
           </div>
           
           <!-- AI功能导航菜单 -->
@@ -28,7 +28,7 @@
               @click="navigateTo('chatbot')"
             >
               <el-icon><ChatLineRound /></el-icon>
-              <span>机器人对话</span>
+              <span>AI 对话</span>
             </span>
             <span 
               class="ai-nav-item" 
@@ -36,7 +36,7 @@
               @click="navigateTo('practice-assistant')"
             >
               <el-icon><Edit /></el-icon>
-              <span>刷题助手</span>
+              <span>练习助手</span>
             </span>
             <span 
               class="ai-nav-item" 
@@ -44,7 +44,7 @@
               @click="navigateTo('customer-service')"
             >
               <el-icon><Service /></el-icon>
-              <span>智能客服</span>
+              <span>平台服务</span>
             </span>
             <span 
               class="ai-nav-item" 
@@ -71,8 +71,8 @@
         <!-- 欢迎区 -->
         <div class="welcome-section">
           <div class="welcome-content">
-            <h1 class="welcome-title">欢迎使用 AI 智能助手</h1>
-            <p class="welcome-subtitle">选择一个功能模块开始您的AI体验之旅</p>
+            <h1 class="welcome-title">把提问、拆解和理解交给 AI 协作</h1>
+            <p class="welcome-subtitle">无论是刷题、读文档、做知识整理还是排查问题，都可以从这里开始</p>
           </div>
         </div>
         
@@ -82,10 +82,10 @@
             <div class="feature-icon">
               <el-icon :size="48"><ChatLineRound /></el-icon>
             </div>
-            <h3 class="feature-title">机器人对话</h3>
-            <p class="feature-description">智能对话助手，支持会话记忆和历史会话管理</p>
+            <h3 class="feature-title">智能对话</h3>
+            <p class="feature-description">围绕概念、需求、代码和方案持续交流，保留上下文更适合深聊</p>
             <div class="feature-status active">
-              <span>可用</span>
+              <span>推荐</span>
             </div>
           </div>
           
@@ -93,10 +93,10 @@
             <div class="feature-icon">
               <el-icon :size="48"><Edit /></el-icon>
             </div>
-            <h3 class="feature-title">刷题助手</h3>
-            <p class="feature-description">智能刷题模拟器，提供个性化的题目推荐和解析</p>
+            <h3 class="feature-title">练习助手</h3>
+            <p class="feature-description">根据表现推荐题目、定位薄弱点，并给出更有针对性的训练建议</p>
             <div class="feature-status">
-              <span>开发中</span>
+              <span>进阶</span>
             </div>
           </div>
           
@@ -104,10 +104,10 @@
             <div class="feature-icon">
               <el-icon :size="48"><Service /></el-icon>
             </div>
-            <h3 class="feature-title">智能客服</h3>
-            <p class="feature-description">7x24小时智能客服，快速解答您的疑问</p>
+            <h3 class="feature-title">平台服务</h3>
+            <p class="feature-description">快速了解功能入口、使用流程、练习路径和常见问题</p>
             <div class="feature-status">
-              <span>开发中</span>
+              <span>在线</span>
             </div>
           </div>
           
@@ -116,9 +116,9 @@
               <el-icon :size="48"><Picture /></el-icon>
             </div>
             <h3 class="feature-title">多模态解析</h3>
-            <p class="feature-description">支持PDF、图片等多模态文件的智能解析</p>
+            <p class="feature-description">读取图片、PDF 与资料内容，帮助你更快理解、整理和提炼重点</p>
             <div class="feature-status">
-              <span>开发中</span>
+              <span>增强</span>
             </div>
           </div>
         </div>

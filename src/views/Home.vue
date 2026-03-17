@@ -7,9 +7,9 @@
         <section class="welcome animate-slide-up">
           <div class="welcome-content">
             <h1 class="welcome-title">
-              下午好，<span class="text-gradient">{{ userStore.userName || '学习者' }}</span>
+              {{ greetingText }}<span class="text-gradient">{{ displayName }}</span>
             </h1>
-            <p class="welcome-subtitle">今天想学点什么？</p>
+            <p class="welcome-subtitle">今天想推进哪一段能力？</p>
           </div>
           <div class="welcome-date">
             <span class="date-day">{{ currentDay }}</span>
@@ -20,7 +20,7 @@
         <section class="stats animate-slide-up" style="animation-delay: 100ms">
           <div class="stats-card">
             <div class="stats-header">
-              <span class="stats-title">今日学习</span>
+              <span class="stats-title">今日进度</span>
               <span class="stats-badge">每日凌晨1点结算</span>
             </div>
             <div class="stats-grid">
@@ -83,8 +83,8 @@
 
         <section class="features animate-slide-up" style="animation-delay: 200ms">
           <div class="section-header">
-            <h2 class="section-title">快速开始</h2>
-            <p class="section-desc">选择一个功能开始你的学习之旅</p>
+            <h2 class="section-title">继续前进</h2>
+            <p class="section-desc">从题库、博客、计划和 AI 工具里选择一个入口</p>
           </div>
           
           <div class="features-grid">
@@ -98,7 +98,7 @@
               </div>
               <div class="feature-content">
                 <h3 class="feature-title">题库练习</h3>
-                <p class="feature-desc">海量题目随时练习</p>
+                <p class="feature-desc">按主题推进，边练边查漏</p>
               </div>
               <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -116,7 +116,7 @@
               </div>
               <div class="feature-content">
                 <h3 class="feature-title">学习计划</h3>
-                <p class="feature-desc">制定专属学习计划</p>
+                <p class="feature-desc">把目标拆成可执行节点</p>
               </div>
               <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -132,7 +132,7 @@
               </div>
               <div class="feature-content">
                 <h3 class="feature-title">排行榜</h3>
-                <p class="feature-desc">查看学习排名</p>
+                <p class="feature-desc">查看当前节奏与阶段位置</p>
               </div>
               <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -148,7 +148,7 @@
               </div>
               <div class="feature-content">
                 <h3 class="feature-title">练习记录</h3>
-                <p class="feature-desc">查看历史记录</p>
+                <p class="feature-desc">回看答题轨迹与薄弱点</p>
               </div>
               <svg class="feature-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -160,8 +160,8 @@
         <section class="ai-section animate-slide-up" style="animation-delay: 300ms">
           <div class="section-header">
             <div class="section-header-left">
-              <h2 class="section-title">AI 智能助手</h2>
-              <p class="section-desc">智能AI赋能，提升学习效率</p>
+              <h2 class="section-title">AI 协作区</h2>
+              <p class="section-desc">把提问、拆解、理解和复盘放到一起</p>
             </div>
             <span class="section-tag">NEW</span>
           </div>
@@ -172,8 +172,8 @@
                 <span class="ai-icon">💬</span>
                 <span class="ai-badge ai-badge-hot">HOT</span>
               </div>
-              <h3 class="ai-title">机器人对话</h3>
-              <p class="ai-desc">支持会话记忆和历史会话，智能问答对话</p>
+              <h3 class="ai-title">通用对话</h3>
+              <p class="ai-desc">聊概念、排思路、拆需求，保留上下文持续协作</p>
               <div class="ai-arrow">→</div>
             </button>
             
@@ -182,8 +182,8 @@
                 <span class="ai-icon">📝</span>
                 <span class="ai-badge ai-badge-new">NEW</span>
               </div>
-              <h3 class="ai-title">刷题助手</h3>
-              <p class="ai-desc">智能推荐题目，个性化学习建议</p>
+              <h3 class="ai-title">练习助手</h3>
+              <p class="ai-desc">按你的表现推荐练习，并给出下一步建议</p>
               <div class="ai-arrow">→</div>
             </button>
             
@@ -193,7 +193,7 @@
                 <span class="ai-badge ai-badge-default">24/7</span>
               </div>
               <h3 class="ai-title">智能客服</h3>
-              <p class="ai-desc">7x24小时智能客服，快速解答疑问</p>
+              <p class="ai-desc">快速了解平台功能、使用路径和常见问题</p>
               <div class="ai-arrow">→</div>
             </button>
             
@@ -203,7 +203,7 @@
                 <span class="ai-badge ai-badge-pro">PRO</span>
               </div>
               <h3 class="ai-title">多模态解析</h3>
-              <p class="ai-desc">支持PDF、图片等多模态文件智能解析</p>
+              <p class="ai-desc">识别图片、PDF 与资料内容，辅助阅读和整理</p>
               <div class="ai-arrow">→</div>
             </button>
           </div>
@@ -214,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getDailyStatistics } from '@/api/subject'
@@ -231,13 +231,28 @@ const dailyStats = ref({
   totalScore: 0
 })
 
+const currentTime = ref(new Date())
+let greetingTimer = null
+
+const displayName = computed(() => userStore.userName || '\u5b66\u4e60\u8005')
+
+const greetingText = computed(() => {
+  const hour = currentTime.value.getHours()
+
+  if (hour < 5) return '\u591c\u6df1\u4e86\uff0c'
+  if (hour < 11) return '\u65e9\u4e0a\u597d\uff0c'
+  if (hour < 13) return '\u4e2d\u5348\u597d\uff0c'
+  if (hour < 18) return '\u4e0b\u5348\u597d\uff0c'
+  return '\u665a\u4e0a\u597d\uff0c'
+})
+
 const currentDay = computed(() => {
-  return new Date().getDate()
+  return currentTime.value.getDate()
 })
 
 const currentMonth = computed(() => {
-  const months = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
-  return months[new Date().getMonth()]
+  const months = ['\u4e00\u6708', '\u4e8c\u6708', '\u4e09\u6708', '\u56db\u6708', '\u4e94\u6708', '\u516d\u6708', '\u4e03\u6708', '\u516b\u6708', '\u4e5d\u6708', '\u5341\u6708', '\u5341\u4e00\u6708', '\u5341\u4e8c\u6708']
+  return months[currentTime.value.getMonth()]
 })
 
 const goTo = (path) => {
@@ -274,7 +289,18 @@ const formatTime = (seconds) => {
 }
 
 onMounted(() => {
+  currentTime.value = new Date()
+  greetingTimer = window.setInterval(() => {
+    currentTime.value = new Date()
+  }, 30000)
   fetchDailyStatistics()
+})
+
+onUnmounted(() => {
+  if (greetingTimer) {
+    window.clearInterval(greetingTimer)
+    greetingTimer = null
+  }
 })
 
 watch(() => userStore.userInfo, (newUserInfo) => {

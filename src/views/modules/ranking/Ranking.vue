@@ -7,7 +7,7 @@
         <div class="page-header">
           <div class="header-left">
             <h1 class="page-title">排行榜</h1>
-            <p class="page-subtitle">与全球学习者一较高下，见证你的成长</p>
+            <p class="page-subtitle">看看你在当前学习周期里的位置，也观察谁在稳定进步</p>
           </div>
         </div>
 
@@ -174,8 +174,8 @@
                 </linearGradient>
               </defs>
             </svg>
-            <h4>暂无排行数据</h4>
-            <p>开始练习，成为第一个上榜的人吧！</p>
+            <h4>还没有排行数据</h4>
+            <p>先完成一组练习，排行榜就会开始记录你的节奏。</p>
           </div>
         </div>
       </div>
@@ -201,9 +201,9 @@ const timeRanges = [
 ]
 
 const rankingTypes = [
-  { label: '刷题数', value: 'problemCount' },
-  { label: '得分', value: 'score' },
-  { label: '正确数', value: 'correctCount' }
+  { label: '练习量', value: 'problemCount' },
+  { label: '综合得分', value: 'score' },
+  { label: '正确率', value: 'correctCount' }
 ]
 
 const topThree = computed(() => {
@@ -217,18 +217,18 @@ const getRankingTitle = () => {
     month: '本月'
   }
   const typeMap = {
-    problemCount: '刷题数排行',
-    score: '得分排行',
-    correctCount: '正确数排行'
+    problemCount: '练习量排行',
+    score: '综合得分排行',
+    correctCount: '正确率排行'
   }
   return `${timeMap[timeRange.value]}${typeMap[rankingType.value]}`
 }
 
 const getValueLabel = () => {
   const typeMap = {
-    problemCount: '刷题数',
-    score: '得分',
-    correctCount: '正确数'
+    problemCount: '练习量',
+    score: '综合得分',
+    correctCount: '正确率'
   }
   return typeMap[rankingType.value]
 }

@@ -10,8 +10,8 @@
             </svg>
           </div>
           <div class="brand-text">
-            <h1>AI 刷题助手</h1>
-            <span class="tagline">智能推荐 · 精准解析 · 高效学习</span>
+            <h1>AI 练习助手</h1>
+            <span class="tagline">推荐 · 诊断 · 复盘</span>
           </div>
         </div>
         <nav class="header-nav">
@@ -26,7 +26,7 @@
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
-            <span>刷题助手</span>
+            <span>练习助手</span>
           </button>
           <button class="nav-item" @click="navigateTo('customer-service')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -56,21 +56,21 @@
     <main class="assistant-main">
       <div class="hero-section">
         <div class="hero-content">
-          <div class="hero-badge">智能学习伙伴</div>
-          <h1 class="hero-title">让刷题变得更高效</h1>
+          <div class="hero-badge">学习加速器</div>
+          <h1 class="hero-title">让每次练习更有方向</h1>
           <p class="hero-desc">
-            AI 智能分析你的学习情况，精准推荐题目，提供深度解析，
-            帮助你快速提升编程能力
+            根据你的节奏、薄弱点和兴趣主题推荐下一步内容，不只给答案，
+            还帮你看清为什么值得练、练完如何沉淀
           </p>
           <div class="hero-actions">
             <button class="primary-btn" @click="startPractice">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              开始智能刷题
+              开始下一组练习
             </button>
             <button class="secondary-btn" @click="navigateTo('chatbot')">
-              先体验 AI 对话
+              先去 AI 对话
             </button>
           </div>
         </div>
@@ -80,18 +80,18 @@
               <span class="card-badge">今日推荐</span>
               <span class="card-difficulty medium">中等难度</span>
             </div>
-            <h3 class="card-title">二叉树的层序遍历</h3>
-            <p class="card-desc">给你一个二叉树，请你返回其按 层序遍历 得到的节点值...</p>
+            <h3 class="card-title">高并发接口如何保证幂等性？</h3>
+            <p class="card-desc">当用户重复提交或网络重试时，如何避免服务端生成重复数据，并兼顾可扩展性？</p>
             <div class="card-tags">
-              <span class="tag">树</span>
-              <span class="tag">BFS</span>
-              <span class="tag">队列</span>
+              <span class="tag">后端</span>
+              <span class="tag">幂等</span>
+              <span class="tag">分布式</span>
             </div>
             <div class="card-progress">
               <div class="progress-bar">
                 <div class="progress-fill" style="width: 68%"></div>
               </div>
-              <span class="progress-text">68% 用户已掌握</span>
+              <span class="progress-text">72% 用户已掌握</span>
             </div>
           </div>
           <div class="floating-cards">
@@ -99,7 +99,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
-              已完成 128 题
+              已完成 128 次练习
             </div>
             <div class="float-card card-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -112,14 +112,14 @@
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
-              连续学习 7 天
+              连续专注 7 天
             </div>
           </div>
         </div>
       </div>
 
       <div class="features-section">
-        <h2 class="section-title">核心功能</h2>
+        <h2 class="section-title">你会得到什么</h2>
         <div class="features-grid">
           <div class="feature-card">
             <div class="feature-icon recommend">
@@ -130,8 +130,8 @@
                 <line x1="15" y1="9" x2="15.01" y2="9"></line>
               </svg>
             </div>
-            <h3>智能推荐</h3>
-            <p>基于你的学习历史和薄弱点，AI 精准推荐最适合你的题目</p>
+            <h3>个性化推荐</h3>
+            <p>结合历史表现、标签偏好和难点分布，安排更值得练的下一题</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon analysis">
@@ -142,8 +142,8 @@
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
             </div>
-            <h3>深度解析</h3>
-            <p>每道题目都有详细的解题思路和多种解法对比，帮你真正理解</p>
+            <h3>深度复盘</h3>
+            <p>不只解析正确答案，还提示误区、边界条件和延伸知识</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon track">
@@ -153,8 +153,8 @@
                 <line x1="6" y1="20" x2="6" y2="14"></line>
               </svg>
             </div>
-            <h3>进度追踪</h3>
-            <p>可视化学习数据，清晰了解自己的成长轨迹和待提升领域</p>
+            <h3>成长诊断</h3>
+            <p>用可视化数据定位薄弱主题，帮助你安排下一轮训练</p>
           </div>
           <div class="feature-card">
             <div class="feature-icon plan">
@@ -165,8 +165,8 @@
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </div>
-            <h3>学习计划</h3>
-            <p>AI 为你定制个性化学习计划，科学安排每日学习任务</p>
+            <h3>学习路径</h3>
+            <p>围绕目标岗位或技术方向生成连续练习路线，让学习不再跳跃</p>
           </div>
         </div>
       </div>
@@ -193,9 +193,9 @@
       <div class="cta-section">
         <div class="cta-content">
           <h2>准备好开始了吗？</h2>
-          <p>加入数万名学习者，让 AI 助力你的编程之路</p>
+          <p>让 AI 帮你把零散练习变成稳定进步</p>
           <button class="cta-btn" @click="startPractice">
-            立即开始
+            去做一组练习
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>

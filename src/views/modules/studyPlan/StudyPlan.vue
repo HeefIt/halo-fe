@@ -7,14 +7,14 @@
         <div class="page-header">
           <div class="header-left">
             <h1 class="page-title">学习计划</h1>
-            <p class="page-subtitle">规划你的学习旅程，追踪每一个成长足迹</p>
+            <p class="page-subtitle">把想学的主题拆成节奏清晰、可持续推进的计划</p>
           </div>
           <button class="create-btn" @click="createPlan">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            创建计划
+            新建计划
           </button>
         </div>
 
@@ -193,14 +193,14 @@
               </defs>
             </svg>
           </div>
-          <h3 class="empty-title">暂无学习计划</h3>
-          <p class="empty-desc">创建你的第一个学习计划，开启高效学习之旅</p>
+          <h3 class="empty-title">还没有学习计划</h3>
+          <p class="empty-desc">从一个目标主题开始，把接下来几周的节奏排出来。</p>
           <button class="create-btn large" @click="createPlan">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
-            创建学习计划
+            新建学习计划
           </button>
         </div>
       </div>
@@ -291,7 +291,7 @@ const fetchStudyPlans = () => {
   studyPlans.value = [
     {
       id: 1,
-      title: 'Java基础巩固计划',
+      title: '后端基础与 API 设计',
       status: 2,
       startDate: '2025-11-01',
       endDate: '2025-12-31',
@@ -300,7 +300,7 @@ const fetchStudyPlans = () => {
     },
     {
       id: 2,
-      title: 'Spring框架深入学习',
+      title: 'Spring 与服务治理',
       status: 1,
       startDate: '2026-01-01',
       endDate: '2026-02-28',
@@ -309,7 +309,7 @@ const fetchStudyPlans = () => {
     },
     {
       id: 3,
-      title: '数据库优化专题',
+      title: '数据库建模与性能优化',
       status: 3,
       startDate: '2025-09-01',
       endDate: '2025-10-31',
@@ -318,7 +318,7 @@ const fetchStudyPlans = () => {
     },
     {
       id: 4,
-      title: '微服务架构实践',
+      title: '分布式系统实践',
       status: 2,
       startDate: '2025-11-15',
       endDate: '2026-01-15',
@@ -327,7 +327,7 @@ const fetchStudyPlans = () => {
     },
     {
       id: 5,
-      title: '前端工程化进阶',
+      title: '前端工程协作',
       status: 1,
       startDate: '2026-02-01',
       endDate: '2026-03-31',
@@ -336,7 +336,7 @@ const fetchStudyPlans = () => {
     },
     {
       id: 6,
-      title: '算法与数据结构',
+      title: '算法与数据结构进阶',
       status: 2,
       startDate: '2025-10-01',
       endDate: '2025-12-31',

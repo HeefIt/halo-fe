@@ -69,12 +69,12 @@
               <div class="orb-ring delay"></div>
             </div>
           </div>
-          <h2 class="empty-title">开始智能对话</h2>
-          <p class="empty-desc">输入您的问题，AI 将为您提供专业解答</p>
+          <h2 class="empty-title">开始一场 AI 协作</h2>
+          <p class="empty-desc">输入问题、需求或思路，AI 会帮你解释概念、拆解任务和整理答案</p>
           <div class="quick-prompts">
-            <button class="prompt-chip" @click="setQuickPrompt('帮我解释一下什么是机器学习？')">机器学习入门</button>
-            <button class="prompt-chip" @click="setQuickPrompt('如何提高编程能力？')">编程提升</button>
-            <button class="prompt-chip" @click="setQuickPrompt('给我讲一个有趣的技术故事')">技术故事</button>
+            <button class="prompt-chip" @click="setQuickPrompt('帮我设计一个带缓存的用户查询接口')">接口设计</button>
+            <button class="prompt-chip" @click="setQuickPrompt('怎么判断一个服务要不要拆分成微服务？')">架构判断</button>
+            <button class="prompt-chip" @click="setQuickPrompt('把这段技术经历整理成一篇博客提纲')">内容沉淀</button>
           </div>
         </div>
 
@@ -133,7 +133,7 @@
         <div class="input-wrapper">
           <textarea
             v-model="inputMessage"
-            placeholder="输入您的问题..."
+            placeholder="输入你的问题、想法或需求..."
             @keydown.enter.prevent="handleSendMessage"
             :disabled="isLoading"
             rows="1"
@@ -164,7 +164,7 @@
             </div>
           </div>
         </div>
-        <p class="disclaimer">AI 生成的内容可能存在误差，请谨慎参考</p>
+        <p class="disclaimer">AI 结果适合用于辅助思考，请结合实际场景自行判断</p>
       </div>
     </main>
   </div>

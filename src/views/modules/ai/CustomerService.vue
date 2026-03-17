@@ -9,10 +9,10 @@
             </svg>
           </div>
           <div class="brand-text">
-            <h1>智能客服中心</h1>
+            <h1>平台服务中心</h1>
             <span class="status-badge">
               <span class="status-dot"></span>
-              7x24 在线
+              全天在线
             </span>
           </div>
         </div>
@@ -28,13 +28,13 @@
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
             </svg>
-            <span>刷题助手</span>
+            <span>练习助手</span>
           </button>
           <button class="nav-item active">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
             </svg>
-            <span>客服</span>
+            <span>服务台</span>
           </button>
           <button class="nav-item" @click="navigateTo('multimodal')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,14 +99,14 @@
         </div>
 
         <div class="quick-questions" v-if="messages.length <= 1">
-          <h4>常见问题</h4>
+          <h4>常见入口</h4>
           <div class="questions-grid">
-            <button class="question-card" @click="askQuestion('如何修改个人信息？')">
+            <button class="question-card" @click="askQuestion('如何修改个人资料？')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
-              如何修改个人信息？
+              如何修改个人资料？
             </button>
             <button class="question-card" @click="askQuestion('忘记密码怎么办？')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -115,20 +115,26 @@
               </svg>
               忘记密码怎么办？
             </button>
-            <button class="question-card" @click="askQuestion('如何查看刷题记录？')">
+            <button class="question-card" @click="askQuestion('如何查看练习轨迹？')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
                 <line x1="16" y1="13" x2="8" y2="13"></line>
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
-              如何查看刷题记录？
+              如何查看练习轨迹？
             </button>
-            <button class="question-card" @click="askQuestion('题目有错误怎么反馈？')">
+            <button class="question-card" @click="askQuestion('如何发布或编辑博客文章？')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
-              题目有错误怎么反馈？
+              如何发布或编辑博客文章？
+            </button>
+            <button class="question-card" @click="askQuestion('发现题目或文章有问题怎么反馈？')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              发现题目或文章有问题怎么反馈？
             </button>
           </div>
         </div>
@@ -137,7 +143,7 @@
           <div class="input-box">
             <textarea
               v-model="inputMessage"
-              placeholder="描述您遇到的问题..."
+              placeholder="描述你遇到的问题、功能疑问或使用诉求..."
               @keydown.enter.exact.prevent="sendMessage"
               :disabled="isLoading"
               rows="1"
@@ -168,7 +174,7 @@
               </div>
             </div>
           </div>
-          <p class="service-hours">客服工作时间：全天候智能服务 · 人工客服 9:00-21:00</p>
+          <p class="service-hours">智能服务全天在线 · 人工支持 9:00-21:00</p>
         </div>
       </div>
     </main>
@@ -302,7 +308,7 @@ const sendMessage = async () => {
 const clearChat = () => {
   messages.value = [{
     role: 'assistant',
-    content: '您好！我是智能客服小助手，很高兴为您服务。请问有什么我可以帮助您的吗？',
+    content: '你好，我是 Halo 平台助手，可以帮你了解功能入口、使用流程、练习路径和常见问题。想先解决哪件事？',
     timestamp: new Date()
   }]
   inputMessage.value = ''
@@ -334,7 +340,7 @@ const scrollToBottom = () => {
 onMounted(() => {
   messages.value.push({
     role: 'assistant',
-    content: '您好！我是智能客服小助手，很高兴为您服务。请问有什么我可以帮助您的吗？',
+    content: '你好，我是 Halo 平台助手，可以帮你了解功能入口、使用流程、练习路径和常见问题。想先解决哪件事？',
     timestamp: new Date()
   })
 })

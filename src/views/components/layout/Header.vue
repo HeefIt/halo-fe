@@ -2,8 +2,11 @@
   <header class="header">
     <div class="header-inner">
       <a class="logo" @click="goHome">
-        <span class="logo-icon">H</span>
-        <span class="logo-text">Halo</span>
+        <img class="logo-mark" :src="brandMark" alt="halo coding do" />
+        <span class="logo-meta">
+          <span class="logo-text">halo coding do</span>
+          <span class="logo-caption">tasteful dev community</span>
+        </span>
       </a>
       
       <nav class="nav">
@@ -41,6 +44,19 @@
           @click="navigateTo('/practice-history')"
         >
           练习记录
+        </button>
+        <button 
+          class="nav-item nav-item-blog" 
+          :class="{ active: isActive('/blog') }"
+          @click="navigateTo('/blog')"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
+            <line x1="7" y1="8" x2="17" y2="8"/>
+            <line x1="7" y1="12" x2="17" y2="12"/>
+            <line x1="7" y1="16" x2="13" y2="16"/>
+          </svg>
+          博客
         </button>
         <button 
           class="nav-item nav-item-ai" 
@@ -127,6 +143,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { ElMessageBox } from 'element-plus'
+import brandMark from '@/assets/brand/hcd-mark.svg'
 
 const router = useRouter()
 const route = useRoute()
@@ -240,25 +257,33 @@ onUnmounted(() => {
   opacity: 0.8;
 }
 
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gradient-primary);
-  color: white;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--text-base);
-  border-radius: var(--radius-sm);
+.logo-mark {
+  width: 40px;
+  height: 34px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(8, 43, 114, 0.14));
 }
 
 .logo-text {
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-lg);
+  font-weight: 700;
+  font-size: 0.98rem;
   color: var(--color-text);
+  line-height: 1;
+}
+
+.logo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.logo-caption {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .nav {
@@ -306,6 +331,21 @@ onUnmounted(() => {
 
 .nav-item-ai.active {
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.nav-item-blog {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.nav-item-blog:hover {
+  opacity: 0.9;
+  color: white;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.nav-item-blog.active {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 .header-actions {
