@@ -9,15 +9,16 @@
           @mouseleave="handleLogoMouseLeave"
           @click="$router.push('/')"
         >
-          <span 
-            class="logo-icon" 
+          <img
+            class="logo-mark"
             ref="logoIconRef"
+            :src="brandMark"
+            alt="halo coding do"
             :style="{ transform: logoTransform }"
-          >
-            <span class="logo-letter" v-for="(letter, index) in 'H'" :key="index" :style="{ animationDelay: `${index * 0.1}s` }">{{ letter }}</span>
-          </span>
-          <span class="logo-text" ref="logoTextRef" :style="{ transform: logoTransform }">
-            <span class="logo-letter" v-for="(letter, index) in 'alo'" :key="index" :style="{ animationDelay: `${(index + 1) * 0.1}s` }">{{ letter }}</span>
+          />
+          <span class="logo-meta" ref="logoTextRef" :style="{ transform: logoTransform }">
+            <span class="logo-text">halo coding do</span>
+            <span class="logo-caption">a tasteful place for curious developers</span>
           </span>
         </div>
         
@@ -31,18 +32,18 @@
             </button>
             <div class="dropdown-content">
               <div class="dropdown-card">
-                <h4>Java后端工程师题库</h4>
-                <p class="dropdown-stats">超过 <strong>1000道</strong> 精选题目</p>
+                <h4>题库不是仓库</h4>
+                <p class="dropdown-stats">超过 <strong>1000+</strong> 道题，带着语境、脾气和一点点讨论欲</p>
                 <ul class="dropdown-list">
-                  <li>Java 基础语法与特性</li>
-                  <li>JVM 内存模型与调优</li>
-                  <li>并发编程与多线程</li>
-                  <li>Redis 缓存设计与应用</li>
-                  <li>MySQL 数据库设计与优化</li>
-                  <li>Spring 框架核心原理</li>
-                  <li>微服务架构与分布式</li>
+                  <li>后端基础与工程规范</li>
+                  <li>JVM 与性能调优</li>
+                  <li>数据库设计与 SQL 优化</li>
+                  <li>Redis、MQ 与缓存策略</li>
+                  <li>Spring / 微服务 / 分布式</li>
+                  <li>系统设计、接口设计与算法</li>
+                  <li>AI 应用、调试与项目实战</li>
                 </ul>
-                <button class="dropdown-cta" @click="$router.push('/login')">立即登录查看完整题库</button>
+                <button class="dropdown-cta" @click="$router.push('/login')">登录去翻翻今天的题</button>
               </div>
             </div>
           </div>
@@ -115,45 +116,45 @@
         <div class="hero-content">
           <div class="hero-badge animate-fade-up">
             <span class="badge-dot"></span>
-            <span>2025 面试季 · 助力 5000+ 开发者成功上岸</span>
+            <span>给代码、表达与一点点锋芒，同时留位置</span>
           </div>
           
           <h1 class="hero-title animate-fade-up" style="animation-delay: 100ms">
-            <span class="title-line">Java 面试</span>
-            <span class="title-line title-gradient">一战成硕</span>
+            <span class="title-line">把灵感、技术与观点</span>
+            <span class="title-line title-gradient">安放进一个理想的社区</span>
           </h1>
           
           <p class="hero-subtitle animate-fade-up" style="animation-delay: 200ms">
-            告别碎片化学习，系统攻克 Java 八股文<br>
-            从基础到架构，让每一次刷题都离 Offer 更近一步
+            halo coding do 把题库、博客、AI 对话与社区节奏收进同一张桌面。你可以认真钻研，也可以轻松发光；<br>
+            既写代码，也写观点，顺手把灵感、答案和偏爱都留在这里
           </p>
           
           <div class="hero-actions animate-fade-up" style="animation-delay: 300ms">
             <button class="btn-primary btn-lg" @click="$router.push('/register')">
-              免费开启学习之旅
+              逛逛今天的新东西
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
             <button class="btn-secondary btn-lg" @click="$router.push('/home')">
-              先逛逛题库
+              先看热门内容
             </button>
           </div>
           
           <div class="hero-stats animate-fade-up" style="animation-delay: 400ms">
             <div class="stat">
               <span class="stat-value">1000+</span>
-              <span class="stat-label">高频面试真题</span>
+              <span class="stat-label">正在生长的话题</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat">
               <span class="stat-value">5000+</span>
-              <span class="stat-label">开发者信赖</span>
+              <span class="stat-label">留下痕迹的读者</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat">
               <span class="stat-value">92%</span>
-              <span class="stat-label">学员面试通过率</span>
+              <span class="stat-label">可被 AI 共创的场景</span>
             </div>
           </div>
         </div>
@@ -162,9 +163,9 @@
       <section class="features" ref="featuresRef">
         <div class="container">
           <div class="section-header animate-on-scroll">
-            <span class="section-tag">核心能力</span>
-            <h2 class="section-title">不止刷题，更是能力跃迁</h2>
-            <p class="section-desc">从知识输入到能力输出，构建完整的学习闭环</p>
+            <span class="section-tag">平台能力</span>
+            <h2 class="section-title">像社区，也像工作台；最重要的是，它不无聊</h2>
+            <p class="section-desc">练习会长出表达，表达会引来讨论，讨论又会把你送回更聪明的下一次练习</p>
           </div>
           
           <div class="features-grid" ref="featuresGridRef" @mousemove="handleFeaturesMouseMove" @mouseleave="handleFeaturesMouseLeave">
@@ -177,8 +178,8 @@
                   <path d="M8 7h8M8 11h8M8 15h4"/>
                 </svg>
               </div>
-              <h3 class="feature-title">大厂真题库</h3>
-              <p class="feature-desc">收录阿里、腾讯、字节等一线大厂高频面试题，覆盖 Java 基础、JVM、并发、Spring 全栈技术体系</p>
+              <h3 class="feature-title">题库有锋芒</h3>
+              <p class="feature-desc">不是整齐堆放的题单，而是带着主题、语境和讨论欲的练习入口，做题也能做出一点品味</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 200ms">
@@ -190,8 +191,8 @@
                   <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </div>
-              <h3 class="feature-title">AI 深度解析</h3>
-              <p class="feature-desc">每道题目配备 AI 智能解析，从原理到实战层层递进，帮你真正理解而非死记硬背</p>
+              <h3 class="feature-title">AI 很会接话</h3>
+              <p class="feature-desc">它不只解释答案，也陪你拆思路、润表达、补细节，偶尔还挺会救场</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 300ms">
@@ -202,8 +203,8 @@
                   <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
                 </svg>
               </div>
-              <h3 class="feature-title">成长激励体系</h3>
-              <p class="feature-desc">刷题解锁成就徽章，排行榜见证你的进步，让学习像游戏一样有成就感</p>
+              <h3 class="feature-title">排行有温度</h3>
+              <p class="feature-desc">不是为了制造焦虑，而是让节奏、手感和参与感都有一点被看见的快乐</p>
             </div>
             
             <div class="feature-card feature-card-wide animate-on-scroll" style="animation-delay: 400ms">
@@ -213,8 +214,8 @@
                   <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
                 </svg>
               </div>
-              <h3 class="feature-title">AI 学习伴侣</h3>
-              <p class="feature-desc">7×24 小时智能答疑，支持 PDF 简历解析、代码评审、技术文档智能解读，你的专属面试教练</p>
+              <h3 class="feature-title">内容会串门</h3>
+              <p class="feature-desc">一条问题可以接到博客、AI、排行榜和计划，知识终于不再各住各的</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 500ms">
@@ -227,8 +228,8 @@
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
               </div>
-              <h3 class="feature-title">智能学习计划</h3>
-              <p class="feature-desc">根据你的目标岗位和时间安排，自动生成个性化学习路径，高效备战不迷茫</p>
+              <h3 class="feature-title">博客要体面</h3>
+              <p class="feature-desc">把题解、经验、偏见和漂亮的结论写下来，慢慢形成只属于你的版本</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 600ms">
@@ -239,8 +240,8 @@
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
-              <h3 class="feature-title">学习数据洞察</h3>
-              <p class="feature-desc">可视化追踪学习进度，智能识别知识盲区，用数据驱动你的成长轨迹</p>
+              <h3 class="feature-title">反馈不靠脑补</h3>
+              <p class="feature-desc">阅读、练习、创作和互动会被诚实记录，下一步不再全凭感觉</p>
             </div>
           </div>
         </div>
@@ -250,26 +251,26 @@
         <div class="container">
           <div class="showcase-grid animate-on-scroll">
             <div class="showcase-content">
-              <span class="section-tag">学习体验</span>
-              <h2 class="showcase-title">刷题，也可以是一种享受</h2>
-              <p class="showcase-desc">极简界面设计，让你心无旁骛。即时反馈机制，让每道题都有收获。这不是题海战术，而是精准打击。</p>
+              <span class="section-tag">使用体验</span>
+              <h2 class="showcase-title">刷题、写作、对话、围观，在这里都顺手</h2>
+              <p class="showcase-desc">halo coding do 不急着把你推向下一页，它更像一张会发光的工作台：先看一篇文章，再刷一道题，顺手追问 AI，最后把自己的答案写得漂漂亮亮。</p>
               
               <ul class="showcase-list">
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>单选 / 多选 / 判断 / 简答，全题型覆盖</span>
+                  <span>内容、题库、AI 和排行彼此通气，不会各玩各的</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>AI 逐题深度解析，知其然更知其所以然</span>
+                  <span>灵感来时能写，卡住时能问，沉淀后还能被看见</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>错题智能归档，薄弱点定向突破</span>
+                  <span>博客不是附件，而是社区里最体面的表达方式</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>学习报告可视化，进步看得见</span>
+                  <span>活跃反馈会轻轻推你一把，但不会把人推急</span>
                 </li>
               </ul>
             </div>
@@ -277,29 +278,111 @@
             <div class="showcase-visual">
               <div class="showcase-card">
                 <div class="showcase-card-header">
-                  <span class="showcase-badge badge-success">简单</span>
-                  <span class="showcase-badge badge-primary">单选题</span>
+                  <span class="showcase-badge badge-success">进阶</span>
+                  <span class="showcase-badge badge-primary">工程思维题</span>
                 </div>
-                <h4 class="showcase-question">Java 中哪个关键字用于定义类？</h4>
+                <h4 class="showcase-question">高并发接口需要防止重复提交时，优先考虑哪种策略？</h4>
                 <div class="showcase-options">
-                  <div class="showcase-option">
-                    <span class="option-letter">A</span>
-                    <span>class</span>
-                  </div>
                   <div class="showcase-option showcase-option-selected">
+                    <span class="option-letter">A</span>
+                    <span>为请求引入幂等键并做唯一校验</span>
+                  </div>
+                  <div class="showcase-option">
                     <span class="option-letter">B</span>
-                    <span>public</span>
+                    <span>仅延长接口超时时间</span>
                   </div>
                   <div class="showcase-option">
                     <span class="option-letter">C</span>
-                    <span>static</span>
+                    <span>把所有请求都改成 GET</span>
                   </div>
                   <div class="showcase-option">
                     <span class="option-letter">D</span>
-                    <span>void</span>
+                    <span>完全依赖前端按钮禁用</span>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="blog-preview">
+        <div class="container">
+          <div class="blog-preview-grid animate-on-scroll">
+            <div class="blog-preview-content">
+              <span class="section-tag">博客样例</span>
+              <h2 class="blog-preview-title">如果今天不想先做题，也可以先读一篇漂亮的文章</h2>
+              <p class="blog-preview-desc">社区不该只提供答案，也该提供语气、结构和观点。你可以先被一篇文章打动，再顺手去刷题、追问 AI，最后把自己的理解留下来。</p>
+
+              <div class="blog-preview-points">
+                <div class="blog-point">
+                  <span class="blog-point-title">有观点</span>
+                  <span class="blog-point-text">不是资料搬运，而是带着判断和取舍去写。</span>
+                </div>
+                <div class="blog-point">
+                  <span class="blog-point-title">有结构</span>
+                  <span class="blog-point-text">从问题、方案到边界，读起来会很顺。</span>
+                </div>
+                <div class="blog-point">
+                  <span class="blog-point-title">有余味</span>
+                  <span class="blog-point-text">看完不是结束，而是忍不住想补一句自己的看法。</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="blog-preview-visual">
+              <article class="blog-sample-card">
+                <div class="blog-sample-head">
+                  <span class="blog-sample-badge">Featured Post</span>
+                  <span class="blog-sample-time">8 min read</span>
+                </div>
+                <h3 class="blog-sample-title">当系统开始变复杂，先别急着上强度，先把边界写清楚</h3>
+                <p class="blog-sample-summary">
+                  很多“架构升级”看起来像技术跃迁，其实只是边界混乱的后遗症。先把责任、数据流和失败路径讲明白，再谈中间件和分布式，通常会优雅得多。
+                </p>
+                <div class="blog-sample-tags">
+                  <span>系统设计</span>
+                  <span>接口边界</span>
+                  <span>工程判断</span>
+                </div>
+                <div class="blog-sample-footer">
+                  <div class="blog-sample-author">
+                    <div class="blog-author-avatar">H</div>
+                    <div class="blog-author-info">
+                      <strong>halo editorial</strong>
+                      <span>把复杂问题讲得不那么吓人</span>
+                    </div>
+                  </div>
+                  <button class="blog-sample-link" @click="$router.push('/blog')">去看更多文章</button>
+                </div>
+              </article>
+
+              <article class="blog-sample-card blog-sample-card-playful">
+                <div class="blog-sample-head">
+                  <span class="blog-sample-badge blog-sample-badge-fun">Fun &amp; Life</span>
+                  <span class="blog-sample-time">5 min read</span>
+                </div>
+                <h3 class="blog-sample-title">如果今天不想聊系统设计，也可以写写周末、咖啡和让人心动的小界面</h3>
+                <p class="blog-sample-summary">
+                  一个理想的社区，不该只容纳标准答案。你也可以记录最近喜欢的歌单、下班后去过的小店，
+                  或者某个让你反复调整到满意的按钮细节，让技术和生活一起变得有趣。
+                </p>
+                <div class="blog-sample-tags">
+                  <span>生活穿插</span>
+                  <span>轻松一点</span>
+                  <span>有趣记录</span>
+                </div>
+                <div class="blog-sample-footer">
+                  <div class="blog-sample-author">
+                    <div class="blog-author-avatar blog-author-avatar-fun">L</div>
+                    <div class="blog-author-info">
+                      <strong>late night notes</strong>
+                      <span>把好看、好玩和好心情也写进社区</span>
+                    </div>
+                  </div>
+                  <button class="blog-sample-link blog-sample-link-fun" @click="$router.push('/blog')">去看这类文章</button>
+                </div>
+              </article>
             </div>
           </div>
         </div>
@@ -309,12 +392,12 @@
         <div class="container">
           <div class="cta-card">
             <div class="cta-content">
-              <h2 class="cta-title">你的 Offer，从这里启程</h2>
-              <p class="cta-desc">加入 5000+ 开发者，用正确的方法，做正确的事</p>
+              <h2 class="cta-title">把练习、写作和 AI 协作接到一起</h2>
+              <p class="cta-desc">把技术、表达和一点点锋芒，放进 halo coding do</p>
             </div>
             <div class="cta-action">
               <button class="btn-primary btn-lg btn-white" @click="$router.push('/register')">
-                立即免费加入
+                来都来了，先进来看看
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -329,10 +412,10 @@
       <div class="container">
         <div class="footer-content">
           <div class="footer-brand">
-            <span class="logo-icon-small">H</span>
-            <span class="footer-name">Halo · Java 面试利器</span>
+            <img class="logo-mark-small" :src="brandMark" alt="halo coding do" />
+            <span class="footer-name">halo coding do</span>
           </div>
-          <p class="footer-copy">© 2025 Halo · 让每一次刷题都有价值</p>
+          <p class="footer-copy">© 2025 halo coding do · 给会写代码、也愿意好好表达的人</p>
         </div>
       </div>
     </footer>
@@ -340,18 +423,18 @@
     <div v-if="showAbout" class="modal-overlay" @click="showAbout = false">
       <div class="modal" @click.stop>
         <button class="modal-close" @click="showAbout = false">×</button>
-        <h3 class="modal-title">关于 Halo</h3>
-        <p class="modal-text">Halo 是一个专注于 Java 后端工程师面试的学习平台，我们相信「刻意练习」的力量——通过高质量的题目、深度的解析、智能的反馈，帮助每一位开发者在面试中展现最好的自己。</p>
+        <h3 class="modal-title">关于 halo coding do</h3>
+        <p class="modal-text">halo coding do 是一个面向广大技术开发者的内容社区。这里接得住问题、文章、灵感与一点点偏执；题库不是终点，表达也不是附属品。</p>
         
         <h4 class="modal-subtitle">我们的理念</h4>
-        <p class="modal-text">面试不是靠运气，而是靠准备。我们拒绝「八股文死记硬背」，提倡「理解原理、融会贯通」。每一道题，都应该成为你技术成长的阶梯。</p>
+        <p class="modal-text">我们偏爱有观点的技术内容，也尊重认真练习的人。最好的一次学习，不只是得到答案，而是顺手长出自己的表达。</p>
         
         <h4 class="modal-subtitle">为什么选择我们</h4>
         <ul class="modal-list">
-          <li><strong>真题驱动</strong>：题目来自一线大厂真实面试场景，拒绝无效刷题</li>
-          <li><strong>AI 赋能</strong>：智能解析、个性化推荐，让学习效率翻倍</li>
-          <li><strong>成长可见</strong>：数据化追踪学习进度，每一步都算数</li>
-          <li><strong>社区陪伴</strong>：与 5000+ 开发者同行，你不是一个人在战斗</li>
+          <li><strong>好内容不散</strong>：题库、博客、AI、排行和计划不是碎片，而是一条完整链路</li>
+          <li><strong>好表达有位置</strong>：写法、观点、复盘和结论都会被认真承接</li>
+          <li><strong>好奇心有回声</strong>：能问、能写、能被看见，社区氛围会更轻盈</li>
+          <li><strong>技术味足够正</strong>：后端、系统、数据库、工程问题都在真实语境里展开</li>
         </ul>
       </div>
     </div>
@@ -386,6 +469,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import brandMark from '@/assets/brand/hcd-mark.svg'
 
 const showAbout = ref(false)
 const showContact = ref(false)
@@ -609,42 +693,36 @@ onUnmounted(() => {
   user-select: none;
 }
 
-.logo:hover .logo-letter {
-  text-shadow: 0 0 20px rgba(16, 185, 129, 0.8);
+.logo-mark {
+  width: 54px;
+  height: 46px;
+  object-fit: contain;
+  transition: transform 0.15s ease;
+  filter: drop-shadow(0 6px 16px rgba(8, 43, 114, 0.24));
 }
 
-.logo-icon {
-  width: 40px;
-  height: 40px;
+.logo-meta {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  color: white;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 700;
-  font-size: 20px;
-  border-radius: 10px;
+  flex-direction: column;
+  gap: 3px;
   transition: transform 0.15s ease;
 }
 
 .logo-text {
   font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 22px;
   color: white;
-  letter-spacing: -0.02em;
-  transition: transform 0.15s ease;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
-.logo-letter {
-  display: inline-block;
-  animation: letterGlow 3s ease-in-out infinite;
-}
-
-@keyframes letterGlow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.logo-caption {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.68);
 }
 
 .nav-links {
@@ -1305,6 +1383,225 @@ onUnmounted(() => {
   color: white;
 }
 
+.blog-preview {
+  padding: 100px 0 20px;
+}
+
+.blog-preview-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.blog-preview-content {
+  max-width: 560px;
+}
+
+.blog-preview-title {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 700;
+  color: white;
+  margin-bottom: 20px;
+  letter-spacing: -0.03em;
+}
+
+.blog-preview-desc {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.56);
+  margin-bottom: 28px;
+}
+
+.blog-preview-points {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.blog-point {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.blog-point-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+}
+
+.blog-point-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.blog-preview-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.blog-sample-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 28px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 30%),
+    rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+}
+
+.blog-sample-card-playful {
+  background:
+    radial-gradient(circle at top left, rgba(6, 182, 212, 0.16), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.12), transparent 30%),
+    rgba(255, 255, 255, 0.035);
+  transform: translateX(24px);
+}
+
+.blog-sample-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.blog-sample-badge,
+.blog-sample-time {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.blog-sample-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.blog-sample-badge-fun {
+  color: #67e8f9;
+  background: rgba(6, 182, 212, 0.14);
+}
+
+.blog-sample-time {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.blog-sample-title {
+  font-size: 26px;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.blog-sample-summary {
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(255, 255, 255, 0.62);
+  margin-bottom: 22px;
+}
+
+.blog-sample-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+
+.blog-sample-tags span {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 13px;
+}
+
+.blog-sample-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.blog-sample-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.blog-author-avatar {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+  color: white;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.blog-author-avatar-fun {
+  background: linear-gradient(135deg, #06b6d4 0%, #10b981 100%);
+}
+
+.blog-author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.blog-author-info strong {
+  font-size: 14px;
+  color: white;
+}
+
+.blog-author-info span {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.blog-sample-link {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.blog-sample-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.blog-sample-link-fun {
+  background: rgba(6, 182, 212, 0.12);
+}
+
+.blog-sample-link-fun:hover {
+  background: rgba(6, 182, 212, 0.18);
+}
+
 .cta {
   padding: 100px 0;
 }
@@ -1349,24 +1646,18 @@ onUnmounted(() => {
   gap: 10px;
 }
 
-.logo-icon-small {
-  width: 32px;
+.logo-mark-small {
+  width: 38px;
   height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
-  color: white;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 700;
-  font-size: 16px;
-  border-radius: 8px;
+  object-fit: contain;
 }
 
 .footer-name {
   font-family: system-ui, -apple-system, sans-serif;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: white;
+  letter-spacing: -0.02em;
 }
 
 .footer-copy {
@@ -1524,6 +1815,11 @@ onUnmounted(() => {
   .showcase-content {
     max-width: 100%;
   }
+
+  .blog-preview-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
   
   .cta-card {
     flex-direction: column;
@@ -1555,6 +1851,15 @@ onUnmounted(() => {
   
   .features-grid {
     grid-template-columns: 1fr;
+  }
+
+  .blog-sample-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .blog-sample-card-playful {
+    transform: none;
   }
   
   .footer-content {
