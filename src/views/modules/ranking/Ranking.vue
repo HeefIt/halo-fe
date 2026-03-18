@@ -286,11 +286,16 @@ onMounted(() => {
 <style scoped>
 .ranking-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0c0a09 0%, #1c1917 50%, #0c0a09 100%);
+  --page-accent: #d97706;
+  --page-accent-soft: #fff7ed;
+  --page-accent-line: rgba(217, 119, 6, 0.18);
+  background:
+    radial-gradient(circle at top center, rgba(245, 158, 11, 0.08), transparent 26%),
+    linear-gradient(180deg, #fbfdff 0%, #f5f7fb 100%);
 }
 
 .main-content {
-  padding: 100px 24px 48px;
+  padding: 108px 24px 48px;
 }
 
 .container {
@@ -299,36 +304,40 @@ onMounted(() => {
 }
 
 .page-header {
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 .page-title {
-  font-size: 42px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--color-text);
   margin: 0 0 8px 0;
-  letter-spacing: -1px;
+  letter-spacing: -0.03em;
 }
 
 .page-subtitle {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   margin: 0;
+  max-width: 640px;
+  line-height: 1.7;
 }
 
 .top-three-section {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .podium {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: flex-end;
-  gap: 24px;
-  padding: 20px 0;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 30px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .podium-item {
@@ -336,10 +345,18 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   position: relative;
+  padding: 28px 20px 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(249, 250, 251, 0.98) 100%);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+  border-radius: 26px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
 }
 
 .podium-item.first {
   order: 2;
+  transform: translateY(-10px);
+  border-color: var(--page-accent-line);
 }
 
 .podium-item.second {
@@ -350,11 +367,24 @@ onMounted(() => {
   order: 3;
 }
 
+.podium-item::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.45), rgba(148, 163, 184, 0.12));
+}
+
+.podium-item.first::before {
+  background: linear-gradient(90deg, #f59e0b 0%, #fde68a 100%);
+}
+
 .crown {
   width: 40px;
   height: 40px;
   color: #fbbf24;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   animation: float 3s ease-in-out infinite;
 }
 
@@ -375,13 +405,13 @@ onMounted(() => {
   right: -4px;
   bottom: -4px;
   border-radius: 50%;
-  border: 2px solid rgba(156, 163, 175, 0.5);
+  border: 2px solid rgba(148, 163, 184, 0.55);
   animation: pulse-ring 2s infinite;
 }
 
 .avatar-ring.gold {
   border-color: #fbbf24;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.08);
 }
 
 @keyframes pulse-ring {
@@ -409,7 +439,7 @@ onMounted(() => {
   height: 96px;
   font-size: 36px;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 14px 28px rgba(245, 158, 11, 0.24);
 }
 
 .rank-badge {
@@ -448,50 +478,48 @@ onMounted(() => {
 .user-name {
   font-size: 16px;
   font-weight: 600;
-  color: white;
+  color: var(--color-text);
   margin-bottom: 4px;
+  text-align: center;
 }
 
 .user-name.champion {
   font-size: 20px;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #92400e;
 }
 
 .user-value {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-muted);
   margin-bottom: 12px;
 }
 
 .user-value.champion {
   font-size: 18px;
   font-weight: 700;
-  color: #fbbf24;
+  color: var(--page-accent);
 }
 
 .podium-stand {
   width: 100px;
   height: 60px;
-  background: linear-gradient(180deg, rgba(156, 163, 175, 0.3) 0%, rgba(156, 163, 175, 0.1) 100%);
-  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.95) 0%, rgba(226, 232, 240, 0.92) 100%);
+  border-radius: 18px 18px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(156, 163, 175, 0.2);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.22);
   border-bottom: none;
 }
 
 .podium-stand.gold {
   height: 80px;
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.3) 0%, rgba(245, 158, 11, 0.1) 100%);
-  border-color: rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
+  background: linear-gradient(180deg, rgba(255, 247, 237, 0.98) 0%, rgba(253, 230, 138, 0.78) 100%);
+  border-color: rgba(245, 158, 11, 0.26);
+  color: #b45309;
 }
 
 .filter-section {
@@ -499,9 +527,10 @@ onMounted(() => {
   gap: 32px;
   margin-bottom: 24px;
   padding: 20px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 24px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.04);
 }
 
 .filter-group {
@@ -513,7 +542,7 @@ onMounted(() => {
 .filter-label {
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -524,33 +553,35 @@ onMounted(() => {
 
 .filter-btn {
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.6);
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 14px;
+  color: var(--color-text-muted);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .filter-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
+  background: #ffffff;
+  color: var(--color-text);
+  border-color: rgba(15, 23, 42, 0.12);
 }
 
 .filter-btn.active {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  background: var(--page-accent-soft);
+  border-color: rgba(217, 119, 6, 0.12);
+  color: var(--page-accent);
+  box-shadow: inset 0 0 0 1px rgba(217, 119, 6, 0.08);
 }
 
 .ranking-list-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 28px;
   overflow: hidden;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.05);
 }
 
 .card-header {
@@ -558,13 +589,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 24px 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .card-title {
   font-size: 20px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -573,20 +604,20 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 8px 16px;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-  border-radius: 12px;
+  background: var(--page-accent-soft);
+  border: 1px solid rgba(217, 119, 6, 0.12);
+  border-radius: 999px;
 }
 
 .my-rank-label {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .my-rank-value {
   font-size: 18px;
   font-weight: 700;
-  color: #f59e0b;
+  color: var(--page-accent);
 }
 
 .ranking-table {
@@ -597,10 +628,10 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 80px 1fr 120px 80px;
   padding: 16px 28px;
-  background: rgba(255, 255, 255, 0.02);
+  background: #f8fafc;
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -619,7 +650,7 @@ onMounted(() => {
 }
 
 .table-body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(148, 163, 184, 0.45);
   border-radius: 3px;
 }
 
@@ -628,21 +659,21 @@ onMounted(() => {
   grid-template-columns: 80px 1fr 120px 80px;
   padding: 16px 28px;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.04);
   transition: all 0.3s ease;
 }
 
 .table-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(248, 250, 252, 0.9);
 }
 
 .table-row.is-me {
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(255, 247, 237, 0.96);
+  border-color: rgba(217, 119, 6, 0.16);
 }
 
 .table-row.top-three {
-  background: rgba(245, 158, 11, 0.03);
+  background: rgba(255, 251, 235, 0.9);
 }
 
 .col {
@@ -665,7 +696,7 @@ onMounted(() => {
 .rank-number {
   font-size: 16px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .rank-medal {
@@ -720,23 +751,23 @@ onMounted(() => {
 .user-info .user-name {
   font-size: 15px;
   font-weight: 600;
-  color: white;
+  color: var(--color-text);
   margin: 0;
 }
 
 .user-badge {
   padding: 2px 8px;
-  background: rgba(245, 158, 11, 0.2);
-  border-radius: 4px;
+  background: rgba(217, 119, 6, 0.12);
+  border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
-  color: #f59e0b;
+  color: var(--page-accent);
 }
 
 .value-number {
   font-size: 18px;
   font-weight: 700;
-  color: #f59e0b;
+  color: var(--page-accent);
 }
 
 .trend {
@@ -764,7 +795,7 @@ onMounted(() => {
 }
 
 .trend-same {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(100, 116, 139, 0.65);
   font-size: 16px;
 }
 
@@ -787,35 +818,40 @@ onMounted(() => {
 .empty-state h4 {
   font-size: 20px;
   font-weight: 700;
-  color: white;
+  color: var(--color-text);
   margin: 0 0 8px 0;
 }
 
 .empty-state p {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
 @media (max-width: 768px) {
+  .main-content {
+    padding: 96px 16px 32px;
+  }
+
   .page-title {
     font-size: 32px;
   }
 
   .podium {
-    flex-direction: column;
-    align-items: center;
+    grid-template-columns: 1fr;
     gap: 32px;
+    padding: 16px;
   }
 
   .podium-item.first,
   .podium-item.second,
   .podium-item.third {
     order: unset;
+    transform: none;
   }
 
   .podium-stand {
-    width: 150px;
+    width: 140px;
   }
 
   .filter-section {
