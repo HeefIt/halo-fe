@@ -2,7 +2,7 @@
   <div class="chatbot-container">
     <aside class="sessions-panel" :class="{ collapsed: isSidebarCollapsed }">
       <div class="panel-header">
-        <button class="new-session-btn" @click="createNewChatWithCustomTitle">
+        <button class="new-session-btn" @click="createNewSession">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -33,17 +33,35 @@
             </svg>
           </div>
           <div class="session-info">
-            <div class="session-title" v-if="!session.editingTitle">
-              {{ getSessionDisplayTitle(session) }}
+            <div class="session-title-row">
+              <div
+                class="session-title"
+                v-if="!session.editingTitle"
+                @dblclick.stop="startEditingTitle(session)"
+              >
+                {{ getSessionDisplayTitle(session) }}
+              </div>
+              <input
+                v-else
+                v-model="session.tempTitle"
+                class="title-input"
+                autofocus
+                @blur="finishEditingTitle(session)"
+                @keyup.enter="finishEditingTitle(session)"
+                @keyup.esc="cancelEditingTitle(session)"
+              />
+              <button
+                v-if="!session.editingTitle"
+                class="edit-btn"
+                title="编辑标题"
+                @click.stop="startEditingTitle(session)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                </svg>
+              </button>
             </div>
-            <input
-              v-else
-              v-model="session.tempTitle"
-              class="title-input"
-              @blur="finishEditingTitle(session)"
-              @keyup.enter="finishEditingTitle(session)"
-              ref="titleInputRef"
-            />
             <div class="session-meta">
               <span class="session-time">{{ formatTime(session.updatedAt) }}</span>
               <span class="session-count">{{ session.messages?.length || 0 }} 条消息</span>
@@ -204,6 +222,18 @@ const sessions = ref([])
 const currentSessionId = ref(null)
 const currentSession = ref(null)
 
+const normalizeSession = (session) => {
+  const normalizedSession = session || {}
+  return {
+    ...normalizedSession,
+    title: normalizedSession.title || '',
+    titleSource: normalizedSession.titleSource || 'SYSTEM',
+    editingTitle: false,
+    tempTitle: normalizedSession.title || '',
+    messages: Array.isArray(normalizedSession.messages) ? normalizedSession.messages : []
+  }
+}
+
 const currentMessages = computed(() => {
   if (!currentSession.value) return []
   if (!currentSession.value.messages) {
@@ -225,11 +255,8 @@ const loadSessions = async () => {
   try {
     const response = await aiApi.getUserSessions(userStore.userInfo?.id)
     if (response.code === 200) {
-      sessions.value = response.data || []
+      sessions.value = (response.data || []).map(normalizeSession)
       sessions.value.forEach(session => {
-        if (!session.messages || !Array.isArray(session.messages)) {
-          session.messages = []
-        }
         session.messages.sort((a, b) => {
           const timeA = new Date(a.timestamp || 0).getTime()
           const timeB = new Date(b.timestamp || 0).getTime()
@@ -247,7 +274,7 @@ const createNewSession = async () => {
   try {
     const response = await aiApi.createSession('', userStore.userInfo?.id)
     if (response.code === 200) {
-      sessions.value.unshift(response.data)
+      sessions.value.unshift(normalizeSession(response.data))
       await selectSession(response.data.sessionId)
       ElMessage.success('新会话创建成功')
     }
@@ -273,13 +300,10 @@ const selectSession = async (sessionId) => {
     const response = await aiApi.getSession(sessionId, userStore.userInfo?.id)
     if (response.code === 200) {
       currentSessionId.value = sessionId
-      currentSession.value = response.data
-      if (!currentSession.value.messages || !Array.isArray(currentSession.value.messages)) {
-        currentSession.value.messages = []
-      }
+      currentSession.value = normalizeSession(response.data)
       const sessionIndex = sessions.value.findIndex(s => s.sessionId === sessionId)
       if (sessionIndex !== -1) {
-        Object.assign(sessions.value[sessionIndex], response.data)
+        Object.assign(sessions.value[sessionIndex], normalizeSession(response.data))
       }
       await nextTick()
       scrollToBottom()
@@ -343,58 +367,6 @@ const clearCurrentSession = async () => {
   }
 }
 
-const createNewChatWithCustomTitle = async () => {
-  if (!userStore.userInfo?.id) {
-    ElMessage.error('请先登录')
-    router.push('/login')
-    return
-  }
-
-  try {
-    const title = await showCustomInputDialog('请输入会话标题', 'new session')
-    if (title !== null) {
-      await createNewSessionWithTitle(title)
-    }
-  } catch (error) {
-    console.log('用户取消了标题输入')
-  }
-}
-
-const showCustomInputDialog = (title, defaultValue) => {
-  return new Promise((resolve) => {
-    ElMessageBox.prompt('请输入会话标题:', title, {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      inputValue: defaultValue,
-      inputPlaceholder: '输入会话标题...',
-      inputValidator: (value) => {
-        if (!value) return '标题不能为空'
-        if (value.trim().length > 50) return '标题不能超过50个字符'
-        return true
-      },
-      inputErrorMessage: '标题格式不正确'
-    }).then(({ value }) => {
-      resolve(value.trim())
-    }).catch(() => {
-      resolve(null)
-    })
-  })
-}
-
-const createNewSessionWithTitle = async (title) => {
-  try {
-    const response = await aiApi.createSession(title, userStore.userInfo?.id)
-    if (response.code === 200) {
-      sessions.value.unshift(response.data)
-      await selectSession(response.data.sessionId)
-      ElMessage.success('新会话创建成功')
-    }
-  } catch (error) {
-    console.error('创建会话失败:', error)
-    ElMessage.error('创建会话失败')
-  }
-}
-
 const selectChat = async (sessionId) => {
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
@@ -420,6 +392,44 @@ const setQuickPrompt = (prompt) => {
   }
 }
 
+const syncCurrentSessionToList = () => {
+  if (!currentSession.value || !currentSessionId.value) return
+  const sessionIndex = sessions.value.findIndex(s => s.sessionId === currentSessionId.value)
+  if (sessionIndex !== -1) {
+    Object.assign(sessions.value[sessionIndex], normalizeSession(currentSession.value))
+  }
+}
+
+const buildDraftTitle = (message) => {
+  const normalizedMessage = (message || '').replace(/\s+/g, ' ').trim()
+  if (!normalizedMessage) return '新对话'
+  return normalizedMessage.length > 14 ? `${normalizedMessage.slice(0, 14)}...` : normalizedMessage
+}
+
+const shouldAutoGenerateTitle = (session) => {
+  if (!session || session.titleSource === 'MANUAL') return false
+  const messages = Array.isArray(session.messages) ? session.messages : []
+  return !messages.some(item => item.role === 'user' && item.content?.trim())
+}
+
+const autoGenerateSessionTitle = async (sessionId, question) => {
+  try {
+    const response = await aiApi.generateSessionTitle(sessionId, question, userStore.userInfo?.id)
+    if (response.code === 200 && response.data) {
+      const updatedSession = normalizeSession(response.data)
+      const sessionIndex = sessions.value.findIndex(s => s.sessionId === sessionId)
+      if (sessionIndex !== -1) {
+        Object.assign(sessions.value[sessionIndex], updatedSession)
+      }
+      if (currentSessionId.value === sessionId && currentSession.value?.titleSource !== 'MANUAL') {
+        Object.assign(currentSession.value, updatedSession)
+      }
+    }
+  } catch (error) {
+    console.error('自动生成会话标题失败:', error)
+  }
+}
+
 const handleSendMessage = async () => {
   const message = inputMessage.value.trim()
   if (!message || isLoading.value) return
@@ -435,6 +445,8 @@ const handleSendMessage = async () => {
     if (!currentSessionId.value) return
   }
 
+  const shouldGenerateTitle = shouldAutoGenerateTitle(currentSession.value)
+
   const userMessage = {
     role: 'user',
     content: message,
@@ -445,6 +457,13 @@ const handleSendMessage = async () => {
     currentSession.value.messages = []
   }
   currentSession.value.messages.push(userMessage)
+
+  if (shouldGenerateTitle) {
+    currentSession.value.title = buildDraftTitle(message)
+    currentSession.value.titleSource = 'AUTO'
+    syncCurrentSessionToList()
+  }
+
   inputMessage.value = ''
 
   scrollToBottom()
@@ -461,14 +480,14 @@ const handleSendMessage = async () => {
       }
       currentSession.value.messages.push(assistantMessage)
       currentSession.value.updatedAt = new Date().toISOString()
-
-      const sessionIndex = sessions.value.findIndex(s => s.sessionId === currentSessionId.value)
-      if (sessionIndex !== -1) {
-        Object.assign(sessions.value[sessionIndex], currentSession.value)
-      }
+      syncCurrentSessionToList()
     }
 
     await saveCurrentSessionState()
+
+    if (shouldGenerateTitle) {
+      autoGenerateSessionTitle(currentSessionId.value, message)
+    }
   } catch (error) {
     ElMessage.error('发送消息失败: ' + error.message)
   } finally {
@@ -583,34 +602,37 @@ const formatMessageTime = (timestamp) => {
 }
 
 const getSessionDisplayTitle = (session) => {
-  if (session.sessionId) {
-    return '会话' + session.sessionId.substring(0, 8)
+  if (session?.title?.trim()) {
+    return session.title.trim()
   }
-  return '未知会话'
+
+  const firstUserMessage = session?.messages?.find(message => message.role === 'user' && message.content?.trim())
+  if (firstUserMessage?.content) {
+    return firstUserMessage.content.trim().slice(0, 16)
+  }
+
+  return '新对话'
+}
+
+const startEditingTitle = (session) => {
+  session.tempTitle = session.title || getSessionDisplayTitle(session)
+  session.editingTitle = true
 }
 
 const finishEditingTitle = async (session) => {
   const newTitle = session.tempTitle?.trim()
 
   if (newTitle && newTitle !== session.title) {
-    session.title = newTitle
-
-    if (currentSessionId.value === session.sessionId && currentSession.value) {
-      currentSession.value.title = newTitle
-    }
-
     try {
-      const sessionData = {
-        sessionId: session.sessionId,
-        userId: userStore.userInfo?.id,
-        title: newTitle,
-        messages: session.messages || [],
-        createdAt: session.createdAt,
-        updatedAt: new Date().toISOString()
-      }
+      const response = await aiApi.updateSessionTitle(session.sessionId, newTitle, userStore.userInfo?.id)
+      if (response.code === 200 && response.data) {
+        const updatedSession = normalizeSession(response.data)
+        Object.assign(session, updatedSession)
 
-      const response = await aiApi.updateSession(session.sessionId, sessionData, userStore.userInfo?.id)
-      if (response.code === 200) {
+        if (currentSessionId.value === session.sessionId && currentSession.value) {
+          Object.assign(currentSession.value, updatedSession)
+        }
+
         ElMessage.success('标题更新成功')
       }
     } catch (error) {
@@ -619,6 +641,11 @@ const finishEditingTitle = async (session) => {
     }
   }
 
+  session.editingTitle = false
+}
+
+const cancelEditingTitle = (session) => {
+  session.tempTitle = session.title || ''
   session.editingTitle = false
 }
 
@@ -638,6 +665,7 @@ const saveCurrentSessionState = async () => {
       sessionId: currentSessionId.value,
       userId: userStore.userInfo?.id,
       title: currentSession.value.title,
+      titleSource: currentSession.value.titleSource,
       messages: currentSession.value.messages || [],
       createdAt: currentSession.value.createdAt,
       updatedAt: new Date().toISOString()
@@ -848,6 +876,12 @@ watch([currentSessionId, sessions], () => {
   white-space: nowrap;
 }
 
+.session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .title-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
@@ -857,6 +891,30 @@ watch([currentSessionId, sessions], () => {
   color: white;
   font-size: 14px;
   outline: none;
+}
+
+.edit-btn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.34);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.session-card:hover .edit-btn {
+  opacity: 1;
+}
+
+.edit-btn:hover {
+  background: rgba(99, 102, 241, 0.16);
+  color: #c4b5fd;
 }
 
 .session-meta {

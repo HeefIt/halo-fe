@@ -102,6 +102,36 @@ export const updateSession = (sessionId, sessionData, userId) => {
   return request(config)
 }
 
+// 手动更新会话标题
+export const updateSessionTitle = (sessionId, title, userId) => {
+  const config = {
+    url: `/ai/session/${sessionId}/title`,
+    method: 'PATCH',
+    data: { title }
+  }
+
+  if (userId) {
+    config.headers = { 'userId': userId }
+  }
+
+  return request(config)
+}
+
+// 根据首条提问生成会话标题
+export const generateSessionTitle = (sessionId, question, userId) => {
+  const config = {
+    url: `/ai/session/${sessionId}/title/generate`,
+    method: 'POST',
+    data: { question }
+  }
+
+  if (userId) {
+    config.headers = { 'userId': userId }
+  }
+
+  return request(config)
+}
+
 /**
  * 发送聊天消息 - 修改为支持sessionId
  * @param {string} sessionId - 会话ID
