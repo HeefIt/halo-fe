@@ -37,7 +37,7 @@
               v-model="registerForm.email"
               type="email"
               autocomplete="email"
-              placeholder="输入常用邮箱"
+              placeholder="输入常用邮箱-仅支持QQ邮箱"
               @focus="focusedField = 'email'"
               @blur="focusedField = ''; validateField('email')"
             />
