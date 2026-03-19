@@ -180,9 +180,8 @@ router.beforeEach(async (to, from, next) => {
     
     // 检查管理员权限
     if (to.path === '/admin') {
-      // 基于username判断是否为管理员
-      const userName = userStore.userInfo?.userName || ''
-      const isAdmin = userName.toLowerCase().includes('admin')
+      // 基于后端返回的角色标识判断管理员身份，避免用户名硬编码误判。
+      const isAdmin = userStore.isAdmin
       
       if (isAdmin) {
         next()

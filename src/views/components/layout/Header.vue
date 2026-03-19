@@ -151,11 +151,7 @@ const userStore = useUserStore()
 
 const showUserMenu = ref(false)
 
-const isAdmin = computed(() => {
-  if (!userStore.userInfo) return false
-  const userName = userStore.userInfo.userName || ''
-  return userName.toLowerCase().includes('admin')
-})
+const isAdmin = computed(() => userStore.isAdmin)
 
 const isActive = (path) => {
   if (path === '/home') {

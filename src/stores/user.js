@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', () => {
   const isLoggedIn = computed(() => !!token.value)
   const userName = computed(() => userInfo.value?.nickName || userInfo.value?.userName || '')
   const userAvatar = computed(() => userInfo.value?.avatar || '')
+  const isAdmin = computed(() => userInfo.value?.roleKeys?.includes('admin_user') || false)
 
   const login = async (loginForm) => {
     try {
@@ -208,6 +209,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     token,
     isLoggedIn,
+    isAdmin,
     userName,
     userAvatar,
     login,
