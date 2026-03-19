@@ -1,169 +1,139 @@
-# Halo刷题网 - 前端项目
+# Halo Coding Do Frontend
 
-一个现代化的在线刷题与面试练习平台，采用Vue3 + Vite + Element Plus构建。
+`halo-fe` 是 `Halo Coding Do` 的前端工程，基于 `Vue 3 + Vite + Pinia + Element Plus` 实现，负责承接落地页、登录注册、站内首页、博客、刷题、排行榜、AI 助手和管理后台等页面。
 
-## ✨ 特性
+## 模块概览
 
-- 🎯 **现代化UI设计** - 仿照LeetCode风格，简洁科技感
-- 🔐 **完整用户系统** - 登录注册、个人中心、权限管理
-- 📚 **丰富题库功能** - 题目筛选、搜索、分类管理
-- 💻 **在线代码编辑** - 支持多种编程语言
-- 📊 **学习统计分析** - 进度跟踪、成就系统
-- 📱 **响应式布局** - 完美适配各种设备
+- 落地页与认证：品牌首页、登录、注册、找回密码
+- 站内学习：刷题首页、题库、练习页、练习记录、学习计划
+- 内容社区：博客首页、文章列表、文章详情、文章发布/编辑
+- AI 能力：通用对话、练题助手、智能客服、多模态解析
+- 管理后台：用户管理、题目管理、分类标签、系统统计、博客统计
 
-## 🚀 快速开始
+主要路由定义见：
 
-### 环境要求
+- [src/router/index.js](E:/ToSchool/halo_project/halo-fe/src/router/index.js)
 
-- Node.js >= 16.0.0
-- npm >= 8.0.0
+## 技术栈
 
-### 安装依赖
+- Vue 3
+- Vite 5
+- Vue Router 4
+- Pinia
+- Element Plus
+- Axios
+- ECharts
+- TinyMCE
+- highlight.js / marked / DOMPurify
+
+## 目录说明
+
+```text
+halo-fe
+├─ src
+│  ├─ api                 # 接口请求封装
+│  ├─ stores              # Pinia 状态
+│  ├─ router              # 路由与守卫
+│  ├─ views               # 页面级视图
+│  │  ├─ modules/user     # 登录注册/个人中心
+│  │  ├─ modules/blog     # 博客模块
+│  │  ├─ modules/ai       # AI 模块
+│  │  ├─ modules/admin    # 管理后台
+│  │  ├─ modules/ranking  # 排行榜
+│  │  └─ modules/questionBank / studyPlan / practiceHistory
+│  └─ assets / styles     # 资源与样式
+├─ favicon                # favicon 与站点图标资源
+└─ package.json
+```
+
+## 本地启动
+
+### 1. 环境要求
+
+- Node.js 18+，建议使用较新的 LTS 版本
+- npm 9+
+
+### 2. 安装依赖
 
 ```bash
 npm install
 ```
 
-### 启动开发服务器
+### 3. 启动开发环境
 
 ```bash
 npm run dev
 ```
 
-项目将在 http://localhost:2444 启动
+默认访问地址：
 
-### 构建生产版本
+- `http://localhost:2444`
+
+## 代理与联调
+
+Vite 开发代理配置见：
+
+- [vite.config.js](E:/ToSchool/halo_project/halo-fe/vite.config.js)
+
+当前约定：
+
+- 前端端口：`2444`
+- 后端端口：`2004`
+- `/api` 请求会代理到 `http://localhost:2004`
+
+因此本地联调前，请先确认后端已经启动。
+
+## 与后端对接关系
+
+推荐先导入总 SQL：
+
+- [../data/halo_all_in_one.sql](E:/ToSchool/halo_project/data/halo_all_in_one.sql)
+
+当前前端已经对接的重点能力包括：
+
+- 用户登录、注册、邮箱验证码、找回密码
+- 刷题与练习记录
+- 排行榜与统计卡片
+- 博客列表、详情、点赞、评论、发布与编辑
+- AI 会话列表、会话标题生成、消息持久化
+- 管理后台真实统计数据与博客统计面板
+
+## 开发建议
+
+- 页面入口优先从 [src/views](E:/ToSchool/halo_project/halo-fe/src/views) 开始看
+- 路由权限逻辑优先看 [src/router/index.js](E:/ToSchool/halo_project/halo-fe/src/router/index.js)
+- 接口封装优先看 `src/api`
+- 如果新增站内模块，建议继续沿用 `views/modules/*` 的拆分方式
+
+## 构建说明
+
+开发环境：
+
+```bash
+npm run dev
+```
+
+生产构建：
 
 ```bash
 npm run build
 ```
 
-## 🏗️ 技术栈
+当前已知问题：
 
-- **前端框架**: Vue 3.4+
-- **构建工具**: Vite 5.0+
-- **状态管理**: Pinia 2.1+
-- **路由管理**: Vue Router 4.2+
-- **UI组件库**: Element Plus 2.4+
-- **HTTP客户端**: Axios 1.6+
-- **图标库**: @element-plus/icons-vue
+- 现有环境下 `npm run build` 可能报错：`crypto$2.getRandomValues is not a function`
+- 这个问题更偏向本地 Node / 依赖运行环境兼容性，不是当前业务页面代码语法错误
+- 如果只是本地联调与功能开发，优先使用 `npm run dev`
 
-## 📁 项目结构
+## 推荐阅读顺序
 
-```
-src/
-├── api/                # API接口封装
-│   ├── auth.js        # 认证相关接口
-│   └── request.js     # Axios配置和拦截器
-├── components/        # 公共组件
-├── router/           # 路由配置
-│   └── index.js      # 路由定义和守卫
-├── stores/           # Pinia状态管理
-│   └── user.js       # 用户状态管理
-├── styles/           # 全局样式
-│   └── global.css    # 全局CSS变量和样式
-├── views/            # 页面组件
-│   ├── Landing.vue   # 首页（未登录）
-│   ├── Login.vue     # 登录页面
-│   ├── Register.vue  # 注册页面
-│   ├── Home.vue      # 刷题主页
-│   ├── Practice.vue  # 练习页面
-│   └── Profile.vue   # 个人中心
-├── App.vue           # 根组件
-└── main.js           # 应用入口
-```
+1. 先看 [../README.md](E:/ToSchool/halo_project/README.md)
+2. 再确认 [vite.config.js](E:/ToSchool/halo_project/halo-fe/vite.config.js)
+3. 然后联动查看 [../halo-be/README.md](E:/ToSchool/halo_project/halo-be/README.md)
+4. 最后进入具体模块页面与接口进行联调
 
-## 🔗 API接口
+## 说明
 
-项目配置了代理，所有以 `/api` 开头的请求会被代理到后端服务器。
-
-### 主要接口
-
-- `POST /api/auth/user/login` - 用户登录
-- `POST /api/auth/user/register` - 用户注册
-- `GET /api/auth/user/queryById/{id}` - 获取用户信息
-- `POST /api/auth/user/logout` - 退出登录
-
-## 🎨 设计规范
-
-### 色彩系统
-
-- **主色调**: #409EFF (科技蓝)
-- **背景色**: #F5F7FA
-- **文字色**: #303133 (主要文字) / #606266 (常规文字) / #909399 (次要文字)
-
-### 组件规范
-
-- **圆角**: 16px (卡片) / 8px (按钮)
-- **阴影**: 0 2px 12px 0 rgba(0, 0, 0, 0.1)
-- **字体**: PingFang SC / Helvetica Neue / Microsoft YaHei
-
-## 🔐 路由守卫
-
-项目实现了完整的路由守卫机制：
-
-- 未登录用户访问需要认证的页面会自动跳转到登录页
-- 已登录用户访问登录/注册页会重定向到首页
-- Token过期会自动清除登录状态并跳转到登录页
-
-## 📱 响应式设计
-
-- **桌面端**: >= 1024px - 完整布局
-- **平板端**: 768px - 1023px - 简化布局
-- **移动端**: < 768px - 移动优化布局
-
-## 🛠️ 开发指南
-
-### 状态管理
-
-使用Pinia进行状态管理，主要包括：
-
-- 用户信息存储
-- 登录状态管理
-- Token管理
-
-### API调用
-
-所有API调用都通过统一的request实例，自动处理：
-
-- Token添加
-- 错误处理
-- 响应拦截
-
-### 样式开发
-
-- 使用CSS变量定义主题色彩
-- 遵循BEM命名规范
-- 优先使用Element Plus组件
-
-## 🚀 部署
-
-### 环境变量
-
-创建 `.env.production` 文件：
-
-```env
-VITE_API_BASE_URL=https://your-api-domain.com
-```
-
-### 构建部署
-
-```bash
-# 构建
-npm run build
-
-# 预览构建结果
-npm run preview
-```
-
-## 📄 许可证
-
-MIT License
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request！
-
----
-
-© 2025 Halo刷题网 | 用代码点亮未来 💡
+- 这是前后端分离项目，前端不建议写死接口地址，开发期统一走代理
+- 如果要部署到生产环境，建议补充 `.env` 配置并区分不同环境
+- 当前界面风格、博客阅读体验、AI 会话体验和后台统计能力都已经做过一轮项目化调整，后续可以继续在这个基础上迭代

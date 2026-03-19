@@ -20,19 +20,19 @@
     <template #default>
       <div class="daily-stats-content">
         <div class="stat-item">
-          <span class="stat-label">刷题数:</span>
+          <span class="stat-label">刷题数</span>
           <span class="stat-value">{{ dailyStats.problemCount }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">刷题时间:</span>
+          <span class="stat-label">学习时长</span>
           <span class="stat-value">{{ formatTime(dailyStats.totalTime) }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">正确率:</span>
+          <span class="stat-label">正确率</span>
           <span class="stat-value">{{ dailyStats.accuracy }}%</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">今日得分:</span>
+          <span class="stat-label">今日得分</span>
           <span class="stat-value">{{ dailyStats.totalScore }}</span>
         </div>
       </div>
@@ -52,31 +52,44 @@ const formatTime = inject('formatTime')
 <style scoped>
 /* 每日统计样式 */
 .daily-stats-content {
-  padding: 12px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 4px 0 0;
 }
 
 .stat-item {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.stat-item:last-child {
-  margin-bottom: 0;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 82px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--qb-panel-bg, var(--internal-panel-bg));
+  border: 1px solid var(--qb-panel-border, var(--internal-panel-border));
 }
 
 .stat-label {
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: var(--qb-text-faint, var(--color-text-muted));
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .stat-value {
-  color: var(--text-primary);
-  font-weight: 500;
-  font-size: 14px;
+  color: var(--qb-text-main, var(--color-text));
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
 .daily-stats-skeleton {
-  padding: 12px 0;
+  padding: 4px 0 0;
+}
+
+@media (max-width: 768px) {
+  .daily-stats-content {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

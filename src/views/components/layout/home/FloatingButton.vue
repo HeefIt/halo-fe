@@ -11,11 +11,10 @@
     class="floating-button"
     type="primary"
     size="large"
-    round
     @click="startRandomPractice"
   >
     <el-icon><Lightning /></el-icon>
-    开始刷题
+    随机开练
   </el-button>
 </template>
 
@@ -31,15 +30,18 @@ const startRandomPractice = inject('startRandomPractice')
 /* 悬浮按钮 */
 .floating-button {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
+  bottom: 24px;
+  right: 24px;
   z-index: 1000;
-  box-shadow: 0 4px 16px rgba(64, 158, 255, 0.3);
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  box-shadow: 0 10px 18px rgba(23, 78, 166, 0.18);
 }
 
 .floating-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(64, 158, 255, 0.4);
+  box-shadow: 0 12px 22px rgba(23, 78, 166, 0.22);
 }
 
 @media (max-width: 768px) {
@@ -47,5 +49,13 @@ const startRandomPractice = inject('startRandomPractice')
     bottom: 16px;
     right: 16px;
   }
+}
+
+:global(:root[data-theme='dark']) .floating-button {
+  box-shadow: 0 12px 22px rgba(23, 78, 166, 0.26);
+}
+
+:global(:root[data-theme='dark']) .floating-button:hover {
+  box-shadow: 0 14px 26px rgba(23, 78, 166, 0.3);
 }
 </style>

@@ -1,61 +1,11 @@
 <template>
-  <div class="customer-service-container">
-    <header class="service-header">
-      <div class="header-content">
-        <div class="brand">
-          <div class="brand-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0z"></path>
-            </svg>
-          </div>
-          <div class="brand-text">
-            <h1>平台服务中心</h1>
-            <span class="status-badge">
-              <span class="status-dot"></span>
-              全天在线
-            </span>
-          </div>
-        </div>
-        <nav class="header-nav">
-          <button class="nav-item" @click="navigateTo('chatbot')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>AI对话</span>
-          </button>
-          <button class="nav-item" @click="navigateTo('practice-assistant')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <span>练习助手</span>
-          </button>
-          <button class="nav-item active">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <span>服务台</span>
-          </button>
-          <button class="nav-item" @click="navigateTo('multimodal')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            <span>多模态</span>
-          </button>
-        </nav>
-        <button class="home-btn" @click="goHome">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>返回首页</span>
-        </button>
-      </div>
-    </header>
-
+  <div class="customer-service-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <main class="service-main">
+      <AIToolHeader
+        title="智能客服"
+        badge="支持"
+      />
+
       <div class="chat-wrapper">
         <div class="chat-area" ref="chatHistoryRef">
           <div
@@ -186,11 +136,13 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
 import { customerServiceChat, customerServiceChatStream } from '@/api/ai'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github-dark.css'
+import AIToolHeader from './AIToolHeader.vue'
 
 marked.setOptions({
   highlight: function(code, lang) {
@@ -203,6 +155,7 @@ marked.setOptions({
 
 const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 
 const messages = ref([])
 const inputMessage = ref('')
@@ -214,14 +167,6 @@ const useStreaming = ref(false)
 const userInitial = computed(() => {
   return userStore.userName?.charAt(0) || 'U'
 })
-
-const navigateTo = (feature) => {
-  router.push(`/ai/${feature}`)
-}
-
-const goHome = () => {
-  router.push('/home')
-}
 
 const askQuestion = (question) => {
   inputMessage.value = question
@@ -347,152 +292,58 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.customer-service-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f0fdf4 0%, #ecfeff 50%, #f0fdfa 100%);
-  display: flex;
-  flex-direction: column;
+.customer-service-page {
+  --ai-accent: #0f766e;
+  --ai-accent-soft: rgba(15, 118, 110, 0.08);
+  --ai-accent-line: rgba(15, 118, 110, 0.16);
+  --ai-bg: #f4f6fa;
+  --ai-surface: #ffffff;
+  --ai-surface-alt: #f8fafc;
+  --ai-surface-muted: #ecfeff;
+  --ai-border: rgba(15, 23, 42, 0.1);
+  --ai-text: var(--color-text);
+  --ai-text-soft: var(--color-text-secondary);
+  --ai-text-faint: var(--color-text-muted);
+  height: 100dvh;
+  min-height: 100dvh;
+  background: var(--ai-bg);
+  overflow: hidden;
 }
 
-.service-header {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(20, 184, 166, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 72px;
-  gap: 32px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.brand-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
-}
-
-.brand-text h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.3px;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #10b981;
-  font-weight: 500;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  background: #10b981;
-  border-radius: 50%;
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-  background: rgba(20, 184, 166, 0.08);
-  color: #0f766e;
-}
-
-.nav-item.active {
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
-}
-
-.home-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: white;
-  border: 1px solid rgba(20, 184, 166, 0.2);
-  border-radius: 10px;
-  color: #0f766e;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.home-btn:hover {
-  background: rgba(20, 184, 166, 0.1);
-  border-color: rgba(20, 184, 166, 0.3);
+.customer-service-page.is-dark {
+  --ai-accent: #5eead4;
+  --ai-accent-soft: rgba(94, 234, 212, 0.12);
+  --ai-accent-line: rgba(94, 234, 212, 0.2);
+  --ai-bg: #09111c;
+  --ai-surface: #0f172a;
+  --ai-surface-alt: #111c31;
+  --ai-surface-muted: #13232d;
+  --ai-border: rgba(148, 163, 184, 0.14);
+  --ai-text: var(--text-1);
+  --ai-text-soft: var(--text-2);
+  --ai-text-faint: var(--text-3);
 }
 
 .service-main {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  padding: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 16px 12px;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+  gap: 18px;
 }
 
 .chat-wrapper {
   width: 100%;
-  max-width: 900px;
-  background: white;
-  border-radius: 24px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  background: var(--ai-surface);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  border: 1px solid var(--ai-border);
 }
 
 .chat-area {
@@ -502,8 +353,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  min-height: 400px;
-  max-height: calc(100vh - 380px);
+  min-height: 0;
 }
 
 .chat-area::-webkit-scrollbar {
@@ -515,7 +365,7 @@ onMounted(() => {
 }
 
 .chat-area::-webkit-scrollbar-thumb {
-  background: rgba(20, 184, 166, 0.2);
+  background: rgba(15, 118, 110, 0.18);
   border-radius: 3px;
 }
 
@@ -555,7 +405,7 @@ onMounted(() => {
 }
 
 .avatar.service {
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
+  background: var(--ai-accent);
   color: white;
 }
 
@@ -584,9 +434,9 @@ onMounted(() => {
 }
 
 .chat-message.assistant .message-content {
-  background: #f8fafc;
-  border: 1px solid rgba(20, 184, 166, 0.1);
-  color: #334155;
+  background: var(--ai-surface-alt);
+  border: 1px solid var(--ai-border);
+  color: var(--ai-text);
   border-bottom-left-radius: 4px;
 }
 
@@ -613,7 +463,7 @@ onMounted(() => {
 
 .message-time {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ai-text-faint);
   margin-top: 6px;
 }
 
@@ -621,8 +471,8 @@ onMounted(() => {
   display: flex;
   gap: 4px;
   padding: 16px 20px;
-  background: #f8fafc;
-  border: 1px solid rgba(20, 184, 166, 0.1);
+  background: var(--ai-surface-alt);
+  border: 1px solid var(--ai-border);
   border-radius: 16px;
   border-bottom-left-radius: 4px;
 }
@@ -630,7 +480,7 @@ onMounted(() => {
 .typing-indicator span {
   width: 8px;
   height: 8px;
-  background: #14b8a6;
+  background: var(--ai-accent);
   border-radius: 50%;
   animation: bounce 1.4s infinite ease-in-out both;
 }
@@ -645,14 +495,14 @@ onMounted(() => {
 
 .quick-questions {
   padding: 0 32px 24px;
-  border-top: 1px solid rgba(20, 184, 166, 0.08);
+  border-top: 1px solid var(--ai-border);
   padding-top: 20px;
 }
 
 .quick-questions h4 {
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--ai-text-soft);
   margin: 0 0 12px 0;
 }
 
@@ -667,10 +517,10 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(16, 185, 129, 0.03) 100%);
-  border: 1px solid rgba(20, 184, 166, 0.15);
+  background: var(--ai-surface-alt);
+  border: 1px solid var(--ai-border);
   border-radius: 12px;
-  color: #0f766e;
+  color: var(--ai-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -679,34 +529,32 @@ onMounted(() => {
 }
 
 .question-card:hover {
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(16, 185, 129, 0.08) 100%);
-  border-color: rgba(20, 184, 166, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15);
+  border-color: var(--ai-accent-line);
+  background: var(--ai-accent-soft);
 }
 
 .question-card svg {
   flex-shrink: 0;
-  color: #14b8a6;
+  color: var(--ai-accent);
 }
 
 .input-section {
   padding: 20px 32px 24px;
-  border-top: 1px solid rgba(20, 184, 166, 0.08);
-  background: #fafcfc;
+  border-top: 1px solid var(--ai-border);
+  background: var(--ai-surface-alt);
 }
 
 .input-box {
-  background: white;
-  border: 1px solid rgba(20, 184, 166, 0.15);
+  background: var(--ai-surface);
+  border: 1px solid var(--ai-border);
   border-radius: 16px;
   padding: 4px;
   transition: all 0.3s ease;
 }
 
 .input-box:focus-within {
-  border-color: #14b8a6;
-  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);
+  border-color: var(--ai-accent-line);
+  box-shadow: 0 0 0 4px var(--ai-accent-soft);
 }
 
 .input-box textarea {
@@ -714,7 +562,7 @@ onMounted(() => {
   background: transparent;
   border: none;
   padding: 14px 16px;
-  color: #0f172a;
+  color: var(--ai-text);
   font-size: 15px;
   line-height: 1.5;
   resize: none;
@@ -723,7 +571,7 @@ onMounted(() => {
 }
 
 .input-box textarea::placeholder {
-  color: #94a3b8;
+  color: var(--ai-text-faint);
 }
 
 .input-toolbar {
@@ -731,7 +579,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-top: 1px solid rgba(20, 184, 166, 0.08);
+  border-top: 1px solid var(--ai-border);
 }
 
 .stream-toggle {
@@ -753,7 +601,7 @@ onMounted(() => {
 .toggle-slider {
   width: 36px;
   height: 20px;
-  background: #e2e8f0;
+  background: rgba(148, 163, 184, 0.28);
   border-radius: 10px;
   position: relative;
   transition: all 0.3s ease;
@@ -773,7 +621,7 @@ onMounted(() => {
 }
 
 .toggle-label input:checked + .toggle-slider {
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
+  background: var(--ai-accent);
 }
 
 .toggle-label input:checked + .toggle-slider::after {
@@ -782,7 +630,7 @@ onMounted(() => {
 
 .toggle-text {
   font-size: 12px;
-  color: #64748b;
+  color: var(--ai-text-soft);
 }
 
 .toolbar-actions {
@@ -819,7 +667,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #14b8a6 0%, #10b981 100%);
+  background: var(--ai-accent);
   border: none;
   border-radius: 10px;
   color: white;
@@ -828,8 +676,7 @@ onMounted(() => {
 }
 
 .send-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+  transform: scale(1.03);
 }
 
 .send-btn:disabled {
@@ -840,22 +687,13 @@ onMounted(() => {
 .service-hours {
   text-align: center;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--ai-text-faint);
   margin: 12px 0 0 0;
 }
 
 @media (max-width: 768px) {
-  .header-content {
-    padding: 0 16px;
-    gap: 16px;
-  }
-
-  .header-nav {
-    display: none;
-  }
-
   .service-main {
-    padding: 16px;
+    padding: 8px 10px 10px;
   }
 
   .chat-wrapper {

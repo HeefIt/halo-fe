@@ -1,133 +1,170 @@
 <template>
-  <div class="study-plan-detail-page">
-    <!-- 顶部导航栏 -->
+  <div
+    class="study-plan-detail-page app-shell app-shell--internal"
+    :class="{ 'is-dark': themeStore.isDark }"
+  >
     <Header />
-    
-    <!-- 主内容区 -->
+
     <main class="main-content">
       <div class="container">
-        <!-- 返回按钮 -->
-        <div class="back-section">
-          <el-button @click="goBack" :icon="ArrowLeft">
-            返回学习计划列表
-          </el-button>
+        <div class="back-row">
+          <button class="back-btn" @click="goBack">返回学习计划</button>
         </div>
-        
-        <!-- 计划详情头部 -->
-        <el-card class="plan-header-card">
-          <div class="plan-header">
-            <div class="plan-basic-info">
-              <h1>{{ currentPlan.title }}</h1>
-              <div class="plan-meta">
-                <el-tag :type="getPlanStatusType(currentPlan.status)" size="large">
-                  {{ getPlanStatusText(currentPlan.status) }}
-                </el-tag>
-                <span class="plan-date">
-                  <el-icon><Calendar /></el-icon>
-                  {{ formatDate(currentPlan.startDate) }} 至 {{ formatDate(currentPlan.endDate) }}
-                </span>
-              </div>
+
+        <section class="plan-hero">
+          <div class="hero-main">
+            <div class="hero-topline">
+              <span class="status-chip" :class="`status-${currentPlan.status}`">
+                {{ getPlanStatusText(currentPlan.status) }}
+              </span>
+              <span class="hero-date">
+                {{ formatDate(currentPlan.startDate) }} 至 {{ formatDate(currentPlan.endDate) }}
+              </span>
             </div>
-            
-            <div class="plan-stats">
-              <div class="stat-item">
-                <div class="stat-value">{{ currentPlan.totalTopics }}</div>
-                <div class="stat-label">总主题数</div>
+
+            <h1 class="hero-title">{{ currentPlan.title }}</h1>
+
+            <div class="hero-progress">
+              <div class="progress-heading">
+                <span>整体进度</span>
+                <strong>{{ completionRate }}%</strong>
               </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ currentPlan.completedTopics }}</div>
-                <div class="stat-label">已完成</div>
+              <div class="progress-track">
+                <div class="progress-fill" :style="{ width: `${completionRate}%` }"></div>
               </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ currentPlan.totalTopics - currentPlan.completedTopics }}</div>
-                <div class="stat-label">待完成</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-value">{{ Math.round((currentPlan.completedTopics / currentPlan.totalTopics) * 100) }}%</div>
-                <div class="stat-label">完成率</div>
+              <div class="progress-foot">
+                <span>已完成 {{ currentPlan.completedTopics }}/{{ currentPlan.totalTopics }} 个主题</span>
+                <span>待完成 {{ remainingTopicCount }} 个主题</span>
               </div>
             </div>
           </div>
-          
-          <div class="progress-section">
-            <el-progress 
-              :percentage="Math.round((currentPlan.completedTopics / currentPlan.totalTopics) * 100)" 
-              :stroke-width="12"
-              striped
-              striped-flow
-            />
-          </div>
-        </el-card>
-        
-        <!-- 学习主题列表 -->
-        <el-card class="topics-card">
-          <template #header>
-            <div class="topics-header">
-              <span>学习主题</span>
-              <el-input
-                v-model="searchKeyword"
-                placeholder="搜索主题..."
-                :prefix-icon="Search"
-                style="width: 200px;"
-              />
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <span class="hero-stat-label">总主题数</span>
+              <strong class="hero-stat-value">{{ currentPlan.totalTopics }}</strong>
             </div>
-          </template>
-          
-          <el-table 
-            :data="filteredTopics" 
-            style="width: 100%" 
-            v-loading="loading"
-            row-key="id"
-          >
-            <el-table-column prop="name" label="主题名称">
-              <template #default="scope">
-                <div class="topic-name">
-                  <el-icon v-if="scope.row.type === 1"><Collection /></el-icon>
-                  <el-icon v-else-if="scope.row.type === 2"><Document /></el-icon>
-                  <el-icon v-else><Reading /></el-icon>
-                  <span>{{ scope.row.name }}</span>
+            <div class="hero-stat">
+              <span class="hero-stat-label">已完成</span>
+              <strong class="hero-stat-value">{{ currentPlan.completedTopics }}</strong>
+            </div>
+            <div class="hero-stat">
+              <span class="hero-stat-label">进行中</span>
+              <strong class="hero-stat-value">{{ topicStatusSummary.active }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <div class="detail-grid">
+          <section class="topics-panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">学习主题</h2>
+              </div>
+
+              <div class="search-box">
+                <input
+                  v-model="searchKeyword"
+                  type="text"
+                  class="search-input"
+                  placeholder="搜索主题或分类"
+                />
+              </div>
+            </div>
+
+            <div class="topic-stream" v-if="filteredTopics.length">
+              <article
+                v-for="topic in filteredTopics"
+                :key="topic.id"
+                class="topic-row"
+              >
+                <div class="topic-main">
+                  <div class="topic-title-row">
+                    <h3 class="topic-title">{{ topic.name }}</h3>
+                    <span class="topic-type">{{ getTopicTypeLabel(topic.type) }}</span>
+                  </div>
+
+                  <div class="topic-meta">
+                    <span>{{ topic.category }}</span>
+                    <span>预计 {{ topic.estimatedTime }} 小时</span>
+                    <span>截止 {{ formatDate(topic.deadline) }}</span>
+                  </div>
                 </div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="category" label="分类" width="150" />
-            <el-table-column label="预计时长" width="120">
-              <template #default="scope">
-                {{ scope.row.estimatedTime }} 小时
-              </template>
-            </el-table-column>
-            <el-table-column label="截止日期" width="120">
-              <template #default="scope">
-                {{ formatDate(scope.row.deadline) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="状态" width="120">
-              <template #default="scope">
-                <el-tag :type="getTopicStatusType(scope.row.status)">
-                  {{ getTopicStatusText(scope.row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="150">
-              <template #default="scope">
-                <el-button 
-                  v-if="scope.row.status !== 3" 
-                  size="small" 
-                  @click="startLearning(scope.row)"
-                >
-                  {{ scope.row.status === 2 ? '继续学习' : '开始学习' }}
-                </el-button>
-                <el-button 
-                  v-if="scope.row.status === 2" 
-                  size="small" 
-                  type="success"
-                  @click="markAsCompleted(scope.row)"
-                >
-                  完成
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
+
+                <div class="topic-side">
+                  <span class="topic-status" :class="`status-${topic.status}`">
+                    {{ getTopicStatusText(topic.status) }}
+                  </span>
+
+                  <div class="topic-actions">
+                    <button
+                      v-if="topic.status !== 3"
+                      class="action-btn action-btn-primary"
+                      @click="startLearning(topic)"
+                    >
+                      {{ topic.status === 2 ? '继续学习' : '开始学习' }}
+                    </button>
+                    <button
+                      v-if="topic.status === 2"
+                      class="action-btn"
+                      @click="markAsCompleted(topic)"
+                    >
+                      标记完成
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div v-else class="empty-block">没有匹配的主题，可以换个关键词试试。</div>
+          </section>
+
+          <aside class="aside-column">
+            <section class="aside-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">状态摘要</h2>
+                </div>
+              </div>
+
+              <div class="summary-list">
+                <div class="summary-row">
+                  <span>未开始</span>
+                  <strong>{{ topicStatusSummary.pending }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>进行中</span>
+                  <strong>{{ topicStatusSummary.active }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>已完成</span>
+                  <strong>{{ topicStatusSummary.completed }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="aside-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">执行提醒</h2>
+                </div>
+              </div>
+
+              <div class="note-list">
+                <div class="note-item">
+                  <span class="note-label">最近应优先处理</span>
+                  <strong class="note-value">
+                    {{ activeTopic ? activeTopic.name : '暂无进行中的主题' }}
+                  </strong>
+                </div>
+                <div class="note-item">
+                  <span class="note-label">搜索结果</span>
+                  <strong class="note-value">{{ filteredTopics.length }} 个主题</strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
       </div>
     </main>
   </div>
@@ -137,43 +174,43 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  ArrowLeft, Search, Calendar, 
-  Collection, Document, Reading 
-} from '@element-plus/icons-vue'
+import { useThemeStore } from '@/stores/theme'
 import Header from '@/views/components/layout/Header.vue'
 
 const route = useRoute()
 const router = useRouter()
+const themeStore = useThemeStore()
 
-// 加载状态
 const loading = ref(false)
-
-// 搜索关键词
 const searchKeyword = ref('')
-
-// 当前学习计划 (Mock数据)
 const currentPlan = ref({})
-
-// 学习主题列表 (Mock数据)
 const topics = ref([])
 
-// 返回学习计划列表
+const completionRate = computed(() => {
+  if (!currentPlan.value.totalTopics) {
+    return 0
+  }
+  return Math.round((currentPlan.value.completedTopics / currentPlan.value.totalTopics) * 100)
+})
+
+const remainingTopicCount = computed(() => {
+  return Math.max(0, (currentPlan.value.totalTopics || 0) - (currentPlan.value.completedTopics || 0))
+})
+
+const topicStatusSummary = computed(() => {
+  return {
+    pending: topics.value.filter(topic => topic.status === 1).length,
+    active: topics.value.filter(topic => topic.status === 2).length,
+    completed: topics.value.filter(topic => topic.status === 3).length
+  }
+})
+
+const activeTopic = computed(() => topics.value.find(topic => topic.status === 2))
+
 const goBack = () => {
   router.push('/study-plan')
 }
 
-// 获取学习计划状态类型
-const getPlanStatusType = (status) => {
-  const statusMap = {
-    1: 'info',    // 未开始
-    2: 'warning', // 进行中
-    3: 'success'  // 已完成
-  }
-  return statusMap[status] || 'info'
-}
-
-// 获取学习计划状态文本
 const getPlanStatusText = (status) => {
   const statusMap = {
     1: '未开始',
@@ -183,17 +220,6 @@ const getPlanStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
-// 获取主题状态类型
-const getTopicStatusType = (status) => {
-  const statusMap = {
-    1: 'info',    // 未开始
-    2: 'warning', // 进行中
-    3: 'success'  // 已完成
-  }
-  return statusMap[status] || 'info'
-}
-
-// 获取主题状态文本
 const getTopicStatusText = (status) => {
   const statusMap = {
     1: '未开始',
@@ -203,128 +229,124 @@ const getTopicStatusText = (status) => {
   return statusMap[status] || '未知'
 }
 
-// 格式化日期
+const getTopicTypeLabel = (type) => {
+  const typeMap = {
+    1: '视频',
+    2: '文档',
+    3: '练习'
+  }
+  return typeMap[type] || '主题'
+}
+
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
-// 筛选后的主题列表
 const filteredTopics = computed(() => {
   if (!searchKeyword.value) {
     return topics.value
   }
-  
+
   const keyword = searchKeyword.value.toLowerCase()
-  return topics.value.filter(topic => 
-    topic.name.toLowerCase().includes(keyword) || 
+  return topics.value.filter(topic =>
+    topic.name.toLowerCase().includes(keyword) ||
     topic.category.toLowerCase().includes(keyword)
   )
 })
 
-// 开始学习
 const startLearning = (topic) => {
   ElMessage.info(`开始学习 "${topic.name}"`)
-  // 更新主题状态为进行中
   if (topic.status === 1) {
     topic.status = 2
   }
 }
 
-// 标记为主题已完成
 const markAsCompleted = (topic) => {
   ElMessageBox.confirm(`确定要将 "${topic.name}" 标记为已完成吗？`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    // 更新主题状态为已完成
     topic.status = 3
-    
-    // 更新计划的完成数量
     currentPlan.value.completedTopics++
-    
     ElMessage.success('主题已标记为完成')
   }).catch(() => {
     // 用户取消操作
   })
 }
 
-// 获取学习计划详情
 const fetchStudyPlanDetail = () => {
   const planId = route.params.id
-  
-  // Mock数据
+
   currentPlan.value = {
     id: parseInt(planId),
     title: 'Java基础巩固计划',
-    status: 2, // 进行中
+    status: 2,
     startDate: '2025-11-01',
     endDate: '2025-12-31',
     totalTopics: 25,
     completedTopics: 10
   }
-  
-  // Mock主题数据
+
   topics.value = [
     {
       id: 1,
       name: 'Java基础语法',
       category: 'Java基础',
-      type: 1, // 视频
+      type: 1,
       estimatedTime: 3,
       deadline: '2025-11-10',
-      status: 3 // 已完成
+      status: 3
     },
     {
       id: 2,
       name: '面向对象编程',
       category: 'Java基础',
-      type: 1, // 视频
+      type: 1,
       estimatedTime: 4,
       deadline: '2025-11-15',
-      status: 3 // 已完成
+      status: 3
     },
     {
       id: 3,
       name: '集合框架详解',
       category: 'Java基础',
-      type: 2, // 文档
+      type: 2,
       estimatedTime: 5,
       deadline: '2025-11-20',
-      status: 2 // 进行中
+      status: 2
     },
     {
       id: 4,
       name: '异常处理机制',
       category: 'Java基础',
-      type: 3, // 练习
+      type: 3,
       estimatedTime: 2,
       deadline: '2025-11-25',
-      status: 1 // 未开始
+      status: 1
     },
     {
       id: 5,
       name: '多线程基础',
       category: 'Java进阶',
-      type: 1, // 视频
+      type: 1,
       estimatedTime: 6,
       deadline: '2025-11-30',
-      status: 1 // 未开始
+      status: 1
     },
     {
       id: 6,
       name: 'IO流操作',
       category: 'Java基础',
-      type: 2, // 文档
+      type: 2,
       estimatedTime: 4,
       deadline: '2025-12-05',
-      status: 1 // 未开始
+      status: 1
     }
   ]
 }
 
-// 组件挂载时获取数据
 onMounted(() => {
   fetchStudyPlanDetail()
 })
@@ -332,114 +354,391 @@ onMounted(() => {
 
 <style scoped>
 .study-plan-detail-page {
+  --detail-bg: #f3f5f8;
+  --detail-surface: #ffffff;
+  --detail-surface-soft: #eef2f6;
+  --detail-border: rgba(15, 23, 42, 0.1);
+  --detail-line: rgba(15, 23, 42, 0.06);
+  --detail-text: var(--color-text);
+  --detail-text-soft: var(--color-text-secondary);
+  --detail-text-faint: var(--color-text-muted);
+  --detail-accent: #0f766e;
+  --detail-accent-soft: rgba(15, 118, 110, 0.08);
+  --detail-accent-line: rgba(15, 118, 110, 0.16);
   min-height: 100vh;
-  background-color: var(--background-color);
+  background: var(--detail-bg);
 }
 
-/* 主内容区 */
+.study-plan-detail-page.is-dark {
+  --detail-bg: #09111c;
+  --detail-surface: #0f172a;
+  --detail-surface-soft: #111c31;
+  --detail-border: rgba(148, 163, 184, 0.14);
+  --detail-line: rgba(148, 163, 184, 0.1);
+  --detail-text: var(--text-1);
+  --detail-text-soft: var(--text-2);
+  --detail-text-faint: var(--text-3);
+  --detail-accent: #5eead4;
+  --detail-accent-soft: rgba(94, 234, 212, 0.12);
+  --detail-accent-line: rgba(94, 234, 212, 0.18);
+}
+
 .main-content {
-  padding: 24px 0;
+  padding: 94px 20px 36px;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
-.back-section {
-  margin-bottom: 20px;
-}
-
-.plan-header-card {
-  margin-bottom: 24px;
-}
-
-.plan-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.plan-basic-info h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
+.back-row {
   margin-bottom: 12px;
 }
 
-.plan-meta {
+.back-btn,
+.action-btn {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface);
+  color: var(--detail-text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.plan-hero,
+.topics-panel,
+.aside-panel {
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface);
+}
+
+.plan-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 240px;
+  gap: 18px;
+  padding: 22px 24px;
+}
+
+.hero-topline,
+.progress-heading,
+.progress-foot,
+.topic-meta,
+.summary-row {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.hero-topline {
   align-items: center;
+}
+
+.status-chip,
+.topic-status,
+.topic-type {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--detail-border);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-chip.status-1,
+.topic-status.status-1 {
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.16);
+}
+
+.status-chip.status-2,
+.topic-status.status-2 {
+  color: var(--detail-accent);
+  background: var(--detail-accent-soft);
+  border-color: var(--detail-accent-line);
+}
+
+.status-chip.status-3,
+.topic-status.status-3 {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.16);
+}
+
+.study-plan-detail-page.is-dark .status-chip.status-1,
+.study-plan-detail-page.is-dark .topic-status.status-1 {
+  color: #fdba74;
+}
+
+.study-plan-detail-page.is-dark .status-chip.status-3,
+.study-plan-detail-page.is-dark .topic-status.status-3 {
+  color: #86efac;
+}
+
+.hero-date,
+.panel-desc,
+.topic-meta,
+.progress-foot,
+.note-label {
+  color: var(--detail-text-soft);
+  font-size: 13px;
+}
+
+.hero-title {
+  margin: 14px 0 0;
+  color: var(--detail-text);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+}
+
+.hero-progress {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.progress-heading {
+  justify-content: space-between;
+  color: var(--detail-text-soft);
+  font-size: 13px;
+}
+
+.progress-heading strong {
+  color: var(--detail-text);
+  font-size: 18px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  background: var(--detail-surface-soft);
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--detail-accent);
+}
+
+.hero-stats {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.hero-stat {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--detail-line);
+  background: var(--detail-surface-soft);
+}
+
+.hero-stat-label,
+.summary-row span {
+  color: var(--detail-text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.hero-stat-value {
+  color: var(--detail-text);
+  font-size: 26px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) 320px;
   gap: 16px;
+  margin-top: 16px;
 }
 
-.plan-date {
+.panel-head {
   display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.topics-panel,
+.aside-panel {
+  padding: 16px;
+}
+
+.panel-title {
+  margin: 0;
+  color: var(--detail-text);
+  font-size: 18px;
+}
+
+.panel-desc {
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.search-box {
+  min-width: 220px;
+}
+
+.search-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface-soft);
+  color: var(--detail-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--detail-text-faint);
+}
+
+.topic-stream,
+.aside-column,
+.summary-list,
+.note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.topic-stream {
+  margin-top: 16px;
+}
+
+.topic-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--detail-line);
+}
+
+.topic-row:last-child {
+  border-bottom: none;
+}
+
+.topic-main,
+.topic-side,
+.topic-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.topic-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   align-items: center;
-  gap: 4px;
-  color: var(--text-secondary);
-  font-size: 14px;
 }
 
-.plan-stats {
-  display: flex;
-  gap: 32px;
+.topic-title {
+  margin: 0;
+  color: var(--detail-text);
+  font-size: 18px;
+  line-height: 1.4;
 }
 
-.stat-item {
-  text-align: center;
+.topic-type {
+  color: var(--detail-text-soft);
+  background: var(--detail-surface-soft);
 }
 
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: var(--primary-color);
+.topic-side {
+  justify-items: start;
+  align-content: start;
 }
 
-.stat-label {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-top: 4px;
+.action-btn {
+  background: transparent;
 }
 
-.progress-section {
-  margin-top: 20px;
+.action-btn-primary {
+  border-color: var(--detail-accent);
+  background: var(--detail-accent);
+  color: #ffffff;
 }
 
-.topics-card {
-  margin-top: 24px;
+.study-plan-detail-page.is-dark .action-btn-primary {
+  color: #06201d;
 }
 
-.topics-header {
-  display: flex;
+.summary-list,
+.note-list {
+  margin-top: 14px;
+}
+
+.summary-row,
+.note-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--detail-line);
+}
+
+.summary-row:last-child,
+.note-item:last-child {
+  border-bottom: none;
+}
+
+.summary-row {
   justify-content: space-between;
   align-items: center;
 }
 
-.topic-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.summary-row strong,
+.note-value {
+  color: var(--detail-text);
+  font-size: 16px;
+}
+
+.note-item {
+  display: grid;
+  gap: 6px;
+}
+
+.empty-block {
+  margin-top: 16px;
+  color: var(--detail-text-soft);
+  font-size: 14px;
+}
+
+@media (max-width: 1080px) {
+  .main-content {
+    padding: 94px 16px 28px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .plan-hero,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .plan-header {
+  .panel-head,
+  .topic-row {
+    grid-template-columns: 1fr;
     flex-direction: column;
-    gap: 20px;
   }
-  
-  .plan-stats {
-    gap: 16px;
+
+  .search-box {
+    min-width: 0;
+    width: 100%;
   }
-  
-  .stat-value {
-    font-size: 20px;
-  }
-  
-  .topics-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
+
+  .topic-row {
+    gap: 12px;
   }
 }
 </style>

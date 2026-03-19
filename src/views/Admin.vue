@@ -81,13 +81,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, h } from 'vue'
+import { ref, reactive, computed, h, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { getStatistics } from '@/api/subject'
 import UserManagement from '@/views/modules/admin/UserManagement.vue'
 import CategoryManagement from '@/views/modules/admin/CategoryManagement.vue'
 import TagManagement from '@/views/modules/admin/TagManagement.vue'
 import SubjectManagement from '@/views/modules/admin/SubjectManagement.vue'
 import Statistics from '@/views/modules/admin/Statistics.vue'
+import BlogStatistics from '@/views/modules/admin/BlogStatistics.vue'
 
 const router = useRouter()
 
@@ -98,7 +101,8 @@ const loadedTabs = reactive({
   categories: false,
   tags: false,
   problems: false,
-  statistics: false
+  statistics: false,
+  blogStatistics: false
 })
 
 const userSearch = ref('')
@@ -138,28 +142,18 @@ const problemForm = reactive({
 
 const users = ref([])
 
-const categories = ref([
-  { id: 1, name: 'Java基础', description: 'Java语言基础知识相关题目', problemCount: 15 },
-  { id: 2, name: 'JVM', description: 'Java虚拟机相关知识点', problemCount: 12 },
-  { id: 3, name: '并发编程', description: '多线程、并发包相关内容', problemCount: 18 },
-  { id: 4, name: 'Spring', description: 'Spring框架相关知识', problemCount: 22 },
-  { id: 5, name: 'MySQL', description: 'MySQL数据库相关题目', problemCount: 14 },
-  { id: 6, name: 'Redis', description: 'Redis缓存系统相关知识', problemCount: 9 }
-])
+const categories = ref([])
 
-const problems = ref([
-  { id: 1, title: 'Java基础：面向对象三大特性', description: '请简述Java面向对象编程的三大特性...', category: 'Java基础', difficulty: '简单' },
-  { id: 2, title: 'JVM内存模型详解', description: '请描述JVM的内存结构...', category: 'JVM', difficulty: '中等' },
-  { id: 3, title: '并发编程：线程池原理与应用', description: '详细说明Java线程池的工作原理...', category: '并发编程', difficulty: '困难' },
-  { id: 4, title: 'Spring Bean生命周期', description: '请描述Spring框架中Bean的完整生命周期...', category: 'Spring', difficulty: '中等' }
-])
+const problems = ref([])
 
 const stats = ref({
-  totalUsers: 128,
-  totalProblems: 86,
-  onlineUsers: 24,
-  totalSubmissions: 1245
+  totalUsers: 0,
+  totalProblems: 0,
+  onlineUsers: 0,
+  totalSubmissions: 0
 })
+
+let statsRefreshTimer = null
 
 const navItems = [
   {
@@ -198,6 +192,14 @@ const navItems = [
     ])
   },
   {
+    id: 'blogStatistics',
+    label: '博客统计',
+    icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
+      h('path', { d: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20' }),
+      h('path', { d: 'M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' })
+    ])
+  },
+  {
     id: 'statistics',
     label: '数据统计',
     icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
@@ -213,6 +215,7 @@ const tabTitles = {
   categories: { title: '分类管理', desc: '管理题目分类和层级结构' },
   tags: { title: '标签管理', desc: '管理题目标签和关键词' },
   problems: { title: '题目管理', desc: '管理题库内容和信息' },
+  blogStatistics: { title: '博客统计', desc: '查看文章表现与后台管理动作的真实数据' },
   statistics: { title: '数据统计', desc: '查看系统运营数据和趋势' }
 }
 
@@ -225,6 +228,7 @@ const currentComponent = computed(() => {
     categories: CategoryManagement,
     tags: TagManagement,
     problems: SubjectManagement,
+    blogStatistics: BlogStatistics,
     statistics: Statistics
   }
   return components[activeTab.value]
@@ -266,9 +270,52 @@ const switchTab = (tabId) => {
   loadedTabs[tabId] = true
 }
 
+/**
+ * 拉取后台头部统计卡片的真实数据。
+ * @param {boolean} silent 是否静默刷新
+ * @return {Promise<void>}
+ */
+const fetchAdminStats = async (silent = false) => {
+  try {
+    const res = await getStatistics()
+    const isSuccess = res?.code === 200 || res?.success
+
+    if (!isSuccess) {
+      if (!silent) {
+        ElMessage.error(res?.message || '获取后台统计数据失败')
+      }
+      return
+    }
+
+    stats.value = {
+      totalUsers: Number(res?.data?.totalUsers || 0),
+      totalProblems: Number(res?.data?.totalProblems || 0),
+      onlineUsers: Number(res?.data?.onlineUsers || 0),
+      totalSubmissions: Number(res?.data?.totalSubmissions || 0)
+    }
+  } catch (error) {
+    console.error('获取后台统计数据失败:', error)
+    if (!silent) {
+      ElMessage.error('获取后台统计数据失败')
+    }
+  }
+}
+
 const goHome = () => {
   router.push('/home')
 }
+
+onMounted(() => {
+  fetchAdminStats()
+  statsRefreshTimer = window.setInterval(() => fetchAdminStats(true), 60000)
+})
+
+onUnmounted(() => {
+  if (statsRefreshTimer) {
+    window.clearInterval(statsRefreshTimer)
+    statsRefreshTimer = null
+  }
+})
 </script>
 
 <style scoped>

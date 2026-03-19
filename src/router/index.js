@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import Home from '@/views/Home.vue'
 
 /**
  * 前端界面路由跳转
@@ -33,7 +34,7 @@ const routes = [
   {
     path: '/home',
     name: 'Home',
-    component: () => import('@/views/Home.vue'),
+    component: Home,
     meta: { requiresAuth: true }
   },
   {

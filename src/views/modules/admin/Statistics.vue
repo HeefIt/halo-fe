@@ -26,7 +26,7 @@
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
             <polyline points="17 6 23 6 23 12"></polyline>
           </svg>
-          +12%
+          近{{ userTrendDays }}天 +{{ userGrowthSummary.total }}
         </div>
       </div>
 
@@ -43,12 +43,13 @@
           <span class="stat-value">{{ animatedStats.totalProblems }}</span>
           <span class="stat-label">题目总数</span>
         </div>
-        <div class="stat-trend up">
+        <div class="stat-trend neutral">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-            <polyline points="17 6 23 6 23 12"></polyline>
+            <path d="M20 7H9"></path>
+            <path d="M14 17H4"></path>
+            <path d="M20 12H4"></path>
           </svg>
-          +8%
+          全量题库
         </div>
       </div>
 
@@ -79,12 +80,13 @@
           <span class="stat-value">{{ animatedStats.totalSubmissions }}</span>
           <span class="stat-label">总提交数</span>
         </div>
-        <div class="stat-trend up">
+        <div class="stat-trend neutral">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-            <polyline points="17 6 23 6 23 12"></polyline>
+            <path d="M20 7H9"></path>
+            <path d="M14 17H4"></path>
+            <path d="M20 12H4"></path>
           </svg>
-          +23%
+          近{{ submissionTrendDays }}天 {{ submissionSummary.total }}
         </div>
       </div>
     </div>
@@ -147,10 +149,10 @@
           <span class="badge">本周</span>
         </div>
         <div class="ranking-list">
-          <div class="ranking-item" v-for="(item, index) in topProblems" :key="index">
+          <div class="ranking-item" v-for="(item, index) in topProblems" :key="item.subjectId || index">
             <span class="rank" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
-            <span class="problem-name">{{ item.name }}</span>
-            <span class="problem-count">{{ item.count }} 次提交</span>
+            <span class="problem-name">{{ item.subjectName }}</span>
+            <span class="problem-count">{{ item.submitCount }} 次提交</span>
           </div>
         </div>
       </div>
@@ -161,15 +163,15 @@
           <span class="badge">本周</span>
         </div>
         <div class="user-list">
-          <div class="user-item" v-for="(user, index) in activeUsers" :key="index">
+          <div class="user-item" v-for="(user, index) in activeUsers" :key="user.userId || index">
             <div class="user-avatar" :style="{ background: getAvatarColor(index) }">
-              {{ user.name.charAt(0) }}
+              {{ user.userName?.charAt(0) || '?' }}
             </div>
             <div class="user-info">
-              <span class="user-name">{{ user.name }}</span>
-              <span class="user-stats">{{ user.problems }} 题 · {{ user.accuracy }}% 正确率</span>
+              <span class="user-name">{{ user.userName }}</span>
+              <span class="user-stats">{{ user.problemCount }} 题 · {{ user.accuracy }}% 正确率</span>
             </div>
-            <span class="user-score">{{ user.score }} 分</span>
+            <span class="user-score">{{ user.totalScore }} 分</span>
           </div>
         </div>
       </div>
@@ -179,25 +181,29 @@
           <h3>系统状态</h3>
           <span class="status-badge online">
             <span class="status-dot"></span>
-            运行正常
+            实时数据
           </span>
         </div>
         <div class="status-list">
           <div class="status-item">
-            <span class="status-label">服务器响应时间</span>
-            <span class="status-value good">32ms</span>
+            <span class="status-label">当前在线用户</span>
+            <span class="status-value good">{{ animatedStats.onlineUsers }}</span>
           </div>
           <div class="status-item">
-            <span class="status-label">数据库连接</span>
-            <span class="status-value good">正常</span>
+            <span class="status-label">近{{ userTrendDays }}日新增用户</span>
+            <span class="status-value">{{ userGrowthSummary.total }}</span>
           </div>
           <div class="status-item">
-            <span class="status-label">缓存命中率</span>
-            <span class="status-value">98.5%</span>
+            <span class="status-label">今日新增用户</span>
+            <span class="status-value">{{ userGrowthSummary.today }}</span>
           </div>
           <div class="status-item">
-            <span class="status-label">今日请求量</span>
-            <span class="status-value">12,847</span>
+            <span class="status-label">近{{ submissionTrendDays }}日提交量</span>
+            <span class="status-value">{{ submissionSummary.total }}</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">今日提交量</span>
+            <span class="status-value">{{ submissionSummary.today }}</span>
           </div>
         </div>
       </div>
@@ -206,9 +212,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
-import { getStatistics, getUserGrowthTrend, getSubmissionTrend } from '@/api/subject'
+import { getStatistics, getUserGrowthTrend, getSubmissionTrend, getTopProblems, getActiveUsers } from '@/api/subject'
 import { ElMessage } from 'element-plus'
 
 const stats = ref({
@@ -240,21 +246,22 @@ let userChart = null
 let submissionChart = null
 let animationTimer = null
 
-const topProblems = ref([
-  { name: 'Java面向对象编程基础', count: 1234 },
-  { name: 'Spring Boot自动配置原理', count: 987 },
-  { name: 'MySQL索引优化实践', count: 856 },
-  { name: 'Redis缓存策略设计', count: 743 },
-  { name: '分布式事务解决方案', count: 621 }
-])
+const topProblems = ref([])
+const activeUsers = ref([])
+const userTrendData = ref([])
+const submissionTrendData = ref([])
 
-const activeUsers = ref([
-  { name: '张三', problems: 156, accuracy: 89, score: 2340 },
-  { name: '李四', problems: 142, accuracy: 92, score: 2180 },
-  { name: '王五', problems: 138, accuracy: 85, score: 2050 },
-  { name: '赵六', problems: 125, accuracy: 88, score: 1920 },
-  { name: '钱七', problems: 118, accuracy: 91, score: 1850 }
-])
+const userGrowthSummary = computed(() => {
+  const total = userTrendData.value.reduce((sum, item) => sum + Number(item.count || 0), 0)
+  const today = Number(userTrendData.value[userTrendData.value.length - 1]?.count || 0)
+  return { total, today }
+})
+
+const submissionSummary = computed(() => {
+  const total = submissionTrendData.value.reduce((sum, item) => sum + Number(item.count || 0), 0)
+  const today = Number(submissionTrendData.value[submissionTrendData.value.length - 1]?.count || 0)
+  return { total, today }
+})
 
 const getAvatarColor = (index) => {
   const colors = [
@@ -308,6 +315,7 @@ const fetchUserGrowthTrend = async () => {
   try {
     const res = await getUserGrowthTrend(userTrendDays.value)
     if (res.code === 200) {
+      userTrendData.value = res.data || []
       renderUserGrowthChart(res.data)
     } else {
       ElMessage.error(res.message || '获取用户增长趋势失败')
@@ -322,6 +330,7 @@ const fetchSubmissionTrend = async () => {
   try {
     const res = await getSubmissionTrend(submissionTrendDays.value)
     if (res.code === 200) {
+      submissionTrendData.value = res.data || []
       renderSubmissionTrendChart(res.data)
     } else {
       ElMessage.error(res.message || '获取题目提交趋势失败')
@@ -329,6 +338,34 @@ const fetchSubmissionTrend = async () => {
   } catch (error) {
     console.error('获取题目提交趋势失败:', error)
     ElMessage.error('获取题目提交趋势失败')
+  }
+}
+
+const fetchTopProblems = async () => {
+  try {
+    const res = await getTopProblems(7, 5)
+    if (res.code === 200) {
+      topProblems.value = res.data || []
+    } else {
+      ElMessage.error(res.message || '获取热门题目失败')
+    }
+  } catch (error) {
+    console.error('获取热门题目失败:', error)
+    ElMessage.error('获取热门题目失败')
+  }
+}
+
+const fetchActiveUsers = async () => {
+  try {
+    const res = await getActiveUsers(7, 5)
+    if (res.code === 200) {
+      activeUsers.value = res.data || []
+    } else {
+      ElMessage.error(res.message || '获取活跃用户失败')
+    }
+  } catch (error) {
+    console.error('获取活跃用户失败:', error)
+    ElMessage.error('获取活跃用户失败')
   }
 }
 
@@ -527,6 +564,8 @@ const handleResize = () => {
 
 onMounted(() => {
   fetchStatistics()
+  fetchTopProblems()
+  fetchActiveUsers()
   setTimeout(() => {
     fetchUserGrowthTrend()
     fetchSubmissionTrend()
@@ -673,6 +712,11 @@ onUnmounted(() => {
 .stat-trend.up {
   background: rgba(34, 197, 94, 0.15);
   color: #4ade80;
+}
+
+.stat-trend.neutral {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
 }
 
 .stat-trend.down {

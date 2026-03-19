@@ -1,109 +1,130 @@
 <template>
-  <div class="ranking-detail-page">
-    <!-- 顶部导航栏 -->
+  <div
+    class="ranking-detail-page app-shell app-shell--internal"
+    :class="{ 'is-dark': themeStore.isDark }"
+  >
     <Header />
-    
-    <!-- 主内容区 -->
+
     <main class="main-content">
       <div class="container">
-        <!-- 返回按钮 -->
-        <div class="back-section">
-          <el-button @click="goBack" :icon="ArrowLeft">
-            返回排行榜
-          </el-button>
+        <div class="back-row">
+          <button class="back-btn" @click="goBack">返回排行榜</button>
         </div>
-        
-        <!-- 排行榜详情 -->
-        <el-card class="ranking-detail-card">
-          <template #header>
-            <div class="ranking-detail-header">
-              <h2>{{ rankingTitle }}</h2>
-              <div class="header-actions">
-                <el-button @click="refreshData" :icon="Refresh" circle />
+
+        <section class="hero-panel">
+          <div class="hero-main">
+            <span class="hero-kicker">RANK DETAIL</span>
+            <h1 class="hero-title">{{ rankingTitle }}</h1>
+          </div>
+
+          <div class="hero-actions">
+            <button class="refresh-btn" @click="refreshData">刷新榜单</button>
+          </div>
+        </section>
+
+        <section class="summary-strip">
+          <article class="summary-unit summary-unit-strong">
+            <span class="summary-label">我的排名</span>
+            <strong class="summary-value">{{ userRank ? `#${userRank}` : '--' }}</strong>
+            <span class="summary-meta">{{ userStore.userName || '当前用户' }}</span>
+          </article>
+          <article class="summary-unit">
+            <span class="summary-label">当前成绩</span>
+            <strong class="summary-value">{{ rankingValue || '--' }}</strong>
+            <span class="summary-meta">{{ valueLabel }}</span>
+          </article>
+          <article class="summary-unit">
+            <span class="summary-label">榜单人数</span>
+            <strong class="summary-value">{{ rankings.length }}</strong>
+          </article>
+        </section>
+
+        <div class="content-grid">
+          <section class="ranking-panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">完整排名</h2>
               </div>
             </div>
-          </template>
-          
-          <!-- 用户排名信息 -->
-          <div class="user-ranking-info">
-            <div class="user-rank-card">
-              <div class="rank-icon">
-                <el-icon v-if="userRank <= 3" class="crown-icon">
-                  <Medal />
-                </el-icon>
-                <span v-else class="rank-number">{{ userRank }}</span>
-              </div>
-              <div class="user-info">
-                <el-avatar :src="userStore.userAvatar" :size="48">
-                  {{ userStore.userName.charAt(0) }}
-                </el-avatar>
-                <div class="user-details">
-                  <div class="user-name">{{ userStore.userName }}</div>
-                  <div class="rank-value">{{ rankingValue }}</div>
+
+            <div class="ranking-stream" v-loading="loading">
+              <article
+                v-for="(item, index) in rankings"
+                :key="item.userId || index"
+                class="ranking-row"
+                :class="{ 'is-current': item.userName === userStore.userName }"
+              >
+                <div class="rank-cell">
+                  <span class="rank-number" :class="{ top: index < 3 }">#{{ index + 1 }}</span>
+                </div>
+
+                <div class="user-cell">
+                  <div class="avatar-shell">
+                    {{ item.userName?.charAt(0) || 'U' }}
+                  </div>
+                  <div class="user-copy">
+                    <strong class="user-name">{{ item.userName }}</strong>
+                    <span class="user-mark" v-if="item.userName === userStore.userName">当前用户</span>
+                  </div>
+                </div>
+
+                <div class="value-cell">
+                  <span class="value-label">{{ valueLabel }}</span>
+                  <strong class="value-number">{{ item.value }}</strong>
+                </div>
+
+                <div class="trend-cell">
+                  <span class="trend-chip" :class="item.trend">{{ getTrendText(item.trend) }}</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <aside class="aside-column">
+            <section class="aside-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">TOP 3</h2>
                 </div>
               </div>
-            </div>
-          </div>
-          
-          <!-- 排行榜列表 -->
-          <div class="ranking-list">
-            <el-table 
-              :data="rankings" 
-              style="width: 100%" 
-              v-loading="loading"
-              :row-class-name="tableRowClassName"
-            >
-              <el-table-column label="排名" width="80" align="center">
-                <template #default="scope">
-                  <div class="rank-cell">
-                    <span 
-                      v-if="scope.$index < 3" 
-                      class="rank-badge"
-                      :class="`rank-${scope.$index + 1}`"
-                    >
-                      {{ scope.$index + 1 }}
-                    </span>
-                    <span v-else class="rank-normal">{{ scope.$index + 1 }}</span>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column label="用户" width="200">
-                <template #default="scope">
-                  <div class="user-info">
-                    <el-avatar :src="scope.row.avatar" :size="32">
-                      {{ scope.row.userName.charAt(0) }}
-                    </el-avatar>
-                    <span class="user-name">{{ scope.row.userName }}</span>
-                  </div>
-                </template>
-              </el-table-column>
-              <el-table-column prop="value" :label="valueLabel" align="center">
-                <template #default="scope">
-                  <span class="ranking-value">{{ scope.row.value }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="趋势" width="100" align="center">
-                <template #default="scope">
-                  <div class="trend-cell">
-                    <el-icon 
-                      v-if="scope.row.trend === 'up'" 
-                      class="trend-up"
-                    >
-                      <ArrowUp />
-                    </el-icon>
-                    <el-icon 
-                      v-else-if="scope.row.trend === 'down'" 
-                      class="trend-down"
-                    >
-                      <ArrowDown />
-                    </el-icon>
-                    <span v-else>--</span>
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </el-card>
+
+              <div class="top-list">
+                <div
+                  v-for="(item, index) in rankings.slice(0, 3)"
+                  :key="item.userId || index"
+                  class="top-row"
+                >
+                  <span class="top-rank">#{{ index + 1 }}</span>
+                  <span class="top-name">{{ item.userName }}</span>
+                  <strong class="top-value">{{ item.value }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="aside-panel">
+              <div class="panel-head">
+                <div>
+                  <h2 class="panel-title">我的摘要</h2>
+                </div>
+              </div>
+
+              <div class="note-list">
+                <div class="note-item">
+                  <span class="note-label">用户名</span>
+                  <strong class="note-value">{{ userStore.userName || '未登录用户' }}</strong>
+                </div>
+                <div class="note-item">
+                  <span class="note-label">当前名次</span>
+                  <strong class="note-value">{{ userRank ? `#${userRank}` : '--' }}</strong>
+                </div>
+                <div class="note-item">
+                  <span class="note-label">统计口径</span>
+                  <strong class="note-value">{{ valueLabel }}</strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
       </div>
     </main>
   </div>
@@ -113,100 +134,79 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
 import { getRankDetail } from '@/api/subject.js'
-import { 
-  ArrowLeft, ArrowUp, ArrowDown, 
-  Medal, Refresh 
-} from '@element-plus/icons-vue'
 import Header from '@/views/components/layout/Header.vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 
-// 加载状态
 const loading = ref(false)
-
-// 排行榜数据
 const rankings = ref([])
 
-// 获取排行榜标题
 const rankingTitle = computed(() => {
   const timeMap = {
     today: '今日',
     week: '本周',
     month: '本月'
   }
-  
+
   const typeMap = {
     problemCount: '刷题数排行',
     score: '得分排行',
     correctCount: '正确数排行'
   }
-  
+
   const time = route.query.time || 'today'
   const type = route.query.type || 'problemCount'
-  
+
   return `${timeMap[time]}${typeMap[type]}`
 })
 
-// 获取数值标签
 const valueLabel = computed(() => {
   const typeMap = {
     problemCount: '刷题数',
     score: '得分',
     correctCount: '正确数'
   }
-  
+
   const type = route.query.type || 'problemCount'
   return typeMap[type]
 })
 
-// 用户排名
 const userRank = ref(5)
-
-// 用户数值
 const rankingValue = ref(0)
 
-// 返回排行榜列表
 const goBack = () => {
   router.push('/ranking')
 }
 
-// 刷新数据
 const refreshData = () => {
   fetchRankingDetail()
 }
 
-// 表格行样式
-const tableRowClassName = ({ row, rowIndex }) => {
-  // 高亮当前用户行
-  if (row.userName === userStore.userName) {
-    return 'current-user-row'
+const getTrendText = (trend) => {
+  const map = {
+    up: '上升',
+    down: '下降',
+    same: '持平'
   }
-  
-  if (rowIndex === 0) {
-    return 'first-rank'
-  } else if (rowIndex === 1) {
-    return 'second-rank'
-  } else if (rowIndex === 2) {
-    return 'third-rank'
-  }
-  return ''
+  return map[trend] || '持平'
 }
 
-// 获取排行榜详情数据
 const fetchRankingDetail = async () => {
   loading.value = true
-  
+
   try {
     const time = route.query.time || 'today'
     const type = route.query.type || 'problemCount'
     const userId = userStore.userId
-    
+
     const response = await getRankDetail(time, type, userId)
     const data = response.data
-    
+
     rankings.value = data.rankings
     userRank.value = data.currentUserRank
     rankingValue.value = data.currentUserValue
@@ -217,7 +217,6 @@ const fetchRankingDetail = async () => {
   }
 }
 
-// 组件挂载时获取数据
 onMounted(() => {
   fetchRankingDetail()
 })
@@ -225,191 +224,383 @@ onMounted(() => {
 
 <style scoped>
 .ranking-detail-page {
+  --detail-bg: #f3f5f8;
+  --detail-surface: #ffffff;
+  --detail-surface-soft: #eef2f6;
+  --detail-border: rgba(15, 23, 42, 0.1);
+  --detail-line: rgba(15, 23, 42, 0.06);
+  --detail-text: var(--color-text);
+  --detail-text-soft: var(--color-text-secondary);
+  --detail-text-faint: var(--color-text-muted);
+  --detail-accent: #b45309;
+  --detail-accent-soft: rgba(180, 83, 9, 0.08);
+  --detail-accent-line: rgba(180, 83, 9, 0.16);
   min-height: 100vh;
-  background-color: var(--background-color);
+  background: var(--detail-bg);
 }
 
-/* 主内容区 */
+.ranking-detail-page.is-dark {
+  --detail-bg: #09111c;
+  --detail-surface: #0f172a;
+  --detail-surface-soft: #111c31;
+  --detail-border: rgba(148, 163, 184, 0.14);
+  --detail-line: rgba(148, 163, 184, 0.1);
+  --detail-text: var(--text-1);
+  --detail-text-soft: var(--text-2);
+  --detail-text-faint: var(--text-3);
+  --detail-accent: #fbbf24;
+  --detail-accent-soft: rgba(251, 191, 36, 0.12);
+  --detail-accent-line: rgba(251, 191, 36, 0.18);
+}
+
 .main-content {
-  padding: 24px 0;
+  padding: 94px 20px 36px;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
-.back-section {
-  margin-bottom: 20px;
+.back-row {
+  margin-bottom: 12px;
 }
 
-.ranking-detail-card {
-  margin-top: 20px;
+.back-btn,
+.refresh-btn {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface);
+  color: var(--detail-text);
+  font-size: 13px;
+  font-weight: 700;
 }
 
-.ranking-detail-header {
+.hero-panel,
+.summary-strip,
+.ranking-panel,
+.aside-panel {
+  border: 1px solid var(--detail-border);
+  background: var(--detail-surface);
+}
+
+.hero-panel {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 20px;
+  align-items: end;
+  padding: 22px 24px;
 }
 
-.ranking-detail-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
+.hero-kicker,
+.summary-label,
+.note-label {
+  color: var(--detail-text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
-.user-ranking-info {
-  margin-bottom: 30px;
+.hero-title {
+  margin: 6px 0 0;
+  color: var(--detail-text);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
 }
 
-.user-rank-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa, #e4e7f4);
-  border-radius: 12px;
+.hero-subtitle,
+.summary-meta,
+.panel-desc {
+  color: var(--detail-text-soft);
+  font-size: 14px;
+  line-height: 1.7;
 }
 
-.rank-icon {
-  margin-right: 20px;
+.hero-subtitle {
+  max-width: 620px;
+  margin: 10px 0 0;
 }
 
-.crown-icon {
-  font-size: 48px;
-  color: #ffd700;
+.refresh-btn {
+  border-color: var(--detail-accent);
+  background: var(--detail-accent-soft);
+  color: var(--detail-accent);
 }
 
-.rank-number {
-  font-size: 48px;
-  font-weight: bold;
-  color: var(--text-primary);
+.summary-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
+.summary-unit {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border-right: 1px solid var(--detail-line);
+}
+
+.summary-unit:last-child {
+  border-right: none;
+}
+
+.summary-unit-strong {
+  background: var(--detail-surface-soft);
+}
+
+.summary-value {
+  color: var(--detail-text);
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) 320px;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.ranking-panel,
+.aside-panel {
+  padding: 16px;
+}
+
+.aside-column {
+  display: grid;
   gap: 16px;
 }
 
-.user-details {
+.panel-head {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
 }
 
-.user-name {
+.panel-title {
+  margin: 0;
+  color: var(--detail-text);
   font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
 }
 
-.rank-value {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--primary-color);
+.panel-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.ranking-list {
-  margin-top: 20px;
+.ranking-stream,
+.top-list,
+.note-list {
+  display: grid;
+  gap: 0;
+  margin-top: 14px;
 }
 
-.rank-cell {
-  display: flex;
+.ranking-row,
+.top-row,
+.note-item {
+  border-bottom: 1px solid var(--detail-line);
+}
+
+.ranking-row:last-child,
+.top-row:last-child,
+.note-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 140px 96px;
+  gap: 14px;
   align-items: center;
-  justify-content: center;
+  padding: 14px 0;
 }
 
-.rank-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
+.ranking-row.is-current {
+  background: var(--detail-accent-soft);
+  margin: 0 -16px;
+  padding: 14px 16px;
 }
 
-.rank-1 {
-  background: linear-gradient(135deg, #ffd700, #ffa500);
+.rank-number {
+  color: var(--detail-text-soft);
+  font-size: 18px;
+  font-weight: 800;
 }
 
-.rank-2 {
-  background: linear-gradient(135deg, #c0c0c0, #a9a9a9);
+.rank-number.top {
+  color: var(--detail-accent);
 }
 
-.rank-3 {
-  background: linear-gradient(135deg, #cd7f32, #a0522d);
-}
-
-.rank-normal {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.user-info {
+.user-cell {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+}
+
+.avatar-shell {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.user-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .user-name {
-  font-size: 14px;
-  color: var(--text-primary);
+  color: var(--detail-text);
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.ranking-value {
-  font-weight: 600;
-  font-size: 16px;
-  color: var(--primary-color);
+.user-mark {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 6px;
+  background: var(--detail-surface-soft);
+  color: var(--detail-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.value-cell {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.value-label {
+  color: var(--detail-text-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.value-number,
+.top-value,
+.note-value {
+  color: var(--detail-text);
+  font-size: 18px;
 }
 
 .trend-cell {
   display: flex;
+  justify-content: end;
+}
+
+.trend-chip {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--detail-border);
+  color: var(--detail-text-soft);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.trend-up {
-  color: #f56c6c;
-  font-size: 18px;
+.trend-chip.up {
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.08);
 }
 
-.trend-down {
-  color: #67c23a;
-  font-size: 18px;
+.trend-chip.down {
+  color: #b91c1c;
+  border-color: rgba(239, 68, 68, 0.16);
+  background: rgba(239, 68, 68, 0.08);
 }
 
-:deep(.first-rank) {
-  background-color: rgba(255, 215, 0, 0.1);
+.trend-chip.same {
+  background: var(--detail-surface-soft);
 }
 
-:deep(.second-rank) {
-  background-color: rgba(192, 192, 192, 0.1);
+.ranking-detail-page.is-dark .trend-chip.up {
+  color: #86efac;
 }
 
-:deep(.third-rank) {
-  background-color: rgba(205, 127, 50, 0.1);
+.ranking-detail-page.is-dark .trend-chip.down {
+  color: #fca5a5;
 }
 
-:deep(.current-user-row) {
-  background-color: rgba(64, 158, 255, 0.1);
-  font-weight: 600;
+.top-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.top-rank,
+.top-name {
+  color: var(--detail-text-soft);
+  font-size: 14px;
+}
+
+.note-item {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+}
+
+@media (max-width: 1080px) {
+  .main-content {
+    padding: 94px 16px 28px;
+  }
+
+  .container {
+    padding: 0 16px;
+  }
+
+  .summary-strip,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-unit {
+    border-right: none;
+    border-bottom: 1px solid var(--detail-line);
+  }
+
+  .summary-unit:last-child {
+    border-bottom: none;
+  }
 }
 
 @media (max-width: 768px) {
-  .user-rank-card {
+  .hero-panel,
+  .ranking-row {
+    grid-template-columns: 1fr;
     flex-direction: column;
-    text-align: center;
   }
-  
-  .rank-icon {
-    margin-right: 0;
-    margin-bottom: 16px;
+
+  .hero-panel {
+    align-items: start;
+  }
+
+  .value-cell,
+  .trend-cell {
+    justify-items: start;
+    justify-content: start;
   }
 }
 </style>

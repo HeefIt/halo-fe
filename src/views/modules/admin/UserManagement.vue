@@ -145,9 +145,9 @@
                 </label>
               </td>
               <td class="online-cell">
-                <span class="online-badge" :class="{ online: user.status === 0 }">
+                <span class="online-badge" :class="{ online: user.online }">
                   <span class="online-dot"></span>
-                  {{ user.status === 0 ? '在线' : '离线' }}
+                  {{ user.online ? '在线' : '离线' }}
                 </span>
               </td>
               <td class="action-cell">
@@ -161,7 +161,7 @@
                   <button
                     class="action-btn kick"
                     @click="kickUser(user)"
-                    :disabled="user.userName === 'haloAdmin' || user.status !== 0"
+                    :disabled="user.userName === 'haloAdmin' || !user.online"
                     title="踢下线"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -315,8 +315,8 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">在线状态</span>
-                <span class="detail-value" :class="selectedUser.status === 0 ? 'status-online' : 'status-offline'">
-                  {{ selectedUser.status === 0 ? '在线' : '离线' }}
+                <span class="detail-value" :class="selectedUser.online ? 'status-online' : 'status-offline'">
+                  {{ selectedUser.online ? '在线' : '离线' }}
                 </span>
               </div>
             </div>
@@ -364,7 +364,7 @@ const users = defineModel('users', { type: Array })
 const showUserDetailsDialog = ref(false)
 const selectedUser = ref(null)
 
-const onlineCount = computed(() => users.value.filter(u => u.status === 0).length)
+const onlineCount = computed(() => users.value.filter(u => u.online).length)
 const activeCount = computed(() => users.value.filter(u => u.status === 0).length)
 
 const visiblePages = computed(() => {
@@ -451,6 +451,9 @@ const handleStatusChange = async (user) => {
   const success = await userStore.setUserStatus(user.id, newStatus)
   if (success) {
     user.status = newStatus
+    if (newStatus === 1) {
+      user.online = false
+    }
   }
 }
 
@@ -476,7 +479,11 @@ const kickUser = (user) => {
       const response = await authApi.kickOutUser(user.id)
       if (response.success) {
         ElMessage.success(`用户 "${user.userName}" 已被踢下线`)
-        user.status = 1
+        user.online = false
+        if (selectedUser.value?.id === user.id) {
+          selectedUser.value.online = false
+        }
+        await fetchUsers()
       } else {
         ElMessage.error(response.message || '踢下线失败')
       }
@@ -487,25 +494,51 @@ const kickUser = (user) => {
   }).catch(() => {})
 }
 
-const saveUser = () => {
-  if (editingUser.value) {
-    const index = users.value.findIndex(u => u.id === editingUser.value.id)
-    if (index !== -1) {
-      users.value[index] = { ...userForm.value }
-    }
-    ElMessage.success('用户信息已更新')
-  } else {
-    const newUser = {
-      ...userForm.value,
-      id: Math.max(...users.value.map(u => u.id)) + 1
-    }
-    users.value.push(newUser)
-    ElMessage.success('用户添加成功')
+const saveUser = async () => {
+  if (!userForm.value.userName?.trim()) {
+    ElMessage.warning('请输入用户名')
+    return
   }
-  
-  resetUserForm()
-  showAddUserDialog.value = false
-  editingUser.value = null
+
+  try {
+    if (editingUser.value) {
+      const payload = {
+        ...userForm.value,
+        userName: userForm.value.userName?.trim(),
+        nickName: userForm.value.nickName?.trim(),
+        email: userForm.value.email?.trim(),
+        phone: userForm.value.phone?.trim()
+      }
+      const response = await authApi.updateUserInfo(editingUser.value.id, payload)
+      if (!response.success || response.code !== 200) {
+        ElMessage.error(response.message || '用户更新失败')
+        return
+      }
+      ElMessage.success('用户信息已更新')
+    } else {
+      const payload = {
+        userName: userForm.value.userName?.trim(),
+        nickName: userForm.value.nickName?.trim(),
+        email: userForm.value.email?.trim(),
+        phone: userForm.value.phone?.trim(),
+        status: userForm.value.status
+      }
+      const response = await authApi.addUser(payload)
+      if (!response.success || response.code !== 200) {
+        ElMessage.error(response.message || '用户添加失败')
+        return
+      }
+      ElMessage.success('用户添加成功，默认密码为 123456')
+    }
+
+    await fetchUsers()
+    resetUserForm()
+    showAddUserDialog.value = false
+    editingUser.value = null
+  } catch (error) {
+    console.error('保存用户失败:', error)
+    ElMessage.error(error.response?.data?.message || error.message || '保存用户失败')
+  }
 }
 
 const showUserDetails = (user) => {
@@ -520,7 +553,8 @@ const resetUserForm = () => {
     nickName: '',
     email: '',
     phone: '',
-    status: 0
+    status: 0,
+    online: false
   })
 }
 

@@ -1,1680 +1,1648 @@
 <template>
-  <div class="profile-page">
-    <div class="profile-bg">
-      <div class="bg-gradient"></div>
-      <div class="bg-noise"></div>
-    </div>
-
+  <div class="profile-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <header class="profile-header">
-      <button class="back-btn" @click="$router.back()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
+      <button class="header-btn" @click="router.back()">
+        <span class="header-btn-icon">←</span>
         <span>返回</span>
       </button>
-      <h1 class="page-title">个人中心</h1>
-      <button class="home-btn" @click="$router.push('/home')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
+
+      <div class="header-title-group">
+        <span class="header-kicker">PROFILE WORKSPACE</span>
+        <h1 class="header-title">个人中心</h1>
+      </div>
+
+      <button class="header-btn" @click="router.push('/home')">
+        <span class="header-btn-icon">⌂</span>
         <span>首页</span>
       </button>
     </header>
 
     <main class="profile-main">
-      <div class="profile-layout">
-        <aside class="profile-sidebar">
-          <div class="profile-card glass-card">
-            <div class="avatar-section">
-              <div class="avatar-wrapper" @dblclick="viewAvatar">
-                <img 
-                  v-if="userStore.userAvatar" 
-                  :src="userStore.userAvatar" 
-                  :alt="userStore.userName"
-                  class="avatar-img"
-                />
-                <div v-else class="avatar-placeholder">
-                  {{ userStore.userName?.charAt(0) || 'U' }}
-                </div>
-                <div class="avatar-ring"></div>
-              </div>
-              <button class="change-avatar-btn" @click="editAvatar">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="4"/>
-                </svg>
-                <span>更换头像</span>
-              </button>
-            </div>
-
-            <div class="user-info">
-              <h2 class="user-nickname">{{ userStore.userName }}</h2>
-              <p class="user-name" v-if="userStore.userInfo?.userName">@{{ userStore.userInfo.userName }}</p>
-              <p class="user-email" v-if="userInfo.email">{{ userInfo.email }}</p>
-              <div class="user-meta">
-                <span v-if="userInfo.gender !== undefined" class="meta-tag">
-                  {{ userInfo.gender === 1 ? '♂ 男' : '♀ 女' }}
-                </span>
-                <span v-if="userInfo.joinDate" class="meta-tag">
-                  加入于 {{ formatDate(userInfo.joinDate) }}
-                </span>
-              </div>
-              <p class="user-bio" v-if="userInfo.bio">{{ userInfo.bio }}</p>
-            </div>
-
-            <div class="stats-grid">
-              <div class="stat-card">
-                <div class="stat-value">{{ userStats.totalSolved }}</div>
-                <div class="stat-label">已解决</div>
-                <div class="stat-bar"></div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ userStats.totalAttempted }}</div>
-                <div class="stat-label">已尝试</div>
-                <div class="stat-bar"></div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">{{ userStats.streak }}</div>
-                <div class="stat-label">天数</div>
-                <div class="stat-bar"></div>
-              </div>
+      <section class="profile-top">
+        <article class="section-shell identity-panel">
+          <div class="identity-head">
+            <span class="identity-label">当前账号</span>
+            <div class="identity-tags">
+              <span
+                v-for="tag in roleTags"
+                :key="tag"
+                class="identity-tag"
+              >
+                {{ tag }}
+              </span>
             </div>
           </div>
 
-          <div class="achievements-card glass-card">
-            <h3 class="card-title">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="8" r="7"/>
-                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-              </svg>
-              成就徽章
-            </h3>
-            <div class="achievements-list">
-              <div 
-                v-for="achievement in achievements" 
-                :key="achievement.id"
-                class="achievement-item"
-                :class="{ unlocked: achievement.unlocked }"
-              >
-                <div class="achievement-icon-wrapper">
-                  <svg v-if="achievement.icon === 'Star'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                  <svg v-else-if="achievement.icon === 'Medal'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/>
-                    <path d="M11 12 5.12 2.2"/>
-                    <path d="m13 12 5.88-9.8"/>
-                    <path d="M8 7h8"/>
-                    <circle cx="12" cy="17" r="5"/>
-                    <path d="M12 18v-2h-.5"/>
-                  </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                    <path d="M4 22h16"/>
-                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                  </svg>
-                </div>
-                <div class="achievement-content">
-                  <div class="achievement-name">{{ achievement.name }}</div>
-                  <div class="achievement-desc">{{ achievement.description }}</div>
-                </div>
-                <div v-if="achievement.unlocked" class="achievement-badge">✓</div>
+          <div class="identity-body">
+            <div class="avatar-rail">
+              <button class="avatar-shell" @click="viewAvatar">
+                <img
+                  v-if="userStore.userAvatar"
+                  :src="userStore.userAvatar"
+                  :alt="displayName"
+                  class="avatar-image"
+                />
+                <div v-else class="avatar-fallback">{{ avatarText }}</div>
+              </button>
+              <button class="avatar-action" @click="editAvatar">更换头像</button>
+            </div>
+
+            <div class="identity-copy">
+              <div class="identity-title-row">
+                <h2 class="identity-name">{{ displayName }}</h2>
+                <span class="identity-handle">@{{ currentUser.userName || 'halo-user' }}</span>
               </div>
+
+              <div class="identity-meta">
+                <span>{{ currentUser.email || '未绑定邮箱' }}</span>
+                <span>{{ currentUser.phone || '未填写手机号' }}</span>
+                <span>{{ currentUser.status === 1 ? '账号已禁用' : '账号正常' }}</span>
+              </div>
+
+              <p class="identity-intro">
+                {{ currentUser.introduce || '还没有填写个人简介，可以补充你的学习方向、技术栈或最近目标。' }}
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <aside class="section-shell control-panel">
+          <div class="panel-head">
+            <h3 class="panel-title">偏好与操作</h3>
+            <span class="panel-meta">{{ themeModeText }}</span>
+          </div>
+
+          <div class="theme-switcher">
+            <button
+              v-for="option in themeOptions"
+              :key="option.value"
+              class="theme-chip"
+              :class="{ active: themeStore.themePreference === option.value }"
+              @click="changeTheme(option.value)"
+            >
+              <span class="theme-chip-icon">{{ option.icon }}</span>
+              <span>{{ option.label }}</span>
+            </button>
+          </div>
+
+          <div class="action-stack">
+            <button class="primary-btn" @click="activeTab = 'settings'">编辑资料</button>
+            <button class="secondary-btn" @click="activeTab = 'activity'">查看动态</button>
+          </div>
+
+          <div class="status-list">
+            <div class="status-row">
+              <span>最近更新</span>
+              <strong>{{ formatDateTime(currentUser.updateTime) || '暂无记录' }}</strong>
+            </div>
+            <div class="status-row">
+              <span>登录邮箱</span>
+              <strong>{{ currentUser.email || '未设置' }}</strong>
             </div>
           </div>
         </aside>
+      </section>
 
-        <section class="profile-content">
-          <div class="tabs-wrapper">
-            <div class="tabs-header">
-              <button 
-                v-for="tab in tabs" 
-                :key="tab.key"
-                class="tab-btn"
-                :class="{ active: activeTab === tab.key }"
-                @click="activeTab = tab.key"
-              >
-                <component :is="tab.icon" />
-                <span>{{ tab.label }}</span>
-              </button>
-            </div>
+      <section class="stats-strip">
+        <article
+          v-for="item in summaryCards"
+          :key="item.label"
+          class="stat-item"
+        >
+          <span class="stat-label">{{ item.label }}</span>
+          <strong class="stat-value">{{ item.value }}</strong>
+          <span class="stat-meta">{{ item.meta }}</span>
+        </article>
+      </section>
 
-            <div class="tabs-content">
-              <div v-if="activeTab === 'solutions'" class="solutions-panel">
-                <div class="panel-header">
-                  <h3>最近提交</h3>
-                  <div class="filter-group">
-                    <button 
-                      v-for="filter in solutionFilters" 
-                      :key="filter.value"
-                      class="filter-btn"
-                      :class="{ active: solutionFilter === filter.value }"
-                      @click="solutionFilter = filter.value"
-                    >
-                      {{ filter.label }}
-                    </button>
-                  </div>
-                </div>
+      <nav class="tab-rail">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="tab-btn"
+          :class="{ active: activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >
+          <span class="tab-icon">{{ tab.icon }}</span>
+          <span>{{ tab.label }}</span>
+        </button>
+      </nav>
 
-                <div class="solutions-timeline">
-                  <div 
-                    v-for="(solution, index) in filteredSolutions" 
-                    :key="solution.id"
-                    class="solution-item"
-                    :style="{ '--delay': index * 0.05 + 's' }"
-                  >
-                    <div class="timeline-marker" :class="solution.status">
-                      <svg v-if="solution.status === 'accepted'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                      </svg>
-                    </div>
-                    <div class="solution-card">
-                      <div class="solution-header">
-                        <h4 class="solution-title">{{ solution.problemTitle }}</h4>
-                        <span class="solution-status" :class="solution.status">
-                          {{ solution.status === 'accepted' ? '通过' : '未通过' }}
-                        </span>
-                      </div>
-                      <div class="solution-meta">
-                        <span v-if="solution.categoryName" class="meta-item">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                          </svg>
-                          {{ solution.categoryName }}
-                        </span>
-                        <span class="meta-item">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <polyline points="12 6 12 12 16 14"/>
-                          </svg>
-                          {{ formatDateTime(solution.submitTime) }}
-                        </span>
-                      </div>
-                      <div v-if="solution.status === 'accepted'" class="solution-metrics">
-                        <div class="metric">
-                          <span class="metric-value">{{ solution.runtime }}ms</span>
-                          <span class="metric-label">运行时间</span>
-                        </div>
-                        <div class="metric">
-                          <span class="metric-value">{{ solution.memory }}MB</span>
-                          <span class="metric-label">内存消耗</span>
-                        </div>
-                      </div>
-                      <div v-else class="solution-error">
-                        <span class="error-type">{{ solution.errorType }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div v-if="filteredSolutions.length === 0" class="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <line x1="10" y1="9" x2="8" y2="9"/>
-                    </svg>
-                    <p>暂无练习记录</p>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="activeTab === 'statistics'" class="statistics-panel">
-                <div class="stats-section">
-                  <h3 class="section-title">题目难度分布</h3>
-                  <div class="difficulty-bars">
-                    <div class="difficulty-item easy">
-                      <div class="difficulty-header">
-                        <span class="difficulty-label">简单</span>
-                        <span class="difficulty-count">{{ difficultyStats.easy.solved }} / {{ difficultyStats.easy.total }}</span>
-                      </div>
-                      <div class="difficulty-track">
-                        <div 
-                          class="difficulty-fill" 
-                          :style="{ width: (difficultyStats.easy.solved / difficultyStats.easy.total * 100) + '%' }"
-                        ></div>
-                      </div>
-                    </div>
-                    <div class="difficulty-item medium">
-                      <div class="difficulty-header">
-                        <span class="difficulty-label">中等</span>
-                        <span class="difficulty-count">{{ difficultyStats.medium.solved }} / {{ difficultyStats.medium.total }}</span>
-                      </div>
-                      <div class="difficulty-track">
-                        <div 
-                          class="difficulty-fill" 
-                          :style="{ width: (difficultyStats.medium.solved / difficultyStats.medium.total * 100) + '%' }"
-                        ></div>
-                      </div>
-                    </div>
-                    <div class="difficulty-item hard">
-                      <div class="difficulty-header">
-                        <span class="difficulty-label">困难</span>
-                        <span class="difficulty-count">{{ difficultyStats.hard.solved }} / {{ difficultyStats.hard.total }}</span>
-                      </div>
-                      <div class="difficulty-track">
-                        <div 
-                          class="difficulty-fill" 
-                          :style="{ width: (difficultyStats.hard.solved / difficultyStats.hard.total * 100) + '%' }"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="stats-section">
-                  <h3 class="section-title">提交日历</h3>
-                  <div class="calendar-wrapper">
-                    <div class="calendar-grid">
-                      <div 
-                        v-for="(day, index) in calendarData" 
-                        :key="day.date"
-                        class="calendar-day"
-                        :class="getCalendarDayClass(day.count)"
-                        :title="`${day.date}: ${day.count} 次提交`"
-                        :style="{ '--delay': (index % 53) * 0.01 + 's' }"
-                      ></div>
-                    </div>
-                    <div class="calendar-legend">
-                      <span>少</span>
-                      <div class="legend-colors">
-                        <div class="legend-color level-0"></div>
-                        <div class="legend-color level-1"></div>
-                        <div class="legend-color level-2"></div>
-                        <div class="legend-color level-3"></div>
-                        <div class="legend-color level-4"></div>
-                      </div>
-                      <span>多</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-if="activeTab === 'settings'" class="settings-panel">
-                <div class="settings-section">
-                  <h3 class="section-title">个人信息</h3>
-                  <div class="settings-form">
-                    <div class="form-group">
-                      <label class="form-label">昵称</label>
-                      <input 
-                        v-model="settingsForm.nickname" 
-                        type="text" 
-                        class="form-input"
-                        placeholder="请输入昵称"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">邮箱</label>
-                      <input 
-                        v-model="settingsForm.email" 
-                        type="email" 
-                        class="form-input"
-                        placeholder="请输入邮箱"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">性别</label>
-                      <div class="radio-group">
-                        <label class="radio-item" :class="{ active: settingsForm.gender === 1 }">
-                          <input type="radio" :value="1" v-model="settingsForm.gender" />
-                          <span>男</span>
-                        </label>
-                        <label class="radio-item" :class="{ active: settingsForm.gender === 0 }">
-                          <input type="radio" :value="0" v-model="settingsForm.gender" />
-                          <span>女</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">个人简介</label>
-                      <textarea 
-                        v-model="settingsForm.bio" 
-                        class="form-textarea"
-                        placeholder="介绍一下你自己..."
-                        rows="3"
-                      ></textarea>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="settings-section">
-                  <h3 class="section-title">偏好设置</h3>
-                  <div class="settings-form">
-                    <div class="form-group">
-                      <label class="form-label">默认编程语言</label>
-                      <select v-model="settingsForm.defaultLanguage" class="form-select">
-                        <option value="javascript">JavaScript</option>
-                        <option value="python">Python</option>
-                        <option value="java">Java</option>
-                        <option value="cpp">C++</option>
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">主题模式</label>
-                      <div class="radio-group">
-                        <label class="radio-item" :class="{ active: settingsForm.theme === 'light' }">
-                          <input type="radio" value="light" v-model="settingsForm.theme" />
-                          <span>浅色</span>
-                        </label>
-                        <label class="radio-item" :class="{ active: settingsForm.theme === 'dark' }">
-                          <input type="radio" value="dark" v-model="settingsForm.theme" />
-                          <span>深色</span>
-                        </label>
-                        <label class="radio-item" :class="{ active: settingsForm.theme === 'auto' }">
-                          <input type="radio" value="auto" v-model="settingsForm.theme" />
-                          <span>跟随系统</span>
-                        </label>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">邮件通知</label>
-                      <div class="toggle-switch" :class="{ active: settingsForm.emailNotification }" @click="settingsForm.emailNotification = !settingsForm.emailNotification">
-                        <div class="toggle-thumb"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button class="save-btn" @click="saveSettings">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
-                  </svg>
-                  <span>保存设置</span>
-                </button>
-              </div>
+      <section v-if="activeTab === 'overview'" class="content-grid overview-grid">
+        <article class="section-shell info-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">基础信息</h3>
             </div>
           </div>
-        </section>
-      </div>
+
+          <dl class="detail-grid">
+            <div
+              v-for="item in profileDetails"
+              :key="item.label"
+              class="detail-item"
+            >
+              <dt class="detail-label">{{ item.label }}</dt>
+              <dd class="detail-value">{{ item.value }}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article class="section-shell insight-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">近期概览</h3>
+            </div>
+          </div>
+
+          <div class="insight-block">
+            <div class="insight-header">
+              <span class="insight-label">刷题完成度</span>
+              <strong class="insight-number">{{ solvedRate }}%</strong>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" :style="{ width: solvedRate + '%' }"></div>
+            </div>
+          </div>
+
+          <div class="snapshot-list">
+            <div class="snapshot-item">
+              <span class="snapshot-label">最近练习时间</span>
+              <strong class="snapshot-value">
+                {{ practiceRecords[0] ? formatDateTime(practiceRecords[0].answerTime) : '暂无记录' }}
+              </strong>
+            </div>
+            <div class="snapshot-item">
+              <span class="snapshot-label">最近发文时间</span>
+              <strong class="snapshot-value">
+                {{ blogArticles[0] ? formatDateTime(blogArticles[0].publishTime || blogArticles[0].createdTime) : '暂无文章' }}
+              </strong>
+            </div>
+            <div class="snapshot-item">
+              <span class="snapshot-label">今日练习得分</span>
+              <strong class="snapshot-value">{{ stats.todayScore }}</strong>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section v-if="activeTab === 'activity'" class="content-grid activity-grid">
+        <article class="section-shell list-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">最近刷题记录</h3>
+            </div>
+            <button class="text-btn" @click="router.push('/practice-history')">查看全部</button>
+          </div>
+
+          <div v-if="practiceRecords.length" class="record-list">
+            <button
+              v-for="record in practiceRecords"
+              :key="record.id"
+              class="record-item"
+              @click="router.push(`/practice-history/${record.id}`)"
+            >
+              <div class="record-main">
+                <div class="record-title-row">
+                  <strong>{{ record.subjectName || `题目 #${record.subjectId}` }}</strong>
+                  <span class="status-pill" :class="{ success: record.isCorrect === 1, danger: record.isCorrect !== 1 }">
+                    {{ record.isCorrect === 1 ? '通过' : '未通过' }}
+                  </span>
+                </div>
+                <div class="record-meta">
+                  <span>{{ record.categoryName || '未分类' }}</span>
+                  <span>{{ formatDateTime(record.answerTime) }}</span>
+                  <span>{{ formatDuration(record.timeCost) }}</span>
+                </div>
+              </div>
+            </button>
+          </div>
+          <div v-else class="empty-state">暂无刷题记录，先去题库完成几道题吧。</div>
+        </article>
+
+        <article class="section-shell list-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">博客文章</h3>
+            </div>
+            <button class="text-btn" @click="router.push('/blog/write')">写文章</button>
+          </div>
+
+          <div v-if="blogArticles.length" class="article-list">
+            <button
+              v-for="article in blogArticles"
+              :key="article.id"
+              class="article-item"
+              @click="router.push(`/blog/article/${article.id}`)"
+            >
+              <div class="article-main">
+                <strong class="article-title">{{ article.title }}</strong>
+                <p class="article-summary">{{ article.summary || '这篇文章还没有填写摘要。' }}</p>
+              </div>
+              <div class="article-meta">
+                <span>{{ article.categoryName || '未分类' }}</span>
+                <span>{{ article.viewCount || 0 }} 浏览</span>
+                <span>{{ formatDate(article.publishTime || article.createdTime) }}</span>
+              </div>
+            </button>
+          </div>
+          <div v-else class="empty-state">还没有发布文章，可以从这里直接进入写作页面。</div>
+        </article>
+      </section>
+
+      <section v-if="activeTab === 'settings'" class="content-grid settings-grid">
+        <article class="section-shell settings-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">资料修改</h3>
+            </div>
+          </div>
+
+          <form class="settings-form" @submit.prevent="saveProfile">
+            <label class="field">
+              <span class="field-label">昵称</span>
+              <input v-model.trim="settingsForm.nickName" class="field-input" maxlength="20" placeholder="请输入昵称" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">用户名</span>
+              <input :value="currentUser.userName || ''" class="field-input readonly" readonly />
+            </label>
+
+            <label class="field">
+              <span class="field-label">邮箱</span>
+              <input :value="currentUser.email || ''" class="field-input readonly" readonly />
+            </label>
+
+            <label class="field">
+              <span class="field-label">手机号</span>
+              <input v-model.trim="settingsForm.phone" class="field-input" maxlength="20" placeholder="请输入手机号" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">性别</span>
+              <select v-model="settingsForm.sex" class="field-input">
+                <option :value="null">未设置</option>
+                <option :value="1">男</option>
+                <option :value="2">女</option>
+              </select>
+            </label>
+
+            <label class="field field-full">
+              <span class="field-label">个人简介</span>
+              <textarea
+                v-model.trim="settingsForm.introduce"
+                class="field-input field-textarea"
+                maxlength="160"
+                placeholder="介绍一下你正在学习的方向、关注的主题或近期目标"
+              ></textarea>
+            </label>
+
+            <div class="form-footer">
+              <div class="form-tip">主题切换会立即生效，并保存在浏览器本地。</div>
+              <button type="submit" class="primary-btn" :disabled="savingProfile">
+                {{ savingProfile ? '保存中...' : '保存修改' }}
+              </button>
+            </div>
+          </form>
+        </article>
+
+        <aside class="section-shell notes-panel">
+          <div class="section-head">
+            <div>
+              <h3 class="section-title">当前设置</h3>
+            </div>
+          </div>
+
+          <div class="note-list">
+            <div class="note-item">
+              <strong>主题模式</strong>
+              <span>{{ themeModeText }}</span>
+            </div>
+            <div class="note-item">
+              <strong>登录邮箱</strong>
+              <span>{{ currentUser.email || '未设置' }}</span>
+            </div>
+            <div class="note-item">
+              <strong>账号状态</strong>
+              <span>{{ currentUser.status === 1 ? '已禁用' : '正常' }}</span>
+            </div>
+            <div class="note-item">
+              <strong>上次更新</strong>
+              <span>{{ formatDateTime(currentUser.updateTime) || '暂无记录' }}</span>
+            </div>
+          </div>
+        </aside>
+      </section>
     </main>
 
-    <Transition name="modal">
-      <div v-if="imagePreviewVisible" class="modal-overlay" @click="imagePreviewVisible = false">
-        <div class="modal-content" @click.stop>
-          <button class="modal-close" @click="imagePreviewVisible = false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-          <img :src="previewImageUrl" alt="头像预览" class="preview-image" />
-        </div>
-      </div>
-    </Transition>
+    <el-dialog v-model="imagePreviewVisible" title="头像预览" width="420px">
+      <img :src="previewImageUrl" alt="头像预览" class="preview-image" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch, h } from 'vue'
-import { useUserStore } from '@/stores/user.js'
-import { ElMessage, ElLoading } from 'element-plus'
-import { getPracticeRecordsByUser, getSolvedProblemsCount, getAttemptedProblemsCount } from '@/api/subject.js'
-import { fileApi } from '@/api/file.js'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElLoading, ElMessage } from 'element-plus'
+import { blogApi } from '@/api/blog'
+import { fileApi } from '@/api/file'
+import {
+  getAttemptedProblemsCount,
+  getDailyStatistics,
+  getPracticeRecordsByUser,
+  getSolvedProblemsCount
+} from '@/api/subject'
+import { useThemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
 
+const router = useRouter()
 const userStore = useUserStore()
+const themeStore = useThemeStore()
 
+const activeTab = ref('overview')
 const imagePreviewVisible = ref(false)
 const previewImageUrl = ref('')
-const activeTab = ref('solutions')
+const savingProfile = ref(false)
 
-const userInfo = reactive({
-  email: '',
-  gender: undefined,
-  joinDate: '',
-  bio: ''
+const stats = reactive({
+  solvedCount: 0,
+  attemptedCount: 0,
+  articleCount: 0,
+  todayProblemCount: 0,
+  todayAccuracy: 0,
+  todayScore: 0
 })
 
-const userStats = reactive({
-  totalSolved: 0,
-  totalAttempted: 0,
-  streak: 0
-})
-
-const achievements = ref([
-  { id: 1, name: '探索者', description: '完成第一组工程主题练习', icon: 'Star', unlocked: true },
-  { id: 2, name: '节奏者', description: '连续 7 天保持学习节奏', icon: 'Medal', unlocked: true },
-  { id: 3, name: '破局者', description: '累计完成 100 次高质量练习', icon: 'Trophy', unlocked: false }
-])
-
-const solutionFilter = ref('all')
-const solutions = ref([])
-
-const solutionFilters = [
-  { label: '全部', value: 'all' },
-  { label: '已通过', value: 'accepted' },
-  { label: '未通过', value: 'failed' }
-]
-
-const filteredSolutions = computed(() => {
-  if (solutionFilter.value === 'all') return solutions.value
-  return solutions.value.filter(s => s.status === solutionFilter.value)
-})
-
-const difficultyStats = reactive({
-  easy: { solved: 25, total: 50 },
-  medium: { solved: 18, total: 60 },
-  hard: { solved: 5, total: 25 }
-})
-
-const calendarData = ref([])
+const practiceRecords = ref([])
+const blogArticles = ref([])
 
 const settingsForm = reactive({
-  nickname: '',
-  email: '',
-  gender: undefined,
-  bio: '',
-  defaultLanguage: 'javascript',
-  theme: 'light',
-  emailNotification: true
+  nickName: '',
+  phone: '',
+  sex: null,
+  introduce: ''
 })
 
 const tabs = [
-  { 
-    key: 'solutions', 
-    label: '练习轨迹',
-    icon: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
-      h('path', { d: 'M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z' }),
-      h('polyline', { points: '14 2 14 8 20 8' }),
-      h('line', { x1: 16, y1: 13, x2: 8, y2: 13 }),
-      h('line', { x1: 16, y1: 17, x2: 8, y2: 17 }),
-      h('line', { x1: 10, y1: 9, x2: 8, y2: 9 })
-    ])
-  },
-  { 
-    key: 'statistics', 
-    label: '成长统计',
-    icon: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
-      h('line', { x1: 18, y1: 20, x2: 18, y2: 10 }),
-      h('line', { x1: 12, y1: 20, x2: 12, y2: 4 }),
-      h('line', { x1: 6, y1: 20, x2: 6, y2: 14 })
-    ])
-  },
-  { 
-    key: 'settings', 
-    label: '设置',
-    icon: () => h('svg', { xmlns: 'http://www.w3.org/2000/svg', width: 18, height: 18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [
-      h('circle', { cx: 12, cy: 12, r: 3 }),
-      h('path', { d: 'M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z' })
-    ])
-  }
+  { key: 'overview', label: '资料概览', icon: '◎' },
+  { key: 'activity', label: '动态记录', icon: '◌' },
+  { key: 'settings', label: '资料设置', icon: '⚙' }
 ]
 
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  if (typeof dateString === 'number') return new Date(dateString).toLocaleDateString('zh-CN')
-  return new Date(dateString).toLocaleDateString('zh-CN')
-}
+const themeOptions = [
+  { value: 'light', label: '浅色', icon: '☀' },
+  { value: 'dark', label: '深色', icon: '☾' },
+  { value: 'system', label: '系统', icon: '◐' }
+]
 
-const formatDateTime = (dateString) => {
-  if (!dateString) return ''
-  if (typeof dateString === 'number') return new Date(dateString).toLocaleString('zh-CN')
-  return new Date(dateString).toLocaleString('zh-CN')
-}
+/**
+ * 当前登录用户资料。
+ * 使用计算属性统一读取，避免模板里重复判空。
+ */
+const currentUser = computed(() => userStore.userInfo || {})
 
-const getCalendarDayClass = (count) => {
-  if (count === 0) return 'level-0'
-  if (count <= 2) return 'level-1'
-  if (count <= 4) return 'level-2'
-  if (count <= 6) return 'level-3'
-  return 'level-4'
-}
+/**
+ * 展示名优先用昵称，昵称为空时回退到用户名。
+ */
+const displayName = computed(() => currentUser.value.nickName || currentUser.value.userName || '学习者')
 
-const generateCalendarData = () => {
-  const data = []
-  const today = new Date()
-  const startDate = new Date(today.getFullYear(), today.getMonth() - 11, today.getDate())
-  
-  for (let i = 0; i < 365; i++) {
-    const date = new Date(startDate)
-    date.setDate(startDate.getDate() + i)
-    data.push({
-      date: date.toISOString().split('T')[0],
-      count: Math.floor(Math.random() * 8)
-    })
+/**
+ * 头像缺失时取用户名首字作为占位字符。
+ */
+const avatarText = computed(() => displayName.value.charAt(0).toUpperCase())
+
+/**
+ * 角色标签列表。
+ * 后端返回多个角色时直接展示，普通用户默认展示基础标识。
+ */
+const roleTags = computed(() => {
+  if (Array.isArray(currentUser.value.roleKeys) && currentUser.value.roleKeys.length) {
+    return currentUser.value.roleKeys.map(formatRoleLabel)
   }
-  calendarData.value = data
-}
+  return ['普通用户']
+})
 
-const calculateStreak = (joinDate) => {
-  if (!joinDate) return 0
-  const join = new Date(joinDate)
-  const now = new Date()
-  const diffTime = Math.abs(now - join)
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-}
-
-const fetchUserStatistics = async () => {
-  try {
-    if (!userStore.userInfo?.id) return
-    
-    const solvedRes = await getSolvedProblemsCount(userStore.userInfo.id)
-    if (solvedRes.code === 200) userStats.totalSolved = solvedRes.data
-    
-    const attemptedRes = await getAttemptedProblemsCount(userStore.userInfo.id)
-    if (attemptedRes.code === 200) userStats.totalAttempted = attemptedRes.data
-    
-    userStats.streak = calculateStreak(userStore.userInfo.createdTime)
-  } catch (error) {
-    console.error('获取用户统计数据失败:', error)
+/**
+ * 当前主题模式的文案说明。
+ */
+const themeModeText = computed(() => {
+  const map = {
+    light: '浅色模式',
+    dark: '深色模式',
+    system: '跟随系统'
   }
-}
+  return map[themeStore.themePreference] || '跟随系统'
+})
 
-const fetchUserPracticeRecords = async () => {
-  try {
-    if (!userStore.userInfo?.id) return
-    
-    const res = await getPracticeRecordsByUser(userStore.userInfo.id)
-    if (res.code === 200) {
-      solutions.value = res.data.map(record => ({
-        id: record.id,
-        problemTitle: record.subjectName || `题目ID: ${record.subjectId}`,
-        categoryName: record.categoryName,
-        language: 'Java',
-        status: record.isCorrect === 1 ? 'accepted' : 'failed',
-        runtime: record.timeCost ? `${record.timeCost * 1000}` : '0',
-        memory: '0',
-        submitTime: record.answerTime,
-        errorType: record.isCorrect === 1 ? '' : '答案错误'
-      }))
-    }
-  } catch (error) {
-    console.error('获取刷题记录失败:', error)
+/**
+ * 个人中心顶部统计卡片。
+ * 全部来自真实接口数据，不再展示演示型随机指标。
+ */
+const summaryCards = computed(() => [
+  {
+    label: '已解决题目',
+    value: stats.solvedCount,
+    meta: `共尝试 ${stats.attemptedCount} 题`
+  },
+  {
+    label: '今日练习',
+    value: stats.todayProblemCount,
+    meta: `正确率 ${stats.todayAccuracy}%`
+  },
+  {
+    label: '博客文章',
+    value: stats.articleCount,
+    meta: '个人创作总数'
+  },
+  {
+    label: '今日得分',
+    value: stats.todayScore,
+    meta: '来自今日练习统计'
   }
+])
+
+/**
+ * 基础资料区使用的展示字段。
+ * 只展示适合用户查看的非敏感信息。
+ */
+const profileDetails = computed(() => [
+  { label: '用户 ID', value: currentUser.value.id || '--' },
+  { label: '用户名', value: currentUser.value.userName || '--' },
+  { label: '昵称', value: currentUser.value.nickName || '--' },
+  { label: '邮箱', value: currentUser.value.email || '--' },
+  { label: '手机号', value: currentUser.value.phone || '--' },
+  { label: '性别', value: formatSex(currentUser.value.sex) },
+  { label: '账号状态', value: currentUser.value.status === 1 ? '已禁用' : '正常' },
+  { label: '注册时间', value: formatDateTime(currentUser.value.createdTime) || '--' },
+  { label: '最近更新', value: formatDateTime(currentUser.value.updateTime) || '--' }
+])
+
+/**
+ * 解题完成率。
+ * 使用已解决 / 已尝试计算，避免展示没有业务意义的假进度。
+ */
+const solvedRate = computed(() => {
+  if (!stats.attemptedCount) {
+    return 0
+  }
+  return Math.min(100, Math.round((stats.solvedCount / stats.attemptedCount) * 100))
+})
+
+/**
+ * 切换主题模式。
+ * 主题立即落到全局 html 节点，不需要额外点击保存。
+ */
+const changeTheme = (mode) => {
+  themeStore.setThemePreference(mode)
 }
 
+/**
+ * 预览头像。
+ * 已上传头像时通过弹窗放大查看。
+ */
+const viewAvatar = () => {
+  if (!userStore.userAvatar) {
+    ElMessage.info('当前还没有头像可预览')
+    return
+  }
+
+  previewImageUrl.value = userStore.userAvatar
+  imagePreviewVisible.value = true
+}
+
+/**
+ * 上传头像并立即同步到当前用户资料。
+ * 这里保留了原有上传逻辑，只是挪到新的页面结构中继续复用。
+ */
 const editAvatar = () => {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
-  input.onchange = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    
+
+  input.onchange = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      ElMessage.error('请上传有效的图片格式')
+      ElMessage.error('请上传 jpg、png、gif 或 webp 图片')
       return
     }
-    
+
     if (file.size > 5 * 1024 * 1024) {
-      ElMessage.error('图片大小不能超过5MB')
+      ElMessage.error('头像大小不能超过 5MB')
       return
     }
-    
+
+    const loading = ElLoading.service({
+      lock: true,
+      text: '头像上传中...',
+      background: 'rgba(15, 23, 42, 0.32)'
+    })
+
     try {
-      const loading = ElLoading.service({
-        lock: true,
-        text: '头像上传中...',
-        background: 'rgba(0, 0, 0, 0.7)'
+      const response = await fileApi.uploadImage(file, '用户头像')
+      const fileUrl = response?.data?.filePath
+
+      if (!response || response.code !== 200 || !fileUrl) {
+        ElMessage.error(response?.message || '头像上传失败')
+        return
+      }
+
+      const success = await userStore.updateUserInfo({
+        id: currentUser.value.id,
+        avatar: fileUrl
       })
-      
-      const res = await fileApi.uploadImage(file, '用户头像')
-      loading.close()
-      
-      if (res && res.code === 200 && res.data) {
-        const fileUrl = res.data.filePath
-        if (!fileUrl) {
-          ElMessage.error('上传回复数据错误')
-          return
-        }
-        
-        const success = await userStore.updateUserInfo({
-          id: userStore.userInfo?.id,
-          avatar: fileUrl
-        })
-        
-        if (success) {
-          ElMessage.success('头像上传成功！')
-          await refreshUserInfo()
-        }
-      } else {
-        ElMessage.error(res?.message || '图片上传失败')
+
+      if (success) {
+        await refreshUserInfo()
+        ElMessage.success('头像更新成功')
       }
     } catch (error) {
       console.error('头像上传失败:', error)
-      ElMessage.error('头像上传失败')
+      ElMessage.error('头像上传失败，请稍后重试')
+    } finally {
+      loading.close()
     }
   }
+
   input.click()
 }
 
-const viewAvatar = () => {
-  if (userStore.userAvatar) {
-    previewImageUrl.value = userStore.userAvatar
-    imagePreviewVisible.value = true
-  } else {
-    ElMessage.info('暂无头像可查看')
+/**
+ * 保存资料修改。
+ * 第一版只开放昵称、手机号、性别和简介，避免影响邮箱登录链路。
+ */
+const saveProfile = async () => {
+  if (!currentUser.value.id) {
+    ElMessage.error('当前用户信息不存在，无法保存')
+    return
   }
-}
 
-const saveSettings = async () => {
+  if (!settingsForm.nickName) {
+    ElMessage.warning('昵称不能为空')
+    return
+  }
+
+  savingProfile.value = true
   try {
-    const userData = {
-      id: userStore.userInfo?.id,
-      nickName: settingsForm.nickname,
-      email: settingsForm.email,
-      sex: settingsForm.gender,
-      introduce: settingsForm.bio
-    }
-    
-    const success = await userStore.updateUserInfo(userData)
+    const success = await userStore.updateUserInfo({
+      id: currentUser.value.id,
+      nickName: settingsForm.nickName,
+      phone: settingsForm.phone,
+      sex: settingsForm.sex,
+      introduce: settingsForm.introduce
+    })
+
     if (success) {
       await refreshUserInfo()
-      ElMessage.success('设置保存成功！')
+      ElMessage.success('个人资料已更新')
     }
   } catch (error) {
-    console.error('保存设置失败:', error)
-    ElMessage.error('保存设置失败')
+    console.error('保存资料失败:', error)
+    ElMessage.error('保存资料失败，请稍后重试')
+  } finally {
+    savingProfile.value = false
   }
 }
 
+/**
+ * 刷新当前用户资料，并同步到表单。
+ * 这样能保证页面展示和编辑表单使用的是同一份最新数据。
+ */
 const refreshUserInfo = async () => {
-  if (userStore.isLoggedIn && userStore.userInfo?.id) {
-    try {
-      await userStore.getUserInfo(userStore.userInfo.id)
-      settingsForm.nickname = userStore.userName
-      settingsForm.email = userStore.userInfo?.email || userInfo.email
-      settingsForm.gender = userStore.userInfo?.sex !== undefined ? userStore.userInfo.sex : userInfo.gender
-      settingsForm.bio = userStore.userInfo?.introduce || userInfo.bio
-      
-      userInfo.email = userStore.userInfo?.email || ''
-      userInfo.gender = userStore.userInfo?.sex !== undefined ? userStore.userInfo.sex : undefined
-      userInfo.joinDate = userStore.userInfo?.createdTime || ''
-      userInfo.bio = userStore.userInfo?.introduce || ''
-    } catch (error) {
-      console.error('获取用户信息失败:', error)
+  if (!currentUser.value.id) {
+    return
+  }
+
+  await userStore.getUserInfo(currentUser.value.id)
+  syncSettingsForm()
+}
+
+/**
+ * 拉取统计数据。
+ * 将刷题总量、今日数据拆开加载，保持个人中心展示口径一致。
+ */
+const fetchStatistics = async () => {
+  if (!currentUser.value.id) {
+    return
+  }
+
+  try {
+    const [solvedRes, attemptedRes, dailyRes] = await Promise.all([
+      getSolvedProblemsCount(currentUser.value.id),
+      getAttemptedProblemsCount(currentUser.value.id),
+      getDailyStatistics(currentUser.value.id)
+    ])
+
+    if (solvedRes?.code === 200) {
+      stats.solvedCount = solvedRes.data || 0
     }
+
+    if (attemptedRes?.code === 200) {
+      stats.attemptedCount = attemptedRes.data || 0
+    }
+
+    if (dailyRes?.code === 200 && dailyRes.data) {
+      stats.todayProblemCount = dailyRes.data.problemCount || 0
+      stats.todayAccuracy = dailyRes.data.accuracy || 0
+      stats.todayScore = dailyRes.data.totalScore || 0
+    }
+  } catch (error) {
+    console.error('获取个人统计失败:', error)
   }
 }
 
-watch(() => userStore.isLoggedIn, (newVal) => {
-  if (newVal) fetchUserPracticeRecords()
-})
+/**
+ * 拉取最近刷题记录。
+ * 只保留最新几条，保证个人中心内容紧凑。
+ */
+const fetchPracticeRecords = async () => {
+  if (!currentUser.value.id) {
+    return
+  }
+
+  try {
+    const response = await getPracticeRecordsByUser(currentUser.value.id)
+    if (response?.code !== 200 || !Array.isArray(response.data)) {
+      practiceRecords.value = []
+      return
+    }
+
+    practiceRecords.value = [...response.data]
+      .sort((left, right) => new Date(right.answerTime || 0) - new Date(left.answerTime || 0))
+      .slice(0, 6)
+  } catch (error) {
+    console.error('获取刷题记录失败:', error)
+    practiceRecords.value = []
+  }
+}
+
+/**
+ * 拉取当前用户的博客文章。
+ * 直接按 authorId 过滤，避免再新增额外聚合接口。
+ */
+const fetchBlogArticles = async () => {
+  if (!currentUser.value.id) {
+    return
+  }
+
+  try {
+    const response = await blogApi.getArticlePage({
+      pageNum: 1,
+      pageSize: 6,
+      authorId: currentUser.value.id
+    })
+
+    if (response?.code !== 200) {
+      blogArticles.value = []
+      stats.articleCount = 0
+      return
+    }
+
+    blogArticles.value = response.data?.result || []
+    stats.articleCount = response.data?.total || 0
+  } catch (error) {
+    console.error('获取个人文章失败:', error)
+    blogArticles.value = []
+    stats.articleCount = 0
+  }
+}
+
+/**
+ * 将最新的用户资料同步到设置表单中。
+ */
+const syncSettingsForm = () => {
+  settingsForm.nickName = currentUser.value.nickName || ''
+  settingsForm.phone = currentUser.value.phone || ''
+  settingsForm.sex = currentUser.value.sex ?? null
+  settingsForm.introduce = currentUser.value.introduce || ''
+}
+
+/**
+ * 初始化个人中心数据。
+ * 将资料刷新、统计、博客和刷题记录一起加载，减少页面分散请求的时序问题。
+ */
+const initializeProfile = async () => {
+  if (!currentUser.value.id && userStore.isLoggedIn) {
+    await userStore.initUser()
+  }
+
+  if (!currentUser.value.id) {
+    return
+  }
+
+  await refreshUserInfo()
+  await Promise.all([fetchStatistics(), fetchPracticeRecords(), fetchBlogArticles()])
+}
+
+/**
+ * 格式化日期。
+ */
+function formatDate(value) {
+  if (!value) {
+    return ''
+  }
+  return new Date(value).toLocaleDateString('zh-CN')
+}
+
+/**
+ * 格式化日期时间。
+ */
+function formatDateTime(value) {
+  if (!value) {
+    return ''
+  }
+  return new Date(value).toLocaleString('zh-CN')
+}
+
+/**
+ * 将秒数转成更易读的耗时文案。
+ */
+function formatDuration(seconds) {
+  if (!seconds && seconds !== 0) {
+    return '耗时未知'
+  }
+  if (seconds < 60) {
+    return `${seconds} 秒`
+  }
+
+  const minutes = Math.floor(seconds / 60)
+  const remainSeconds = seconds % 60
+  return remainSeconds ? `${minutes} 分 ${remainSeconds} 秒` : `${minutes} 分钟`
+}
+
+/**
+ * 性别展示文案。
+ */
+function formatSex(value) {
+  if (value === 1) {
+    return '男'
+  }
+  if (value === 2) {
+    return '女'
+  }
+  return '未设置'
+}
+
+/**
+ * 将后端角色标识转换为更友好的中文标签。
+ */
+function formatRoleLabel(roleKey) {
+  if (roleKey === 'admin_user') {
+    return '管理员'
+  }
+  if (roleKey === 'normal_user') {
+    return '普通用户'
+  }
+  return roleKey
+}
 
 onMounted(() => {
-  settingsForm.nickname = userStore.userName
-  settingsForm.email = userStore.userInfo?.email || userInfo.email
-  settingsForm.gender = userStore.userInfo?.sex !== undefined ? userStore.userInfo.sex : userInfo.gender
-  settingsForm.bio = userStore.userInfo?.introduce || userInfo.bio
-  
-  userInfo.email = userStore.userInfo?.email || ''
-  userInfo.gender = userStore.userInfo?.sex !== undefined ? userStore.userInfo.sex : undefined
-  userInfo.joinDate = userStore.userInfo?.createdTime || ''
-  userInfo.bio = userStore.userInfo?.introduce || ''
-  
-  generateCalendarData()
-  refreshUserInfo()
-  
-  if (userStore.isLoggedIn) {
-    fetchUserStatistics()
-    fetchUserPracticeRecords()
-  }
+  initializeProfile()
 })
 </script>
 
 <style scoped>
 .profile-page {
+  --profile-bg: #f4f6fa;
+  --profile-surface: #ffffff;
+  --profile-surface-alt: #f8fafc;
+  --profile-surface-hover: #eef2f7;
+  --profile-surface-muted: #f1f5f9;
+  --profile-text: var(--text-1, #0f172a);
+  --profile-text-soft: var(--text-2, #475569);
+  --profile-text-faint: var(--text-3, #64748b);
+  --profile-border: rgba(15, 23, 42, 0.1);
+  --profile-line: rgba(15, 23, 42, 0.06);
+  --profile-accent: #1d4ed8;
+  --profile-accent-soft: rgba(29, 78, 216, 0.08);
+  --profile-accent-line: rgba(29, 78, 216, 0.18);
   min-height: 100vh;
-  position: relative;
-  overflow: hidden;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(29, 78, 216, 0.06), transparent 24%),
+    radial-gradient(circle at top right, rgba(15, 23, 42, 0.04), transparent 26%),
+    var(--profile-bg);
+  color: var(--profile-text);
 }
 
-.profile-bg {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+.profile-page.is-dark {
+  --profile-bg: #09111f;
+  --profile-surface: #0f172a;
+  --profile-surface-alt: #111c31;
+  --profile-surface-hover: #162338;
+  --profile-surface-muted: #0c1628;
+  --profile-text: var(--text-1);
+  --profile-text-soft: var(--text-2);
+  --profile-text-faint: var(--text-3);
+  --profile-border: rgba(148, 163, 184, 0.14);
+  --profile-line: rgba(148, 163, 184, 0.1);
+  --profile-accent: #60a5fa;
+  --profile-accent-soft: rgba(96, 165, 250, 0.12);
+  --profile-accent-line: rgba(96, 165, 250, 0.24);
 }
 
-.bg-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
-}
-
-.bg-noise {
-  position: absolute;
-  inset: 0;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+.profile-header,
+.profile-main {
+  max-width: 1260px;
+  margin: 0 auto;
 }
 
 .profile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 40px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  gap: 18px;
+  margin-bottom: 22px;
 }
 
-.back-btn, .home-btn {
-  display: flex;
+.header-title-group {
+  text-align: center;
+}
+
+.header-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--profile-text-faint);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.header-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 38px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.header-btn {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface);
+  color: var(--profile-text);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 14px;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
-.back-btn:hover, .home-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
-  color: #fff;
-  transform: translateY(-1px);
+.header-btn:hover,
+.theme-chip:hover,
+.tab-btn:hover,
+.record-item:hover,
+.article-item:hover,
+.text-btn:hover {
+  background: var(--profile-surface-hover);
 }
 
-.page-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
+.header-btn-icon {
+  font-size: 16px;
 }
 
 .profile-main {
-  padding: 40px;
-  max-width: 1400px;
-  margin: 0 auto;
+  display: grid;
+  gap: 18px;
 }
 
-.profile-layout {
+.section-shell {
+  background: var(--profile-surface);
+  border: 1px solid var(--profile-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
+}
+
+.profile-top {
   display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.8fr);
+  gap: 16px;
   align-items: start;
 }
 
-.profile-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: sticky;
-  top: 100px;
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 28px;
-}
-
-.profile-card {
-  text-align: center;
-}
-
-.avatar-section {
-  margin-bottom: 24px;
-}
-
-.avatar-wrapper {
+.identity-panel {
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 16px;
-  cursor: pointer;
+  padding: 22px 24px 20px;
+  border-radius: 22px 22px 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.94)),
+    var(--profile-surface);
+  overflow: hidden;
 }
 
-.avatar-img, .avatar-placeholder {
+.profile-page.is-dark .identity-panel {
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.94)),
+    var(--profile-surface);
+}
+
+.identity-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 96px;
+  background: linear-gradient(135deg, var(--profile-accent-soft), transparent 70%);
+  pointer-events: none;
+}
+
+.identity-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--profile-line);
+}
+
+.identity-label,
+.stat-label,
+.detail-label,
+.snapshot-label,
+.field-label {
+  color: var(--profile-text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.identity-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.identity-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface-muted);
+  color: var(--profile-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+
+.identity-body {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  padding-top: 16px;
+}
+
+.avatar-rail {
+  display: grid;
+  gap: 10px;
+}
+
+.avatar-shell {
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface-alt);
+  border-radius: 20px;
+}
+
+.avatar-image,
+.avatar-fallback {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+}
+
+.avatar-image {
   object-fit: cover;
 }
 
-.avatar-placeholder {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+.avatar-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.avatar-action,
+.text-btn,
+.tab-btn,
+.theme-chip,
+.primary-btn,
+.secondary-btn {
+  font: inherit;
+}
+
+.avatar-action {
+  min-height: 34px;
+  border: 1px solid var(--profile-border);
+  background: transparent;
+  color: var(--profile-text-soft);
+  font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  border-radius: 12px;
 }
 
-.avatar-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  background: linear-gradient(135deg, #8b5cf6, #6366f1, #8b5cf6) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: ring-rotate 4s linear infinite;
+.identity-title-row {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-@keyframes ring-rotate {
-  to { transform: rotate(360deg); }
+.identity-name {
+  margin: 0;
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
 }
 
-.change-avatar-btn {
+.identity-handle {
+  color: var(--profile-text-faint);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.identity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 10px;
+  color: var(--profile-text-soft);
+  font-size: 13px;
+}
+
+.identity-intro {
+  margin: 18px 0 0;
+  max-width: 700px;
+  color: var(--profile-text-soft);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.control-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  align-content: start;
+  background: linear-gradient(180deg, var(--profile-surface-alt), var(--profile-surface));
+  border-radius: 18px;
+}
+
+.panel-head,
+.section-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel-title,
+.section-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.panel-meta,
+.section-desc,
+.form-tip {
+  color: var(--profile-text-soft);
+  font-size: 13px;
+}
+
+.section-desc {
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+.theme-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.theme-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 20px;
-  color: #a78bfa;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.change-avatar-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.5);
-  transform: translateY(-1px);
-}
-
-.user-info {
-  margin-bottom: 24px;
-}
-
-.user-nickname {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 4px;
-}
-
-.user-name {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.5);
-  margin: 0 0 8px;
-}
-
-.user-email {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 12px;
-}
-
-.user-meta {
-  display: flex;
   justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.meta-tag {
-  padding: 4px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface);
+  color: var(--profile-text-soft);
+  font-size: 13px;
+  font-weight: 700;
   border-radius: 12px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
-.user-bio {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
-  margin: 0;
+.theme-chip.active {
+  border-color: var(--profile-accent-line);
+  background: var(--profile-accent-soft);
+  color: var(--profile-accent);
 }
 
-.stats-grid {
+.action-stack {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 8px;
 }
 
-.stat-card {
-  text-align: center;
-  padding: 16px 8px;
-  background: rgba(255, 255, 255, 0.02);
+.primary-btn,
+.secondary-btn,
+.text-btn {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--profile-border);
+  background: transparent;
+  color: var(--profile-text);
+  font-size: 13px;
+  font-weight: 700;
   border-radius: 12px;
-  position: relative;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.primary-btn {
+  border-color: var(--profile-accent);
+  background: var(--profile-accent);
+  color: #ffffff;
+}
+
+.primary-btn:hover {
+  background: #1e40af;
+  border-color: #1e40af;
+}
+
+.status-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--profile-line);
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--profile-text-soft);
+  font-size: 13px;
+}
+
+.status-row strong {
+  color: var(--profile-text);
+  font-size: 13px;
+  text-align: right;
+}
+
+.stats-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface);
+  border-radius: 20px;
   overflow: hidden;
+}
+
+.stat-item {
+  display: grid;
+  gap: 8px;
+  padding: 18px 20px;
+  border-right: 1px solid var(--profile-line);
+}
+
+.stat-item:first-child {
+  background: linear-gradient(135deg, var(--profile-accent-soft), transparent 70%);
+}
+
+.stat-item:last-child {
+  border-right: none;
 }
 
 .stat-value {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: clamp(28px, 3vw, 38px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 4px;
+.stat-meta {
+  color: var(--profile-text-soft);
+  font-size: 13px;
 }
 
-.stat-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 20px;
-}
-
-.card-title svg {
-  color: #8b5cf6;
-}
-
-.achievements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.achievement-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.achievement-item.unlocked {
-  background: rgba(139, 92, 246, 0.08);
-  border-color: rgba(139, 92, 246, 0.2);
-}
-
-.achievement-item:not(.unlocked) {
-  opacity: 0.5;
-}
-
-.achievement-item:hover {
-  transform: translateX(4px);
-  border-color: rgba(139, 92, 246, 0.3);
-}
-
-.achievement-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(139, 92, 246, 0.15);
-  border-radius: 10px;
-  color: #a78bfa;
-}
-
-.achievement-content {
-  flex: 1;
-}
-
-.achievement-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 2px;
-}
-
-.achievement-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.achievement-badge {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  border-radius: 50%;
-  font-size: 12px;
-  color: #fff;
-}
-
-.profile-content {
-  min-height: 600px;
-}
-
-.tabs-wrapper {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-.tabs-header {
-  display: flex;
-  gap: 4px;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.tab-rail {
+  display: inline-flex;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px;
+  background: var(--profile-surface-alt);
+  border: 1px solid var(--profile-border);
+  border-radius: 16px;
 }
 
 .tab-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
   background: transparent;
-  border: none;
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--profile-text-soft);
   font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.tab-btn:hover {
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
+  font-weight: 700;
+  border-radius: 12px;
 }
 
 .tab-btn.active {
-  background: rgba(139, 92, 246, 0.15);
-  color: #a78bfa;
+  color: var(--profile-text);
+  background: var(--profile-surface);
+  border-color: var(--profile-border);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset;
 }
 
-.tabs-content {
-  padding: 28px;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.panel-header h3 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
-}
-
-.filter-group {
-  display: flex;
-  gap: 8px;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.filter-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-}
-
-.filter-btn.active {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: #a78bfa;
-}
-
-.solutions-timeline {
-  display: flex;
-  flex-direction: column;
+.content-grid {
+  display: grid;
   gap: 16px;
 }
 
-.solution-item {
-  display: flex;
-  gap: 16px;
-  animation: slideIn 0.4s ease forwards;
-  animation-delay: var(--delay);
-  opacity: 0;
+.overview-grid {
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.82fr);
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.activity-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.timeline-marker {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  flex-shrink: 0;
+.settings-grid {
+  grid-template-columns: minmax(0, 1.38fr) minmax(300px, 0.82fr);
 }
 
-.timeline-marker.accepted {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-
-.timeline-marker.failed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.solution-card {
-  flex: 1;
+.info-panel,
+.insight-panel,
+.list-panel,
+.settings-panel,
+.notes-panel {
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  transition: all 0.3s ease;
 }
 
-.solution-card:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(139, 92, 246, 0.2);
-  transform: translateX(4px);
+.info-panel {
+  border-radius: 20px 16px 18px 18px;
 }
 
-.solution-header {
+.insight-panel {
+  border-radius: 16px 20px 18px 18px;
+  background: linear-gradient(180deg, var(--profile-surface), var(--profile-surface-alt));
+}
+
+.list-panel {
+  border-radius: 18px;
+}
+
+.settings-panel {
+  border-radius: 22px 16px 18px 18px;
+}
+
+.notes-panel {
+  border-radius: 16px 22px 18px 18px;
+  background: linear-gradient(180deg, var(--profile-surface-alt), var(--profile-surface));
+}
+
+.detail-grid {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.detail-item {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 18px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--profile-line);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-value {
+  margin: 0;
+  color: var(--profile-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.insight-block {
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--profile-line);
+}
+
+.insight-header {
   display: flex;
+  align-items: end;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.solution-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
-}
-
-.solution-status {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.solution-status.accepted {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-
-.solution-status.failed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.solution-meta {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.solution-metrics {
-  display: flex;
-  gap: 24px;
-}
-
-.metric {
-  display: flex;
-  flex-direction: column;
-}
-
-.metric-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #22c55e;
-}
-
-.metric-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.solution-error {
-  padding: 8px 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: 8px;
-}
-
-.error-type {
-  font-size: 13px;
-  color: #ef4444;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.empty-state svg {
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.stats-section {
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0 0 20px;
-}
-
-.difficulty-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.difficulty-item {
-  display: flex;
-  flex-direction: column;
   gap: 10px;
 }
 
-.difficulty-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.difficulty-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.difficulty-count {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.difficulty-track {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.difficulty-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.6s ease;
-}
-
-.difficulty-item.easy .difficulty-fill {
-  background: linear-gradient(90deg, #22c55e, #4ade80);
-}
-
-.difficulty-item.medium .difficulty-fill {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.difficulty-item.hard .difficulty-fill {
-  background: linear-gradient(90deg, #ef4444, #f87171);
-}
-
-.calendar-wrapper {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(53, 1fr);
-  gap: 3px;
-  margin-bottom: 16px;
-}
-
-.calendar-day {
-  aspect-ratio: 1;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  animation: fadeIn 0.3s ease forwards;
-  animation-delay: var(--delay);
-  opacity: 0;
-}
-
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-.calendar-day:hover {
-  transform: scale(1.5);
-  z-index: 1;
-}
-
-.calendar-day.level-0 { background: rgba(255, 255, 255, 0.03); }
-.calendar-day.level-1 { background: rgba(139, 92, 246, 0.2); }
-.calendar-day.level-2 { background: rgba(139, 92, 246, 0.4); }
-.calendar-day.level-3 { background: rgba(139, 92, 246, 0.6); }
-.calendar-day.level-4 { background: rgba(139, 92, 246, 0.8); }
-
-.calendar-legend {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
+.insight-label {
+  color: var(--profile-text-faint);
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
 }
 
-.legend-colors {
+.insight-number {
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  margin-top: 10px;
+  background: var(--profile-surface-alt);
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--profile-accent);
+  border-radius: 999px;
+}
+
+.insight-foot {
+  margin: 10px 0 0;
+  color: var(--profile-text-soft);
+  font-size: 13px;
+}
+
+.snapshot-list {
+  display: grid;
+  gap: 0;
+}
+
+.snapshot-item {
+  display: grid;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--profile-line);
+}
+
+.snapshot-item:last-child {
+  border-bottom: none;
+}
+
+.snapshot-value {
+  color: var(--profile-text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.record-list,
+.article-list,
+.note-list {
+  display: grid;
+  gap: 10px;
+}
+
+.record-item,
+.article-item {
+  width: 100%;
+  padding: 14px 12px;
+  border: none;
+  border-bottom: 1px solid var(--profile-line);
+  background: transparent;
+  text-align: left;
+  border-radius: 12px;
+}
+
+.record-item:last-child,
+.article-item:last-child {
+  border-bottom: none;
+}
+
+.record-title-row {
   display: flex;
-  gap: 3px;
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
-
-.legend-color.level-0 { background: rgba(255, 255, 255, 0.03); }
-.legend-color.level-1 { background: rgba(139, 92, 246, 0.2); }
-.legend-color.level-2 { background: rgba(139, 92, 246, 0.4); }
-.legend-color.level-3 { background: rgba(139, 92, 246, 0.6); }
-.legend-color.level-4 { background: rgba(139, 92, 246, 0.8); }
-
-.settings-panel {
-  max-width: 600px;
-}
-
-.settings-section {
-  margin-bottom: 32px;
-}
-
-.settings-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.form-input, .form-textarea, .form-select {
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  outline: none;
-}
-
-.form-input:focus, .form-textarea:focus, .form-select:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.form-input::placeholder, .form-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-select {
-  cursor: pointer;
-}
-
-.form-select option {
-  background: #1a1a2e;
-  color: #fff;
-}
-
-.radio-group {
-  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
 }
 
-.radio-item {
+.record-meta,
+.article-meta {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 10px;
+  color: var(--profile-text-soft);
+  font-size: 13px;
+}
+
+.status-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--profile-border);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
 }
 
-.radio-item input {
-  display: none;
+.status-pill.success {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.16);
 }
 
-.radio-item span {
+.status-pill.danger {
+  color: #ea580c;
+  background: rgba(249, 115, 22, 0.08);
+  border-color: rgba(249, 115, 22, 0.16);
+}
+
+.profile-page.is-dark .status-pill.success {
+  color: #86efac;
+}
+
+.profile-page.is-dark .status-pill.danger {
+  color: #fdba74;
+}
+
+.article-title {
+  display: block;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.article-summary {
+  margin: 8px 0 0;
+  color: var(--profile-text-soft);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.radio-item:hover {
-  border-color: rgba(139, 92, 246, 0.3);
+.empty-state {
+  padding: 20px 0;
+  color: var(--profile-text-soft);
+  font-size: 14px;
 }
 
-.radio-item.active {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.3);
+.settings-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
 }
 
-.radio-item.active span {
-  color: #a78bfa;
+.field {
+  display: grid;
+  gap: 8px;
 }
 
-.toggle-switch {
-  width: 48px;
-  height: 26px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 13px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.3s ease;
+.field-full {
+  grid-column: 1 / -1;
 }
 
-.toggle-switch.active {
-  background: rgba(139, 92, 246, 0.3);
-}
-
-.toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.toggle-switch.active .toggle-thumb {
-  left: 25px;
-  background: #8b5cf6;
-}
-
-.save-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px 32px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
-  border: none;
+.field-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--profile-border);
+  background: var(--profile-surface-alt);
+  color: var(--profile-text);
+  font: inherit;
+  outline: none;
   border-radius: 12px;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.save-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+.field-input:focus {
+  border-color: var(--profile-accent-line);
+  background: var(--profile-surface);
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
+.readonly {
+  color: var(--profile-text-soft);
+}
+
+.field-textarea {
+  min-height: 128px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.form-footer {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 6px;
 }
 
-.modal-content {
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-}
-
-.modal-close {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
+.note-item {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--profile-line);
 }
 
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
+.note-item:last-child {
+  border-bottom: none;
+}
+
+.note-item strong {
+  color: var(--profile-text-faint);
+  font-size: 13px;
+}
+
+.note-item span {
+  color: var(--profile-text);
+  font-size: 13px;
+  text-align: right;
 }
 
 .preview-image {
-  max-width: 100%;
-  max-height: 80vh;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid var(--profile-border);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
+@media (max-width: 1080px) {
+  .profile-page {
+    padding: 18px;
+  }
 
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  transform: scale(0.9);
-}
-
-@media (max-width: 1024px) {
-  .profile-layout {
+  .profile-top,
+  .overview-grid,
+  .activity-grid,
+  .settings-grid,
+  .stats-strip {
     grid-template-columns: 1fr;
   }
-  
-  .profile-sidebar {
-    position: static;
+
+  .stat-item {
+    border-right: none;
+    border-bottom: 1px solid var(--profile-line);
+  }
+
+  .stat-item:last-child {
+    border-bottom: none;
   }
 }
 
 @media (max-width: 768px) {
   .profile-header {
-    padding: 16px 20px;
     flex-wrap: wrap;
-    gap: 12px;
+    justify-content: center;
   }
-  
-  .page-title {
-    order: -1;
+
+  .identity-body,
+  .settings-form {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-rail {
+    display: grid;
     width: 100%;
-    text-align: center;
   }
-  
-  .profile-main {
-    padding: 20px;
+
+  .tab-btn {
+    justify-content: flex-start;
+    border-right: none;
+    border-bottom: none;
   }
-  
-  .tabs-header {
-    flex-wrap: wrap;
+
+  .form-footer,
+  .note-item,
+  .record-title-row,
+  .status-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  .calendar-grid {
-    grid-template-columns: repeat(26, 1fr);
+
+  .note-item span,
+  .status-row strong {
+    text-align: left;
   }
 }
 </style>

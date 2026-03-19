@@ -1,7 +1,10 @@
 <template>
   <aside class="filter-sidebar">
     <div class="sidebar-header">
-      <h3>筛选条件</h3>
+      <div class="sidebar-title">
+        <span class="sidebar-kicker">CONTROL PANEL</span>
+        <h3>筛选面板</h3>
+      </div>
       <button class="reset-btn" @click="resetFilters">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
@@ -261,21 +264,18 @@ const toggleSection = (section) => {
 <style scoped>
 .filter-sidebar {
   position: sticky;
-  top: 80px;
-  width: 300px;
+  top: 84px;
+  width: 304px;
   flex-shrink: 0;
   height: fit-content;
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 104px);
   overflow-y: auto;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  padding-right: 8px;
+  color: var(--color-text);
 }
 
 .filter-sidebar::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .filter-sidebar::-webkit-scrollbar-track {
@@ -283,22 +283,35 @@ const toggleSection = (section) => {
 }
 
 .filter-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
+  background: var(--color-border);
+  border-radius: 999px;
 }
 
 .sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 6px 0 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
 }
 
 .sidebar-header h3 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -306,39 +319,40 @@ const toggleSection = (section) => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  min-height: 36px;
+  padding: 0 12px;
   background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .reset-btn:hover {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: var(--color-error-light);
+  border-color: rgba(194, 59, 59, 0.16);
+  color: var(--color-error);
 }
 
 .sidebar-content {
-  padding: 16px;
+  padding: 18px 0 0;
 }
 
 .stats-section {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 22px;
+  padding: 0 0 18px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .stats-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  color: #64748b;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 600;
 }
@@ -347,11 +361,10 @@ const toggleSection = (section) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
+  gap: 12px;
+  padding: 0 0 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .breadcrumb-nav {
@@ -367,29 +380,30 @@ const toggleSection = (section) => {
   gap: 4px;
   background: none;
   border: none;
-  color: #6366f1;
+  color: var(--color-accent);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color var(--transition-fast);
 }
 
 .breadcrumb-item:hover {
-  color: #4f46e5;
+  color: var(--qb-accent, var(--color-accent-hover));
 }
 
 .breadcrumb-item svg {
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .clear-all-btn {
   background: none;
   border: none;
-  color: #ef4444;
+  color: var(--color-error);
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .clear-all-btn:hover {
@@ -397,34 +411,29 @@ const toggleSection = (section) => {
 }
 
 .filter-section {
-  margin-bottom: 16px;
+  margin-bottom: 22px;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 12px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.section-header:hover {
-  background: rgba(0, 0, 0, 0.04);
+  transition: color var(--transition-base);
 }
 
 .section-header h4 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text);
   margin: 0;
 }
 
 .section-header svg {
-  color: #94a3b8;
-  transition: transform 0.3s ease;
+  color: var(--color-text-muted);
+  transition: transform var(--transition-base), color var(--transition-fast);
 }
 
 .section-header svg.rotated {
@@ -432,28 +441,28 @@ const toggleSection = (section) => {
 }
 
 .section-content {
-  padding: 12px 0;
+  padding: 14px 0 0;
 }
 
 .back-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  min-height: 36px;
+  padding: 0 12px;
   margin-bottom: 12px;
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.15);
-  border-radius: 10px;
-  color: #6366f1;
-  font-size: 12px;
-  font-weight: 500;
+  background: var(--color-accent-light);
+  border: 1px solid rgba(23, 78, 166, 0.12);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .back-btn:hover {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.25);
+  filter: brightness(1.02);
 }
 
 .category-list {
@@ -466,39 +475,38 @@ const toggleSection = (section) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 12px;
+  min-height: 44px;
+  padding: 0 14px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .category-card:hover {
-  background: rgba(99, 102, 241, 0.04);
-  border-color: rgba(99, 102, 241, 0.2);
-  transform: translateX(4px);
+  background: var(--color-bg-subtle);
+  border-color: var(--color-border-hover);
 }
 
 .category-card.active {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  background: var(--color-accent-light);
+  border-color: rgba(23, 78, 166, 0.14);
 }
 
 .category-card.active .category-name,
 .category-card.active svg {
-  color: white;
+  color: var(--color-accent);
 }
 
 .category-name {
   font-size: 14px;
-  font-weight: 500;
-  color: #334155;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .category-card svg {
-  color: #94a3b8;
+  color: var(--color-text-muted);
 }
 
 .label-list {
@@ -512,12 +520,12 @@ const toggleSection = (section) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 20px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
 }
 
 .label-chip input,
@@ -527,20 +535,21 @@ const toggleSection = (section) => {
 }
 
 .chip-indicator {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #cbd5e1;
-  border-radius: 4px;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-border-hover);
+  border-radius: 3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
+  position: relative;
 }
 
 .label-chip.selected .chip-indicator,
 .type-chip.selected .chip-indicator {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .label-chip.selected .chip-indicator::after,
@@ -555,24 +564,25 @@ const toggleSection = (section) => {
 
 .chip-text {
   font-size: 13px;
-  font-weight: 500;
-  color: #475569;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .label-chip.selected,
 .type-chip.selected {
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: var(--color-accent-light);
+  border-color: rgba(23, 78, 166, 0.14);
 }
 
 .label-chip.selected .chip-text,
 .type-chip.selected .chip-text {
-  color: #6366f1;
+  color: var(--color-accent);
 }
 
 .label-chip:hover,
 .type-chip:hover {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--color-border-hover);
+  background: var(--color-bg-subtle);
 }
 
 .difficulty-options {
@@ -586,12 +596,13 @@ const toggleSection = (section) => {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 12px;
-  background: white;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 8px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
 }
@@ -605,8 +616,7 @@ const toggleSection = (section) => {
 }
 
 .difficulty-chip:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--color-bg-subtle);
 }
 
 .difficulty-chip input {
@@ -615,25 +625,21 @@ const toggleSection = (section) => {
 
 .difficulty-chip.easy .chip-indicator {
   border-color: #22c55e;
-  transition: all 0.3s ease;
 }
 
 .difficulty-chip.easy:hover {
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.05);
+  border-color: rgba(15, 157, 88, 0.4);
+  background: rgba(15, 157, 88, 0.05);
 }
 
 .difficulty-chip.easy.selected {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.08) 100%);
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15), 0 4px 12px rgba(34, 197, 94, 0.2);
-  transform: scale(1.02);
+  background: rgba(15, 157, 88, 0.08);
+  border-color: #0f9d58;
 }
 
 .difficulty-chip.easy.selected .chip-indicator {
-  background: #22c55e;
-  border-color: #22c55e;
-  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+  background: #0f9d58;
+  border-color: #0f9d58;
 }
 
 .difficulty-chip.easy.selected .chip-indicator::after {
@@ -651,70 +657,62 @@ const toggleSection = (section) => {
 }
 
 .difficulty-chip.easy.selected .chip-text {
-  color: #16a34a;
+  color: #0f7b55;
   font-weight: 700;
 }
 
 .difficulty-chip.medium .chip-indicator {
   border-color: #f59e0b;
-  transition: all 0.3s ease;
 }
 
 .difficulty-chip.medium:hover {
-  border-color: rgba(245, 158, 11, 0.5);
-  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(201, 130, 0, 0.4);
+  background: rgba(201, 130, 0, 0.05);
 }
 
 .difficulty-chip.medium.selected {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%);
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15), 0 4px 12px rgba(245, 158, 11, 0.2);
-  transform: scale(1.02);
+  background: rgba(201, 130, 0, 0.08);
+  border-color: #c98200;
 }
 
 .difficulty-chip.medium.selected .chip-indicator {
-  background: #f59e0b;
-  border-color: #f59e0b;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  background: #c98200;
+  border-color: #c98200;
 }
 
 .difficulty-chip.medium.selected .chip-text {
-  color: #d97706;
+  color: #9a6700;
   font-weight: 700;
 }
 
 .difficulty-chip.hard .chip-indicator {
   border-color: #ef4444;
-  transition: all 0.3s ease;
 }
 
 .difficulty-chip.hard:hover {
-  border-color: rgba(239, 68, 68, 0.5);
-  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(194, 59, 59, 0.4);
+  background: rgba(194, 59, 59, 0.05);
 }
 
 .difficulty-chip.hard.selected {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%);
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15), 0 4px 12px rgba(239, 68, 68, 0.2);
-  transform: scale(1.02);
+  background: rgba(194, 59, 59, 0.08);
+  border-color: #c23b3b;
 }
 
 .difficulty-chip.hard.selected .chip-indicator {
-  background: #ef4444;
-  border-color: #ef4444;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  background: #c23b3b;
+  border-color: #c23b3b;
 }
 
 .difficulty-chip.hard.selected .chip-text {
-  color: #dc2626;
+  color: #a73b3b;
   font-weight: 700;
 }
 
 .difficulty-chip .chip-text {
   font-size: 12px;
   font-weight: 600;
-  transition: all 0.3s ease;
+  transition: color var(--transition-fast);
 }
 
 .type-options {
@@ -725,30 +723,19 @@ const toggleSection = (section) => {
 
 .type-chip {
   justify-content: center;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-width: 1px;
   position: relative;
   overflow: hidden;
 }
 
-.type-chip:hover {
-  border-color: rgba(99, 102, 241, 0.5);
-  background: rgba(99, 102, 241, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
 .type-chip.selected {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 4px 12px rgba(99, 102, 241, 0.2);
-  transform: scale(1.02);
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
 }
 
 .type-chip.selected .chip-indicator {
-  background: #6366f1;
-  border-color: #6366f1;
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.5);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
 
 .type-chip.selected .chip-indicator::after {
@@ -766,7 +753,7 @@ const toggleSection = (section) => {
 }
 
 .type-chip.selected .chip-text {
-  color: #4f46e5;
+  color: var(--color-accent);
   font-weight: 700;
 }
 
@@ -776,5 +763,28 @@ const toggleSection = (section) => {
     width: 100%;
     max-height: none;
   }
+}
+
+:global(.question-bank-page.is-dark) .filter-sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+
+:global(.question-bank-page.is-dark) .difficulty-chip.easy.selected .chip-text {
+  color: #78d1aa;
+}
+
+:global(.question-bank-page.is-dark) .difficulty-chip.medium.selected .chip-text {
+  color: #f0c679;
+}
+
+:global(.question-bank-page.is-dark) .difficulty-chip.hard.selected .chip-text {
+  color: #f0a0a0;
+}
+
+:global(.question-bank-page.is-dark) .label-chip.selected,
+:global(.question-bank-page.is-dark) .type-chip.selected,
+:global(.question-bank-page.is-dark) .back-btn {
+  background: rgba(108, 159, 255, 0.14);
+  border-color: rgba(108, 159, 255, 0.16);
 }
 </style>

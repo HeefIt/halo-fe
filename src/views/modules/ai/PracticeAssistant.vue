@@ -1,59 +1,11 @@
 <template>
-  <div class="practice-assistant-container">
-    <header class="assistant-header">
-      <div class="header-content">
-        <div class="brand">
-          <div class="brand-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-          </div>
-          <div class="brand-text">
-            <h1>AI 练习助手</h1>
-            <span class="tagline">推荐 · 诊断 · 复盘</span>
-          </div>
-        </div>
-        <nav class="header-nav">
-          <button class="nav-item" @click="navigateTo('chatbot')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>AI对话</span>
-          </button>
-          <button class="nav-item active">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <span>练习助手</span>
-          </button>
-          <button class="nav-item" @click="navigateTo('customer-service')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07"></path>
-            </svg>
-            <span>客服</span>
-          </button>
-          <button class="nav-item" @click="navigateTo('multimodal')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-            <span>多模态</span>
-          </button>
-        </nav>
-        <button class="home-btn" @click="goHome">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span>返回首页</span>
-        </button>
-      </div>
-    </header>
-
+  <div class="practice-assistant-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <main class="assistant-main">
+      <AIToolHeader
+        title="练习助手"
+        badge="推荐"
+      />
+
       <div class="hero-section">
         <div class="hero-content">
           <div class="hero-badge">学习加速器</div>
@@ -209,16 +161,11 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { useThemeStore } from '@/stores/theme'
+import AIToolHeader from './AIToolHeader.vue'
 
 const router = useRouter()
-
-const navigateTo = (feature) => {
-  router.push(`/ai/${feature}`)
-}
-
-const goHome = () => {
-  router.push('/home')
-}
+const themeStore = useThemeStore()
 
 const startPractice = () => {
   router.push('/home/questions')
@@ -226,151 +173,77 @@ const startPractice = () => {
 </script>
 
 <style scoped>
-.practice-assistant-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 50%, #fffbeb 100%);
-  display: flex;
-  flex-direction: column;
+.practice-assistant-page {
+  --ai-accent: #c2410c;
+  --ai-accent-soft: rgba(194, 65, 12, 0.08);
+  --ai-accent-line: rgba(194, 65, 12, 0.16);
+  --ai-bg: #f4f6fa;
+  --ai-surface: #ffffff;
+  --ai-surface-alt: #f8fafc;
+  --ai-surface-muted: #fff7ed;
+  --ai-border: rgba(15, 23, 42, 0.1);
+  --ai-text: var(--color-text);
+  --ai-text-soft: var(--color-text-secondary);
+  --ai-text-faint: var(--color-text-muted);
+  height: 100dvh;
+  min-height: 100dvh;
+  background: var(--ai-bg);
+  overflow: hidden;
 }
 
-.assistant-header {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(249, 115, 22, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 72px;
-  gap: 32px;
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.brand-icon {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-}
-
-.brand-text h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.3px;
-}
-
-.tagline {
-  font-size: 12px;
-  color: #9a3412;
-  font-weight: 500;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: center;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.nav-item:hover {
-  background: rgba(249, 115, 22, 0.08);
-  color: #c2410c;
-}
-
-.nav-item.active {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
-}
-
-.home-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: white;
-  border: 1px solid rgba(249, 115, 22, 0.2);
-  border-radius: 10px;
-  color: #c2410c;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.home-btn:hover {
-  background: rgba(249, 115, 22, 0.1);
-  border-color: rgba(249, 115, 22, 0.3);
+.practice-assistant-page.is-dark {
+  --ai-accent: #fdba74;
+  --ai-accent-soft: rgba(251, 146, 60, 0.14);
+  --ai-accent-line: rgba(251, 146, 60, 0.22);
+  --ai-bg: #09111c;
+  --ai-surface: #0f172a;
+  --ai-surface-alt: #111c31;
+  --ai-surface-muted: #1a2232;
+  --ai-border: rgba(148, 163, 184, 0.14);
+  --ai-text: var(--text-1);
+  --ai-text-soft: var(--text-2);
+  --ai-text-faint: var(--text-3);
 }
 
 .assistant-main {
-  flex: 1;
-  max-width: 1400px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 48px 32px;
+  padding: 10px 16px 12px;
   width: 100%;
+  display: grid;
+  gap: 14px;
+  height: 100dvh;
+  overflow-y: auto;
+  align-content: start;
 }
 
 .hero-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 64px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
+  gap: 36px;
   align-items: center;
-  margin-bottom: 80px;
+  padding: 24px;
+  border: 1px solid var(--ai-border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
 }
 
 .hero-badge {
   display: inline-block;
   padding: 6px 14px;
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(251, 146, 60, 0.1) 100%);
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  background: var(--ai-accent-soft);
+  border: 1px solid var(--ai-accent-line);
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  color: #c2410c;
+  color: var(--ai-accent);
   margin-bottom: 20px;
 }
 
 .hero-title {
   font-size: 48px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--ai-text);
   margin: 0 0 20px 0;
   line-height: 1.1;
   letter-spacing: -1px;
@@ -378,7 +251,7 @@ const startPractice = () => {
 
 .hero-desc {
   font-size: 18px;
-  color: #64748b;
+  color: var(--ai-text-soft);
   line-height: 1.7;
   margin: 0 0 32px 0;
 }
@@ -393,8 +266,8 @@ const startPractice = () => {
   align-items: center;
   gap: 10px;
   padding: 14px 28px;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  border: none;
+  background: var(--ai-accent);
+  border: 1px solid var(--ai-accent);
   border-radius: 12px;
   color: white;
   font-size: 16px;
@@ -405,16 +278,15 @@ const startPractice = () => {
 }
 
 .primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
 }
 
 .secondary-btn {
   padding: 14px 28px;
-  background: white;
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  background: transparent;
+  border: 1px solid var(--ai-border);
   border-radius: 12px;
-  color: #c2410c;
+  color: var(--ai-text);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -422,8 +294,7 @@ const startPractice = () => {
 }
 
 .secondary-btn:hover {
-  background: rgba(249, 115, 22, 0.05);
-  border-color: rgba(249, 115, 22, 0.3);
+  background: var(--ai-surface-alt);
 }
 
 .hero-visual {
@@ -431,11 +302,10 @@ const startPractice = () => {
 }
 
 .visual-card {
-  background: white;
-  border-radius: 20px;
+  background: var(--ai-surface);
+  border-radius: 18px;
   padding: 28px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.1);
+  border: 1px solid var(--ai-border);
 }
 
 .main-card {
@@ -452,7 +322,7 @@ const startPractice = () => {
 
 .card-badge {
   padding: 4px 12px;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: var(--ai-accent);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -467,20 +337,20 @@ const startPractice = () => {
 }
 
 .card-difficulty.medium {
-  background: rgba(234, 179, 8, 0.1);
+  background: rgba(234, 179, 8, 0.12);
   color: #a16207;
 }
 
 .card-title {
   font-size: 20px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ai-text);
   margin: 0 0 10px 0;
 }
 
 .card-desc {
   font-size: 14px;
-  color: #64748b;
+  color: var(--ai-text-soft);
   line-height: 1.6;
   margin: 0 0 16px 0;
 }
@@ -493,10 +363,10 @@ const startPractice = () => {
 
 .tag {
   padding: 4px 12px;
-  background: rgba(249, 115, 22, 0.08);
+  background: var(--ai-accent-soft);
   border-radius: 6px;
   font-size: 12px;
-  color: #c2410c;
+  color: var(--ai-accent);
   font-weight: 500;
 }
 
@@ -509,20 +379,20 @@ const startPractice = () => {
 .progress-bar {
   flex: 1;
   height: 6px;
-  background: #f1f5f9;
+  background: var(--ai-surface-muted);
   border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  background: var(--ai-accent);
   border-radius: 3px;
 }
 
 .progress-text {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--ai-text-faint);
   white-space: nowrap;
 }
 
@@ -541,12 +411,12 @@ const startPractice = () => {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: white;
+  background: var(--ai-surface);
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ai-border);
   font-size: 13px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ai-text);
   animation: float 3s ease-in-out infinite;
 }
 
@@ -569,7 +439,7 @@ const startPractice = () => {
 }
 
 .float-card svg {
-  color: #f97316;
+  color: var(--ai-accent);
 }
 
 @keyframes float {
@@ -578,15 +448,15 @@ const startPractice = () => {
 }
 
 .features-section {
-  margin-bottom: 80px;
+  display: grid;
+  gap: 18px;
 }
 
 .section-title {
   font-size: 32px;
   font-weight: 700;
-  color: #0f172a;
-  text-align: center;
-  margin: 0 0 48px 0;
+  color: var(--ai-text);
+  margin: 0;
 }
 
 .features-grid {
@@ -596,18 +466,17 @@ const startPractice = () => {
 }
 
 .feature-card {
-  background: white;
-  border-radius: 20px;
+  background: var(--ai-surface);
+  border-radius: 16px;
   padding: 32px;
   text-align: center;
-  border: 1px solid rgba(249, 115, 22, 0.08);
+  border: 1px solid var(--ai-border);
   transition: all 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(249, 115, 22, 0.15);
-  border-color: rgba(249, 115, 22, 0.2);
+  transform: translateY(-4px);
+  border-color: var(--ai-accent-line);
 }
 
 .feature-icon {
@@ -643,13 +512,13 @@ const startPractice = () => {
 .feature-card h3 {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ai-text);
   margin: 0 0 12px 0;
 }
 
 .feature-card p {
   font-size: 14px;
-  color: #64748b;
+  color: var(--ai-text-soft);
   line-height: 1.6;
   margin: 0;
 }
@@ -658,15 +527,15 @@ const startPractice = () => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  margin-bottom: 80px;
 }
 
 .stat-card {
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  border-radius: 20px;
+  background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
+  border-radius: 16px;
   padding: 32px;
   text-align: center;
-  color: white;
+  color: var(--ai-text);
+  border: 1px solid var(--ai-border);
 }
 
 .stat-number {
@@ -677,27 +546,27 @@ const startPractice = () => {
 
 .stat-label {
   font-size: 14px;
-  opacity: 0.9;
+  color: var(--ai-text-soft);
 }
 
 .cta-section {
-  background: white;
-  border-radius: 24px;
-  padding: 64px;
+  background: var(--ai-surface);
+  border-radius: 18px;
+  padding: 40px;
   text-align: center;
-  border: 1px solid rgba(249, 115, 22, 0.1);
+  border: 1px solid var(--ai-border);
 }
 
 .cta-content h2 {
   font-size: 32px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--ai-text);
   margin: 0 0 12px 0;
 }
 
 .cta-content p {
   font-size: 18px;
-  color: #64748b;
+  color: var(--ai-text-soft);
   margin: 0 0 32px 0;
 }
 
@@ -706,8 +575,8 @@ const startPractice = () => {
   align-items: center;
   gap: 10px;
   padding: 16px 32px;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  border: none;
+  background: var(--ai-accent);
+  border: 1px solid var(--ai-accent);
   border-radius: 12px;
   color: white;
   font-size: 18px;
@@ -718,14 +587,13 @@ const startPractice = () => {
 }
 
 .cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 1024px) {
   .hero-section {
     grid-template-columns: 1fr;
-    gap: 48px;
+    gap: 28px;
   }
 
   .hero-visual {
@@ -743,17 +611,8 @@ const startPractice = () => {
 }
 
 @media (max-width: 768px) {
-  .header-content {
-    padding: 0 16px;
-    gap: 16px;
-  }
-
-  .header-nav {
-    display: none;
-  }
-
   .assistant-main {
-    padding: 32px 16px;
+    padding: 8px 10px 10px;
   }
 
   .hero-title {

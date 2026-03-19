@@ -113,6 +113,30 @@ export const blogApi = {
 
   recordViewLog(articleId) {
     return request.post(`${API_PREFIX}/viewLog/record/${articleId}`)
+  },
+
+  getAdminStatisticsOverview() {
+    return request.get(`${API_PREFIX}/admin/statistics/overview`)
+  },
+
+  getAdminStatisticsTrend(days = 7) {
+    return request.get(`${API_PREFIX}/admin/statistics/trend`, { params: { days } })
+  },
+
+  getAdminTopArticles(limit = 5) {
+    return request.get(`${API_PREFIX}/admin/statistics/topArticles`, { params: { limit } })
+  },
+
+  getAdminActionSummary(days = 7) {
+    return request.get(`${API_PREFIX}/admin/statistics/actionSummary`, { params: { days } })
+  },
+
+  getAdminActionTrend(days = 7) {
+    return request.get(`${API_PREFIX}/admin/statistics/actionTrend`, { params: { days } })
+  },
+
+  getAdminRecentActions(limit = 8) {
+    return request.get(`${API_PREFIX}/admin/statistics/recentActions`, { params: { limit } })
   }
 }
 

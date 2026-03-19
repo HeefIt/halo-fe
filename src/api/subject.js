@@ -140,6 +140,32 @@ export function getSubmissionTrend(days = 7) {
 }
 
 /**
+ * 获取热门题目 TOP 数据
+ * @param {Integer} days 统计天数
+ * @param {Integer} limit 返回条数
+ */
+export function getTopProblems(days = 7, limit = 5) {
+  return request({
+    url: '/statistics/getTopProblems',
+    method: 'get',
+    params: { days, limit }
+  })
+}
+
+/**
+ * 获取活跃用户 TOP 数据
+ * @param {Integer} days 统计天数
+ * @param {Integer} limit 返回条数
+ */
+export function getActiveUsers(days = 7, limit = 5) {
+  return request({
+    url: '/statistics/getActiveUsers',
+    method: 'get',
+    params: { days, limit }
+  })
+}
+
+/**
  * 新增题目
  * @param {Object} data 题目信息
  * @param {String} data.subjectName 题目名称

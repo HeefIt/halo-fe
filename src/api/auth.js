@@ -19,6 +19,15 @@ export const authApi = {
     })
   },
 
+  // 管理员新增用户
+  addUser: (data) => {
+    return request({
+      url: '/auth/user/add',
+      method: 'POST',
+      data
+    })
+  },
+
   // 发送注册验证码
   sendRegisterCode: (data) => {
     return request({
