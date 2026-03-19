@@ -293,9 +293,6 @@ const selectSession = async (sessionId) => {
 
   try {
     isLoading.value = true
-    if (currentSessionId.value && currentSession.value) {
-      await saveCurrentSessionState()
-    }
 
     const response = await aiApi.getSession(sessionId, userStore.userInfo?.id)
     if (response.code === 200) {
@@ -483,8 +480,6 @@ const handleSendMessage = async () => {
       syncCurrentSessionToList()
     }
 
-    await saveCurrentSessionState()
-
     if (shouldGenerateTitle) {
       autoGenerateSessionTitle(currentSessionId.value, message)
     }
@@ -655,26 +650,6 @@ const scrollToBottom = () => {
       messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
     }
   })
-}
-
-const saveCurrentSessionState = async () => {
-  if (!currentSessionId.value || !currentSession.value) return
-
-  try {
-    const sessionData = {
-      sessionId: currentSessionId.value,
-      userId: userStore.userInfo?.id,
-      title: currentSession.value.title,
-      titleSource: currentSession.value.titleSource,
-      messages: currentSession.value.messages || [],
-      createdAt: currentSession.value.createdAt,
-      updatedAt: new Date().toISOString()
-    }
-
-    await aiApi.updateSession(currentSessionId.value, sessionData, userStore.userInfo?.id)
-  } catch (error) {
-    console.error('保存会话状态失败:', error)
-  }
 }
 
 onMounted(async () => {
