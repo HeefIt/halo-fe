@@ -25,6 +25,12 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/modules/user/ForgotPassword.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
     path: '/home',
     name: 'Home',
     component: () => import('@/views/Home.vue'),
@@ -190,7 +196,7 @@ router.beforeEach(async (to, from, next) => {
   }
   
   // 如果已登录访问登录页，重定向到首页
-  if (userStore.isLoggedIn && (to.path === '/login' || to.path === '/register')) {
+  if (userStore.isLoggedIn && (to.path === '/login' || to.path === '/register' || to.path === '/forgot-password')) {
     next('/home')
     return
   }

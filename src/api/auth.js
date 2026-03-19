@@ -18,6 +18,33 @@ export const authApi = {
       data
     })
   },
+
+  // 发送注册验证码
+  sendRegisterCode: (data) => {
+    return request({
+      url: '/auth/user/send-register-code',
+      method: 'POST',
+      data
+    })
+  },
+
+  // 发送重置密码验证码
+  sendResetCode: (data) => {
+    return request({
+      url: '/auth/user/send-reset-code',
+      method: 'POST',
+      data
+    })
+  },
+
+  // 重置密码
+  resetPassword: (data) => {
+    return request({
+      url: '/auth/user/reset-password',
+      method: 'POST',
+      data
+    })
+  },
   
   // 获取用户信息
   getUserInfo: (id) => {

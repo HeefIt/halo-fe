@@ -15,6 +15,14 @@
           <span class="auth-shell__brand-caption">tasteful dev community</span>
         </div>
       </router-link>
+
+      <!-- 提供稳定的回落入口，避免退出后只能停留在登录/注册页。 -->
+      <router-link to="/" class="auth-shell__home-link">
+        <svg class="auth-shell__home-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span>返回落地页</span>
+      </router-link>
     </header>
 
     <main class="auth-shell__main">
@@ -125,6 +133,10 @@ const panelStyle = computed(() => {
   position: relative;
   z-index: 1;
   padding: 28px 36px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .auth-shell__brand {
@@ -162,6 +174,37 @@ const panelStyle = computed(() => {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.auth-shell__home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 250, 252, 0.86);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.auth-shell__home-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(52, 211, 153, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.auth-shell__home-icon {
+  width: 15px;
+  height: 15px;
 }
 
 .auth-shell__main {
@@ -251,6 +294,17 @@ const panelStyle = computed(() => {
 
 :deep(.field-box) {
   position: relative;
+}
+
+:deep(.field-row) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+:deep(.field-row .field-group) {
+  min-width: 0;
 }
 
 :deep(.field-icon) {
@@ -433,6 +487,63 @@ const panelStyle = computed(() => {
   box-shadow: none;
 }
 
+:deep(.secondary-btn) {
+  height: 60px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 250, 252, 0.9);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+:deep(.secondary-btn:hover:not(:disabled)) {
+  transform: translateY(-1px);
+  border-color: rgba(52, 211, 153, 0.26);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:deep(.secondary-btn:disabled) {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+:deep(.action-row) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+:deep(.text-link-btn) {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+:deep(.text-link-btn:hover) {
+  color: #34d399;
+}
+
+:deep(.helper-text) {
+  margin: -4px 0 2px;
+  color: rgba(148, 163, 184, 0.74);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
 :deep(.loading-spinner) {
   display: inline-flex;
   align-items: center;
@@ -485,6 +596,11 @@ const panelStyle = computed(() => {
     display: none;
   }
 
+  .auth-shell__home-link {
+    padding: 9px 14px;
+    font-size: 0.8rem;
+  }
+
   .auth-shell__title {
     font-size: clamp(2.4rem, 12vw, 3.2rem);
   }
@@ -495,6 +611,15 @@ const panelStyle = computed(() => {
   }
 
   :deep(.field-box input) {
+    height: 56px;
+  }
+
+  :deep(.field-row) {
+    grid-template-columns: 1fr;
+  }
+
+  :deep(.secondary-btn) {
+    width: 100%;
     height: 56px;
   }
 }

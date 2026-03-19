@@ -1,32 +1,13 @@
 <template>
   <AuthShell
-    eyebrow="CREATE ACCOUNT"
-    title="注册"
-    subtitle="创建你的 halo coding do 账号。"
+    eyebrow="RECOVER ACCOUNT"
+    title="找回密码"
+    subtitle="使用邮箱验证码重置你的账号密码。"
     :panel-width="520"
   >
-    <form class="auth-form" @submit.prevent="handleRegister">
-      <div class="field-group" :class="{ focused: focusedField === 'userName', filled: registerForm.userName, error: errors.userName }">
-        <label class="field-label">用户名</label>
-        <div class="field-box">
-          <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <input
-            v-model="registerForm.userName"
-            type="text"
-            autocomplete="username"
-            placeholder="设置用户名"
-            @focus="focusedField = 'userName'"
-            @blur="focusedField = ''; validateField('userName')"
-          />
-        </div>
-        <span v-if="errors.userName" class="error-message">{{ errors.userName }}</span>
-      </div>
-
+    <form class="auth-form" @submit.prevent="handleResetPassword">
       <div class="field-row">
-        <div class="field-group" :class="{ focused: focusedField === 'email', filled: registerForm.email, error: errors.email }">
+        <div class="field-group" :class="{ focused: focusedField === 'email', filled: form.email, error: errors.email }">
           <label class="field-label">邮箱</label>
           <div class="field-box">
             <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -34,10 +15,10 @@
               <path d="m22 6-10 7L2 6" />
             </svg>
             <input
-              v-model="registerForm.email"
+              v-model="form.email"
               type="email"
               autocomplete="email"
-              placeholder="输入常用邮箱"
+              placeholder="输入注册邮箱"
               @focus="focusedField = 'email'"
               @blur="focusedField = ''; validateField('email')"
             />
@@ -55,7 +36,7 @@
         </button>
       </div>
 
-      <div class="field-group" :class="{ focused: focusedField === 'verificationCode', filled: registerForm.verificationCode, error: errors.verificationCode }">
+      <div class="field-group" :class="{ focused: focusedField === 'verificationCode', filled: form.verificationCode, error: errors.verificationCode }">
         <label class="field-label">邮箱验证码</label>
         <div class="field-box">
           <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,7 +45,7 @@
             <path d="M7 13h6" />
           </svg>
           <input
-            v-model="registerForm.verificationCode"
+            v-model="form.verificationCode"
             type="text"
             inputmode="numeric"
             maxlength="6"
@@ -77,20 +58,20 @@
         <span v-if="errors.verificationCode" class="error-message">{{ errors.verificationCode }}</span>
       </div>
 
-      <div class="field-group" :class="{ focused: focusedField === 'password', filled: registerForm.password, error: errors.password }">
-        <label class="field-label">密码</label>
+      <div class="field-group" :class="{ focused: focusedField === 'newPassword', filled: form.newPassword, error: errors.newPassword }">
+        <label class="field-label">新密码</label>
         <div class="field-box">
           <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <input
-            v-model="registerForm.password"
+            v-model="form.newPassword"
             :type="showPassword ? 'text' : 'password'"
             autocomplete="new-password"
-            placeholder="设置密码"
-            @focus="focusedField = 'password'"
-            @blur="focusedField = ''; validateField('password')"
+            placeholder="输入新密码"
+            @focus="focusedField = 'newPassword'"
+            @blur="focusedField = ''; validateField('newPassword')"
           />
           <button type="button" class="toggle-password" @click="showPassword = !showPassword">
             <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -103,27 +84,27 @@
             </svg>
           </button>
         </div>
-        <div v-if="registerForm.password" class="password-strength">
+        <div v-if="form.newPassword" class="password-strength">
           <div class="strength-bar">
             <div class="strength-fill" :style="{ width: passwordStrength.percent + '%' }" :class="passwordStrength.level"></div>
           </div>
           <span class="strength-label" :class="passwordStrength.level">{{ passwordStrength.text }}</span>
         </div>
-        <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+        <span v-if="errors.newPassword" class="error-message">{{ errors.newPassword }}</span>
       </div>
 
-      <div class="field-group" :class="{ focused: focusedField === 'confirmPassword', filled: registerForm.confirmPassword, error: errors.confirmPassword }">
-        <label class="field-label">确认密码</label>
+      <div class="field-group" :class="{ focused: focusedField === 'confirmPassword', filled: form.confirmPassword, error: errors.confirmPassword }">
+        <label class="field-label">确认新密码</label>
         <div class="field-box">
           <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
           <input
-            v-model="registerForm.confirmPassword"
+            v-model="form.confirmPassword"
             :type="showConfirmPassword ? 'text' : 'password'"
             autocomplete="new-password"
-            placeholder="再次输入密码"
+            placeholder="再次输入新密码"
             @focus="focusedField = 'confirmPassword'"
             @blur="focusedField = ''; validateField('confirmPassword')"
           />
@@ -142,7 +123,7 @@
       </div>
 
       <button type="submit" class="submit-btn" :disabled="loading">
-        <span v-if="!loading">注册</span>
+        <span v-if="!loading">重置密码</span>
         <span v-else class="loading-spinner">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 12a9 9 0 1 1-6.219-8.56" />
@@ -152,8 +133,8 @@
     </form>
 
     <div class="panel-footer">
-      <span>已经有账号了？</span>
-      <router-link to="/login" class="footer-link">去登录</router-link>
+      <span>想起密码了？</span>
+      <router-link to="/login" class="footer-link">返回登录</router-link>
     </div>
   </AuthShell>
 </template>
@@ -169,19 +150,17 @@ const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/
 const router = useRouter()
 const userStore = useUserStore()
 
-const registerForm = reactive({
-  userName: '',
+const form = reactive({
   email: '',
   verificationCode: '',
-  password: '',
+  newPassword: '',
   confirmPassword: ''
 })
 
 const errors = reactive({
-  userName: '',
   email: '',
   verificationCode: '',
-  password: '',
+  newPassword: '',
   confirmPassword: ''
 })
 
@@ -195,7 +174,7 @@ const cooldown = ref(0)
 let timer = null
 
 const passwordStrength = computed(() => {
-  const password = registerForm.password
+  const password = form.newPassword
   if (!password) return { percent: 0, level: '', text: '' }
 
   let score = 0
@@ -214,53 +193,42 @@ const passwordStrength = computed(() => {
 
 const validateField = (field) => {
   switch (field) {
-    case 'userName':
-      if (!registerForm.userName) {
-        errors.userName = '请输入用户名'
-      } else if (registerForm.userName.length < 3 || registerForm.userName.length > 20) {
-        errors.userName = '用户名长度需要在 3 到 20 个字符之间'
-      } else if (!/^[a-zA-Z0-9_]+$/.test(registerForm.userName)) {
-        errors.userName = '用户名只支持字母、数字和下划线'
-      } else {
-        errors.userName = ''
-      }
-      break
     case 'email':
-      if (!registerForm.email) {
+      if (!form.email) {
         errors.email = '请输入邮箱'
-      } else if (!EMAIL_PATTERN.test(registerForm.email)) {
+      } else if (!EMAIL_PATTERN.test(form.email)) {
         errors.email = '邮箱格式不正确'
       } else {
         errors.email = ''
       }
       break
     case 'verificationCode':
-      if (!registerForm.verificationCode) {
+      if (!form.verificationCode) {
         errors.verificationCode = '请输入邮箱验证码'
-      } else if (!/^\d{6}$/.test(registerForm.verificationCode)) {
+      } else if (!/^\d{6}$/.test(form.verificationCode)) {
         errors.verificationCode = '验证码需为 6 位数字'
       } else {
         errors.verificationCode = ''
       }
       break
-    case 'password':
-      if (!registerForm.password) {
-        errors.password = '请输入密码'
-      } else if (registerForm.password.length < 6 || registerForm.password.length > 20) {
-        errors.password = '密码长度需要在 6 到 20 个字符之间'
-      } else if (!/^(?=.*[a-zA-Z])(?=.*\d)/.test(registerForm.password)) {
-        errors.password = '密码至少需要包含字母和数字'
+    case 'newPassword':
+      if (!form.newPassword) {
+        errors.newPassword = '请输入新密码'
+      } else if (form.newPassword.length < 6 || form.newPassword.length > 20) {
+        errors.newPassword = '密码长度需要在 6 到 20 个字符之间'
+      } else if (!/^(?=.*[a-zA-Z])(?=.*\d)/.test(form.newPassword)) {
+        errors.newPassword = '密码至少需要包含字母和数字'
       } else {
-        errors.password = ''
+        errors.newPassword = ''
       }
-      if (registerForm.confirmPassword) {
+      if (form.confirmPassword) {
         validateField('confirmPassword')
       }
       break
     case 'confirmPassword':
-      if (!registerForm.confirmPassword) {
+      if (!form.confirmPassword) {
         errors.confirmPassword = '请再次确认密码'
-      } else if (registerForm.confirmPassword !== registerForm.password) {
+      } else if (form.confirmPassword !== form.newPassword) {
         errors.confirmPassword = '两次输入的密码不一致'
       } else {
         errors.confirmPassword = ''
@@ -270,10 +238,9 @@ const validateField = (field) => {
 }
 
 const validateForm = () => {
-  validateField('userName')
   validateField('email')
   validateField('verificationCode')
-  validateField('password')
+  validateField('newPassword')
   validateField('confirmPassword')
   return Object.values(errors).every(value => !value)
 }
@@ -284,7 +251,7 @@ const handleSendCode = async () => {
 
   codeLoading.value = true
   try {
-    const success = await userStore.sendRegisterCode(registerForm.email.trim())
+    const success = await userStore.sendResetPasswordCode(form.email.trim())
     if (success) {
       startCooldown()
     }
@@ -293,23 +260,23 @@ const handleSendCode = async () => {
   }
 }
 
-const handleRegister = async () => {
+const handleResetPassword = async () => {
   if (!validateForm()) return
 
   loading.value = true
   try {
-    const success = await userStore.register({
-      userName: registerForm.userName.trim(),
-      email: registerForm.email.trim(),
-      verificationCode: registerForm.verificationCode.trim(),
-      password: registerForm.password
+    const success = await userStore.resetPassword({
+      email: form.email.trim(),
+      verificationCode: form.verificationCode.trim(),
+      newPassword: form.newPassword,
+      confirmPassword: form.confirmPassword
     })
 
     if (success) {
       router.push('/login')
     }
   } catch (error) {
-    console.error('注册失败:', error)
+    console.error('重置密码失败:', error)
   } finally {
     loading.value = false
   }
