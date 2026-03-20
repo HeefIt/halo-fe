@@ -1,5 +1,5 @@
 // API测试工具
-import { authApi } from '@/api/auth'
+import { authApi } from '@/api/modules/auth'
 
 // 测试登录接口
 export const testLogin = async () => {

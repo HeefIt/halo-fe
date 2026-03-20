@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
-import Home from '@/views/Home.vue'
+import { useUserStore } from '@/stores/modules/user'
+import Home from '@/pages/home/HomePage.vue'
 
 /**
  * 前端界面路由跳转
@@ -10,25 +10,25 @@ const routes = [
   {
     path: '/',
     name: 'Landing',
-    component: () => import('@/views/Landing.vue'),
+    component: () => import('@/pages/landing/LandingPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/modules/user/Login.vue'),
+    component: () => import('@/pages/auth/LoginPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/register',
     name: 'Register',
-    component: () => import('@/views/modules/user/Register.vue'),
+    component: () => import('@/pages/auth/RegisterPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: () => import('@/views/modules/user/ForgotPassword.vue'),
+    component: () => import('@/pages/auth/ForgotPasswordPage.vue'),
     meta: { requiresAuth: false }
   },
   {
@@ -40,115 +40,115 @@ const routes = [
   {
     path: '/home/questions',
     name: 'QuestionBank',
-    component: () => import('@/views/modules/questionBank/QuestionBank.vue'),
+    component: () => import('@/pages/question-bank/QuestionBankPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/practice/:id?',
     name: 'Practice',
-    component: () => import('@/views/Practice.vue'),
+    component: () => import('@/pages/practice/PracticePage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: () => import('@/views/modules/user/Profile.vue'),
+    component: () => import('@/pages/profile/ProfilePage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/admin',
     name: 'Admin',
-    component: () => import('@/views/Admin.vue'),
+    component: () => import('@/pages/admin/AdminPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/study-plan',
     name: 'StudyPlan',
-    component: () => import('@/views/modules/studyPlan/StudyPlan.vue'),
+    component: () => import('@/pages/study-plan/StudyPlanPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/study-plan/:id',
     name: 'StudyPlanDetail',
-    component: () => import('@/views/modules/studyPlan/StudyPlanDetail.vue'),
+    component: () => import('@/pages/study-plan/StudyPlanDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ranking',
     name: 'Ranking',
-    component: () => import('@/views/modules/ranking/Ranking.vue'),
+    component: () => import('@/pages/ranking/RankingPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ranking/:id',
     name: 'RankingDetail',
-    component: () => import('@/views/modules/ranking/RankingDetail.vue'),
+    component: () => import('@/pages/ranking/RankingDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/practice-history',
     name: 'PracticeHistory',
-    component: () => import('@/views/modules/practiceHistory/PracticeHistory.vue'),
+    component: () => import('@/pages/practice-history/PracticeHistoryPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/practice-history/:id',
     name: 'PracticeHistoryDetail',
-    component: () => import('@/views/modules/practiceHistory/PracticeDetail.vue'),
+    component: () => import('@/pages/practice-history/PracticeHistoryDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ai/chatbot',
     name: 'ChatBot',
-    component: () => import('@/views/modules/ai/ChatBot.vue'),
+    component: () => import('@/pages/ai/ChatPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ai/practice-assistant',
     name: 'PracticeAssistant',
-    component: () => import('@/views/modules/ai/PracticeAssistant.vue'),
+    component: () => import('@/pages/ai/PracticeAssistantPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ai/customer-service',
     name: 'CustomerService',
-    component: () => import('@/views/modules/ai/CustomerService.vue'),
+    component: () => import('@/pages/ai/CustomerServicePage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/ai/multimodal',
     name: 'MultimodalParser',
-    component: () => import('@/views/modules/ai/MultimodalParser.vue'),
+    component: () => import('@/pages/ai/MultimodalParserPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/blog',
     name: 'BlogHome',
-    component: () => import('@/views/modules/blog/BlogHome.vue'),
+    component: () => import('@/pages/blog/BlogHomePage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/blog/list',
     name: 'BlogList',
-    component: () => import('@/views/modules/blog/BlogList.vue'),
+    component: () => import('@/pages/blog/BlogListPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/blog/article/:id',
     name: 'BlogDetail',
-    component: () => import('@/views/modules/blog/BlogDetail.vue'),
+    component: () => import('@/pages/blog/BlogDetailPage.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/blog/write',
     name: 'BlogWrite',
-    component: () => import('@/views/modules/blog/BlogWrite.vue'),
+    component: () => import('@/pages/blog/BlogWritePage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/blog/edit/:id',
     name: 'BlogEdit',
-    component: () => import('@/views/modules/blog/BlogWrite.vue'),
+    component: () => import('@/pages/blog/BlogWritePage.vue'),
     meta: { requiresAuth: true }
   }
 ]
