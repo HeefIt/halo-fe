@@ -170,13 +170,16 @@
             </div>
             
             <div v-else class="analysis-section">
-              <div v-if="aiAnalysisLoading" class="ai-loading">
+              <div v-if="aiAnalysisLoading && !aiAnalysisContent" class="ai-loading">
                 <div class="loading-spinner"></div>
-                <p>AI 正在分析中...</p>
+                <p>AI 正在分析中，马上给你首屏结论...</p>
               </div>
-              <div v-else-if="aiAnalysisContent" class="ai-content" v-html="formatAIAnalysisContent(aiAnalysisContent)"></div>
+              <div v-else-if="aiAnalysisContent" class="ai-stream-shell">
+                <div v-if="aiAnalysisLoading" class="ai-stream-status">AI 正在持续输出...</div>
+                <div class="ai-content" v-html="formatAIAnalysisContent(aiAnalysisContent)"></div>
+              </div>
               <div v-else class="ai-empty">
-                <p>点击下方按钮获取 AI 智能解析</p>
+                <p>{{ aiAnalysisError || '点击下方按钮获取 AI 智能解析' }}</p>
               </div>
             </div>
           </div>
@@ -189,7 +192,7 @@
               @click="analyzeWithAI"
               :disabled="aiAnalysisLoading"
             >
-              {{ aiAnalysisContent ? '重新解析' : 'AI解析' }}
+              {{ aiAnalysisLoading ? '解析中...' : aiAnalysisContent ? '重新解析' : 'AI解析' }}
             </button>
           </div>
         </div>
@@ -199,11 +202,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getSubjectInfo, savePracticeRecord } from '@/api/subject'
-import { analyzeSubjectWithAI } from '@/api/openai'
+import { analyzeSubjectWithAI, analyzeSubjectWithAIStream } from '@/api/openai'
 import { useUserStore } from '@/stores/user'
 import { usePracticeStore } from '@/stores/practice'
 import Header from '@/views/components/layout/Header.vue'
@@ -218,6 +221,11 @@ const showAnalysis = ref(false)
 const activeTab = ref('subject')
 const aiAnalysisContent = ref('')
 const aiAnalysisLoading = ref(false)
+const aiAnalysisError = ref('')
+
+let aiAnalysisAbortController = null
+let aiAnalysisBufferedContent = ''
+let aiAnalysisFlushTimer = null
 
 const currentProblem = reactive({
   id: null,
@@ -383,6 +391,8 @@ const goBackHome = () => {
 
 const fetchSubjectInfo = async (problemId) => {
   try {
+    cancelAIAnalysisStream()
+    resetAIAnalysisState()
     loading.value = true
     const res = await getSubjectInfo(problemId)
     if (res.code === 200) {
@@ -405,23 +415,128 @@ const fetchSubjectInfo = async (problemId) => {
   }
 }
 
+const resetAIAnalysisState = () => {
+  aiAnalysisContent.value = ''
+  aiAnalysisError.value = ''
+  aiAnalysisLoading.value = false
+  aiAnalysisBufferedContent = ''
+  if (aiAnalysisFlushTimer) {
+    clearTimeout(aiAnalysisFlushTimer)
+    aiAnalysisFlushTimer = null
+  }
+}
+
+const cancelAIAnalysisStream = () => {
+  if (aiAnalysisAbortController) {
+    aiAnalysisAbortController.abort()
+    aiAnalysisAbortController = null
+  }
+  if (aiAnalysisFlushTimer) {
+    clearTimeout(aiAnalysisFlushTimer)
+    aiAnalysisFlushTimer = null
+  }
+  aiAnalysisBufferedContent = ''
+}
+
+const flushAIAnalysisBuffer = () => {
+  if (!aiAnalysisBufferedContent) {
+    aiAnalysisFlushTimer = null
+    return
+  }
+
+  aiAnalysisContent.value += aiAnalysisBufferedContent
+  aiAnalysisBufferedContent = ''
+  aiAnalysisFlushTimer = null
+}
+
+const queueAIAnalysisChunk = (chunk) => {
+  if (!chunk) {
+    return
+  }
+
+  aiAnalysisBufferedContent += chunk
+  if (!aiAnalysisFlushTimer) {
+    aiAnalysisFlushTimer = setTimeout(flushAIAnalysisBuffer, 50)
+  }
+}
+
+const buildUserAnswerForAI = () => {
+  if (currentProblem.subjectType === 1) {
+    return selectedOption.value !== null ? getOptionLabel(selectedOption.value) : ''
+  }
+
+  if (currentProblem.subjectType === 2) {
+    return selectedOptions.value
+      .map((optionType) => getOptionLabel(optionType))
+      .sort()
+      .join('')
+  }
+
+  if (currentProblem.subjectType === 3) {
+    if (selectedOption.value === 1) return 'A'
+    if (selectedOption.value === 0) return 'B'
+    return ''
+  }
+
+  return userAnswer.value.trim()
+}
+
 const analyzeWithAI = async () => {
   try {
+    cancelAIAnalysisStream()
+    resetAIAnalysisState()
     aiAnalysisLoading.value = true
-    aiAnalysisContent.value = ''
     const aiRequestData = {
+      subjectId: currentProblem.id,
       subjectName: currentProblem.subjectName,
       subjectType: currentProblem.subjectType,
       subjectParse: currentProblem.subjectParse,
       subjectAnswer: currentProblem.subjectAnswer,
-      optionList: currentProblem.optionList
+      optionList: currentProblem.optionList,
+      userAnswer: buildUserAnswerForAI(),
+      needMistakeAnalysis: true
     }
-    const response = await analyzeSubjectWithAI(aiRequestData)
-    aiAnalysisContent.value = response
+
+    aiAnalysisAbortController = new AbortController()
+
+    await analyzeSubjectWithAIStream(aiRequestData, {
+      signal: aiAnalysisAbortController.signal,
+      onChunk: (payload) => {
+        aiAnalysisError.value = ''
+        queueAIAnalysisChunk(payload.content || '')
+      },
+      onDone: (payload) => {
+        flushAIAnalysisBuffer()
+        if (payload.fullContent) {
+          aiAnalysisContent.value = payload.fullContent
+        }
+      }
+    })
   } catch (error) {
-    aiAnalysisContent.value = 'AI解析失败，请稍后重试'
+    if (error.name === 'AbortError') {
+      return
+    }
+
+    try {
+      const fallbackContent = await analyzeSubjectWithAI({
+        subjectId: currentProblem.id,
+        subjectName: currentProblem.subjectName,
+        subjectType: currentProblem.subjectType,
+        subjectParse: currentProblem.subjectParse,
+        subjectAnswer: currentProblem.subjectAnswer,
+        optionList: currentProblem.optionList,
+        userAnswer: buildUserAnswerForAI(),
+        needMistakeAnalysis: true
+      })
+      aiAnalysisContent.value = fallbackContent
+      aiAnalysisError.value = ''
+    } catch (fallbackError) {
+      aiAnalysisError.value = 'AI解析失败，请稍后重试'
+    }
   } finally {
     aiAnalysisLoading.value = false
+    aiAnalysisAbortController = null
+    flushAIAnalysisBuffer()
   }
 }
 
@@ -451,6 +566,17 @@ watch(() => route.params.id, (newId) => {
     practiceStore.setCurrentProblemId(parseInt(newId))
     fetchSubjectInfo(newId)
   }
+})
+
+watch(showAnalysis, (visible) => {
+  if (!visible) {
+    cancelAIAnalysisStream()
+    aiAnalysisLoading.value = false
+  }
+})
+
+onBeforeUnmount(() => {
+  cancelAIAnalysisStream()
 })
 </script>
 
@@ -885,6 +1011,23 @@ watch(() => route.params.id, (newId) => {
   font-size: var(--text-base);
   color: var(--color-text-secondary);
   line-height: 1.8;
+}
+
+.ai-stream-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.ai-stream-status {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-sm);
 }
 
 .ai-content :deep(pre) {

@@ -11,49 +11,132 @@ import request from './request'
  */
 export function analyzeSubjectWithAI(data) {
   return request({
-    url: '/openAI/deepSeek/chat',
+    url: '/ai/practice/analyze',
     method: 'post',
-    data: {
-      message: buildAIRequestMessage(data)
-    },
+    data,
     timeout: 90000 // 设置90秒超时
+  }).then((response) => {
+    if (response.code === 200) {
+      return response.data?.reply || ''
+    }
+    throw new Error(response.message || 'AI解析失败')
   })
 }
 
 /**
- * 构建发送给AI的请求消息
- * @param {Object} subjectData 题目数据
- * @returns {String} 格式化的请求消息
+ * 流式AI解析题目
+ * @param {Object} data 题目信息
+ * @param {Object} callbacks 回调集合
+ * @param {Function} callbacks.onStart 开始回调
+ * @param {Function} callbacks.onChunk 增量输出回调
+ * @param {Function} callbacks.onDone 完成回调
+ * @param {Function} callbacks.onError 错误回调
+ * @param {AbortSignal} callbacks.signal 中断信号
  */
-function buildAIRequestMessage(subjectData) {
-  let message = `请帮我解析下面这道题目:
+export function analyzeSubjectWithAIStream(data, callbacks = {}) {
+  const { onStart, onChunk, onDone, onError, signal } = callbacks
+  const headers = {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive'
+  }
 
-题目: ${subjectData.subjectName}
+  const token = localStorage.getItem('halo_token')
+  if (token) {
+    headers.satoken = token
+  }
 
-`
-  
-  // 添加选项信息（如果是选择题）
-  if (subjectData.optionList && subjectData.optionList.length > 0) {
-    message += "选项:\n"
-    subjectData.optionList.forEach(option => {
-      const optionLabel = getOptionLabel(option.optionType)
-      message += `${optionLabel}. ${option.optionContent}\n`
-    })
-    message += "\n"
-  }
-  
-  // 添加题目解析和答案
-  if (subjectData.subjectParse) {
-    message += `题目解析: ${subjectData.subjectParse}\n\n`
-  }
-  
-  if (subjectData.subjectAnswer) {
-    message += `参考答案: ${subjectData.subjectAnswer}\n\n`
-  }
-  
-  message += "请用通俗易懂的语言详细解释这道题目的解题思路和知识点，并指出容易出错的地方。"
-  
-  return message
+  return fetch('/api/ai/practice/analyze/stream', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(data),
+    signal
+  }).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder('utf-8')
+    let buffer = ''
+    let fullContent = ''
+
+    const processEvent = (rawEvent) => {
+      const lines = rawEvent
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+      const dataLine = lines.find((line) => line.startsWith('data:'))
+
+      if (!dataLine) {
+        return
+      }
+
+      const payload = JSON.parse(dataLine.replace(/^data:\s*/, ''))
+      const eventType = payload.type
+
+      if (eventType === 'start') {
+        onStart?.(payload)
+        return
+      }
+
+      if (eventType === 'chunk') {
+        const content = payload.content || ''
+        fullContent += content
+        onChunk?.({
+          content,
+          fullContent,
+          subjectId: payload.subjectId
+        })
+        return
+      }
+
+      if (eventType === 'done') {
+        if (payload.fullContent) {
+          fullContent = payload.fullContent
+        }
+        onDone?.({
+          fullContent,
+          subjectId: payload.subjectId
+        })
+        return
+      }
+
+      if (eventType === 'error') {
+        const error = new Error(payload.content || 'AI解析失败')
+        onError?.(error)
+        throw error
+      }
+    }
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        break
+      }
+
+      buffer += decoder.decode(value, { stream: true })
+      const events = buffer.split('\n\n')
+      buffer = events.pop() || ''
+
+      for (const event of events) {
+        if (!event.trim()) {
+          continue
+        }
+        processEvent(event)
+      }
+    }
+
+    if (buffer.trim()) {
+      processEvent(buffer)
+    }
+  }).catch((error) => {
+    if (error.name !== 'AbortError') {
+      onError?.(error)
+    }
+    throw error
+  })
 }
 
 /**
