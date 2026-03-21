@@ -71,6 +71,15 @@
       </nav>
       
       <div class="header-actions">
+        <button class="notice-trigger" type="button" @click="handleOpenNotice">
+          <span v-if="hasActiveNotice" class="notice-dot"></span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.17V11a6 6 0 1 0-12 0v3.17c0 .53-.21 1.04-.59 1.41L4 17h5"></path>
+            <path d="M10 17a2 2 0 0 0 4 0"></path>
+          </svg>
+          <span class="notice-label">公告</span>
+        </button>
+
         <button 
           v-if="isAdmin" 
           class="btn-admin"
@@ -135,6 +144,12 @@
     </div>
     
     <div v-if="showUserMenu" class="dropdown-backdrop" @click="showUserMenu = false"></div>
+
+    <NoticeDialog
+      v-model="showNoticeDialog"
+      :notice="currentNotice"
+      mode="view"
+    />
   </header>
 </template>
 
@@ -142,16 +157,21 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getCurrentNotice } from '@/api/modules/notice'
 import brandMark from '@/assets/brand/hcd-mark.svg'
+import NoticeDialog from '@/components/notice/NoticeDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 
 const showUserMenu = ref(false)
+const showNoticeDialog = ref(false)
+const currentNotice = ref(null)
 
 const isAdmin = computed(() => userStore.isAdmin)
+const hasActiveNotice = computed(() => !!currentNotice.value?.id)
 
 const isActive = (path) => {
   if (path === '/home') {
@@ -188,6 +208,30 @@ const handleAdmin = () => {
   navigateTo('/admin')
 }
 
+const fetchCurrentNotice = async () => {
+  try {
+    const res = await getCurrentNotice(1)
+    if (res.success) {
+      currentNotice.value = res.data || null
+    }
+  } catch (error) {
+    console.error('获取当前公告失败:', error)
+  }
+}
+
+const handleOpenNotice = async () => {
+  if (!currentNotice.value) {
+    await fetchCurrentNotice()
+  }
+
+  if (!currentNotice.value) {
+    ElMessage.info('当前暂无公告')
+    return
+  }
+
+  showNoticeDialog.value = true
+}
+
 const logout = () => {
   showUserMenu.value = false
   ElMessageBox.confirm('确定要退出登录吗？', '提示', {
@@ -208,6 +252,7 @@ const handleClickOutside = (e) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  fetchCurrentNotice()
 })
 
 onUnmounted(() => {
@@ -343,6 +388,43 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.notice-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.notice-trigger:hover {
+  color: var(--text-1);
+  background: var(--color-bg-subtle);
+  border-color: var(--border-normal);
+}
+
+.notice-dot {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.notice-label {
+  white-space: nowrap;
 }
 
 .btn-admin {
@@ -502,7 +584,8 @@ onUnmounted(() => {
 
 @media (max-width: 1280px) {
   .logo-caption,
-  .user-name {
+  .user-name,
+  .notice-label {
     display: none;
   }
 }

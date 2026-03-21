@@ -91,6 +91,7 @@ import TagManagement from '@/pages/admin/components/TagManagement.vue'
 import SubjectManagement from '@/pages/admin/components/SubjectManagement.vue'
 import Statistics from '@/pages/admin/components/Statistics.vue'
 import BlogStatistics from '@/pages/admin/components/BlogStatistics.vue'
+import NoticeManagement from '@/pages/admin/components/NoticeManagement.vue'
 
 const router = useRouter()
 
@@ -101,6 +102,7 @@ const loadedTabs = reactive({
   categories: false,
   tags: false,
   problems: false,
+  notices: false,
   statistics: false,
   blogStatistics: false
 })
@@ -192,6 +194,14 @@ const navItems = [
     ])
   },
   {
+    id: 'notices',
+    label: '公告管理',
+    icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
+      h('path', { d: 'M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.17V11a6 6 0 1 0-12 0v3.17c0 .53-.21 1.04-.59 1.41L4 17h5' }),
+      h('path', { d: 'M10 17a2 2 0 0 0 4 0' })
+    ])
+  },
+  {
     id: 'blogStatistics',
     label: '博客统计',
     icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
@@ -215,6 +225,7 @@ const tabTitles = {
   categories: { title: '分类管理', desc: '管理题目分类和层级结构' },
   tags: { title: '标签管理', desc: '管理题目标签和关键词' },
   problems: { title: '题目管理', desc: '管理题库内容和信息' },
+  notices: { title: '公告管理', desc: '管理首页公告、弹窗策略和过期时间' },
   blogStatistics: { title: '博客统计', desc: '查看文章表现与后台管理动作的真实数据' },
   statistics: { title: '数据统计', desc: '查看系统运营数据和趋势' }
 }
@@ -228,6 +239,7 @@ const currentComponent = computed(() => {
     categories: CategoryManagement,
     tags: TagManagement,
     problems: SubjectManagement,
+    notices: NoticeManagement,
     blogStatistics: BlogStatistics,
     statistics: Statistics
   }

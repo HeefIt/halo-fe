@@ -23,6 +23,17 @@
               </button>
             </div>
 
+            <button
+              v-if="activeNotice"
+              class="notice-entry"
+              type="button"
+              @click="showNoticeDialog = true"
+            >
+              <span class="notice-entry__icon">公告</span>
+              <span class="notice-entry__title">{{ activeNotice.title }}</span>
+              <span class="notice-entry__arrow">查看</span>
+            </button>
+
             <div class="signal-row">
               <div
                 v-for="signal in leadSignals"
@@ -231,6 +242,20 @@
         </section>
       </div>
     </main>
+
+    <NoticeDialog
+      v-model="showNoticeDialog"
+      :notice="activeNotice"
+      mode="view"
+    />
+
+    <NoticeDialog
+      v-model="showPopupDialog"
+      :notice="popupNotice"
+      mode="popup"
+      @close-today="handleCloseNoticeForToday"
+      @close-forever="handleCloseNoticeForever"
+    />
   </div>
 </template>
 
@@ -239,8 +264,10 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getDailyStatistics } from '@/api/modules/question/subject'
+import { closeNotice, closeNoticeForToday, getCurrentNotice, getCurrentPopupNotice } from '@/api/modules/notice'
 import { useThemeStore } from '@/stores/modules/theme'
 import { useUserStore } from '@/stores/modules/user'
+import NoticeDialog from '@/components/notice/NoticeDialog.vue'
 import Header from '@/layouts/AppHeader.vue'
 
 const router = useRouter()
@@ -255,6 +282,10 @@ const dailyStats = ref({
 })
 
 const currentTime = ref(new Date())
+const activeNotice = ref(null)
+const popupNotice = ref(null)
+const showNoticeDialog = ref(false)
+const showPopupDialog = ref(false)
 let greetingTimer = null
 
 const defaultProblemGoal = 10
@@ -459,6 +490,67 @@ async function fetchDailyStatistics() {
   }
 }
 
+async function fetchCurrentNotice() {
+  try {
+    const res = await getCurrentNotice(1)
+    if (res.success) {
+      activeNotice.value = res.data || null
+    }
+  } catch (error) {
+    console.error('获取当前公告失败:', error)
+  }
+}
+
+async function fetchPopupNotice() {
+  try {
+    const res = await getCurrentPopupNotice(1)
+    if (res.success) {
+      popupNotice.value = res.data || null
+      showPopupDialog.value = !!res.data
+    }
+  } catch (error) {
+    console.error('获取弹窗公告失败:', error)
+  }
+}
+
+async function handleCloseNoticeForToday() {
+  if (!popupNotice.value?.id) {
+    showPopupDialog.value = false
+    return
+  }
+  try {
+    const res = await closeNoticeForToday(popupNotice.value.id)
+    if (res.success) {
+      ElMessage.success('今日内将不再弹出该公告')
+      showPopupDialog.value = false
+      return
+    }
+    ElMessage.error(res.message || '关闭公告失败')
+  } catch (error) {
+    console.error('今日关闭公告失败:', error)
+    ElMessage.error('关闭公告失败')
+  }
+}
+
+async function handleCloseNoticeForever() {
+  if (!popupNotice.value?.id) {
+    showPopupDialog.value = false
+    return
+  }
+  try {
+    const res = await closeNotice(popupNotice.value.id)
+    if (res.success) {
+      ElMessage.success('该公告后续将不再弹出')
+      showPopupDialog.value = false
+      return
+    }
+    ElMessage.error(res.message || '关闭公告失败')
+  } catch (error) {
+    console.error('关闭公告失败:', error)
+    ElMessage.error('关闭公告失败')
+  }
+}
+
 function formatTime(seconds) {
   if (!seconds) return '0 分钟'
 
@@ -482,6 +574,8 @@ onMounted(() => {
     currentTime.value = new Date()
   }, 30000)
   fetchDailyStatistics()
+  fetchCurrentNotice()
+  fetchPopupNotice()
 })
 
 onUnmounted(() => {
@@ -580,6 +674,49 @@ watch(
   gap: 12px;
   margin-top: 28px;
   flex-wrap: wrap;
+}
+
+.notice-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(37, 99, 235, 0.04);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.notice-entry__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notice-entry__title {
+  max-width: 380px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.notice-entry__arrow {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .action-primary,

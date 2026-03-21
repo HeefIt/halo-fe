@@ -7,6 +7,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import router from './router'
 import './styles/global.css'
+import './styles/ai-markdown.css'
 import { useThemeStore } from '@/stores/modules/theme'
 
 const app = createApp(App)
