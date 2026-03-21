@@ -86,7 +86,7 @@
         </aside>
 
         <section class="chat-stage">
-          <div class="messages-area" ref="messagesContainer">
+          <div class="messages-area" ref="messagesContainer" @scroll="handleMessagesScroll">
             <div v-if="currentMessages.length === 0 && !isLoading" class="empty-state">
               <div class="empty-orb"></div>
               <h2 class="empty-title">开始一场新对话</h2>
@@ -121,7 +121,7 @@
                 </div>
               </div>
               <div class="message-body">
-                <div class="message-content" v-html="formatMessage(message.content || '')"></div>
+                <div class="message-content ai-markdown" v-html="formatMessage(message.content || '')"></div>
                 <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
               </div>
             </div>
@@ -139,6 +139,18 @@
               </div>
             </div>
           </div>
+
+          <button
+            v-show="showScrollToBottom"
+            class="scroll-bottom-btn"
+            type="button"
+            @click="scrollMessagesToBottom"
+          >
+            <span>回到底部</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
 
           <div class="input-area">
             <div class="input-wrapper">
@@ -182,20 +194,8 @@ import { useUserStore } from '@/stores/modules/user'
 import { useThemeStore } from '@/stores/modules/theme'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as aiApi from '@/api/modules/ai/chat'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
-import hljs from 'highlight.js'
-import 'highlight.js/styles/github-dark.css'
+import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
-
-marked.setOptions({
-  highlight: function(code, lang) {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext'
-    return hljs.highlight(code, { language }).value
-  },
-  breaks: true,
-  gfm: true
-})
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -207,9 +207,11 @@ const isLoading = ref(false)
 const messagesContainer = ref(null)
 const textareaRef = ref(null)
 const isStreamingMode = ref(true)
+const isUserNearBottom = ref(true)
 const sessions = ref([])
 const currentSessionId = ref(null)
 const currentSession = ref(null)
+const SCROLL_BOTTOM_THRESHOLD = 72
 
 const normalizeSession = (session) => {
   const normalizedSession = session || {}
@@ -229,6 +231,8 @@ const currentMessages = computed(() => {
   const messages = Array.isArray(currentSession.value.messages) ? currentSession.value.messages : []
   return [...messages].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0))
 })
+
+const showScrollToBottom = computed(() => currentMessages.value.length > 0 && !isUserNearBottom.value)
 
 const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value }
 
@@ -262,7 +266,7 @@ const createNewSession = async () => {
 const selectSession = async (sessionId) => {
   if (currentSessionId.value === sessionId) {
     await nextTick()
-    scrollToBottom()
+    scrollToBottom({ force: true })
     return
   }
 
@@ -275,7 +279,7 @@ const selectSession = async (sessionId) => {
       const sessionIndex = sessions.value.findIndex(s => s.sessionId === sessionId)
       if (sessionIndex !== -1) Object.assign(sessions.value[sessionIndex], normalizeSession(response.data))
       await nextTick()
-      scrollToBottom()
+      scrollToBottom({ force: true })
     }
   } catch (error) {
     console.error('加载会话详情失败:', error)
@@ -418,7 +422,7 @@ const handleSendMessage = async () => {
   }
 
   inputMessage.value = ''
-  scrollToBottom()
+  scrollToBottom({ force: true, behavior: 'smooth' })
   isLoading.value = true
 
   try {
@@ -437,7 +441,7 @@ const handleSendMessage = async () => {
     ElMessage.error('发送消息失败: ' + error.message)
   } finally {
     isLoading.value = false
-    scrollToBottom()
+    scrollToBottom({ force: false })
   }
 }
 
@@ -473,7 +477,7 @@ const sendMessageToAI = async (sessionId, content) => {
               currentSession.value.messages[lastIndex].content = fullResponse
             }
           }
-          nextTick(scrollToBottom)
+          nextTick(() => scrollToBottom({ force: false }))
         },
         (error) => {
           console.error('AI流式请求错误:', error)
@@ -503,7 +507,7 @@ const sendMessageToAI = async (sessionId, content) => {
   }
 }
 
-const formatMessage = (content) => content ? DOMPurify.sanitize(marked.parse(content)) : ''
+const formatMessage = (content) => renderAiMarkdown(content)
 
 const formatTime = (date) => {
   const now = new Date()
@@ -552,10 +556,31 @@ const cancelEditingTitle = (session) => {
   session.editingTitle = false
 }
 
-const scrollToBottom = () => {
+const isMessagesNearBottom = () => {
+  const container = messagesContainer.value
+  if (!container) return true
+  return container.scrollHeight - container.scrollTop - container.clientHeight <= SCROLL_BOTTOM_THRESHOLD
+}
+
+const handleMessagesScroll = () => {
+  isUserNearBottom.value = isMessagesNearBottom()
+}
+
+const scrollToBottom = ({ force = false, behavior = 'auto' } = {}) => {
   nextTick(() => {
-    if (messagesContainer.value) messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+    const container = messagesContainer.value
+    if (!container) return
+    if (!force && !isUserNearBottom.value) return
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior
+    })
+    isUserNearBottom.value = true
   })
+}
+
+const scrollMessagesToBottom = () => {
+  scrollToBottom({ force: true, behavior: 'smooth' })
 }
 
 onMounted(async () => {
@@ -864,15 +889,20 @@ watch([currentSessionId, sessions], () => {
 }
 
 .chat-stage {
+  position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   min-width: 0;
   background: var(--ai-chat-bg);
 }
 
 .messages-area {
   flex: 1;
+  min-height: 0;
   padding: 28px 28px 18px;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
 }
 
 .empty-state,
@@ -1028,19 +1058,6 @@ watch([currentSessionId, sessions], () => {
   border-bottom-left-radius: 4px;
 }
 
-.message-content :deep(pre) {
-  margin: 12px 0;
-  padding: 14px;
-  border-radius: 10px;
-  background: #111827;
-  overflow-x: auto;
-}
-
-.message-content :deep(code) {
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
 .message-content :deep(p) {
   margin: 0 0 10px;
 }
@@ -1049,15 +1066,22 @@ watch([currentSessionId, sessions], () => {
   margin-bottom: 0;
 }
 
-.message-content :deep(ul),
-.message-content :deep(ol) {
-  margin: 8px 0;
-  padding-left: 20px;
+.message.user .message-content :deep(a) {
+  color: inherit;
 }
 
-.message-content :deep(a) {
-  color: inherit;
-  text-decoration: underline;
+.message.user .message-content :deep(code):not(pre code) {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff7ed;
+}
+
+.message.user .message-content :deep(blockquote) {
+  background: rgba(255, 255, 255, 0.12);
+  border-left-color: rgba(255, 255, 255, 0.35);
+}
+
+.message.user .message-content :deep(hr) {
+  border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 .message-time {
@@ -1070,6 +1094,30 @@ watch([currentSessionId, sessions], () => {
   border: 1px solid var(--ai-border);
   background: var(--ai-surface);
   border-bottom-left-radius: 4px;
+}
+
+.scroll-bottom-btn {
+  position: absolute;
+  right: 24px;
+  bottom: 112px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-accent-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ai-accent);
+  box-shadow: var(--shadow-md);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 3;
+}
+
+.chatbot-page.is-dark .scroll-bottom-btn {
+  background: rgba(17, 27, 45, 0.94);
 }
 
 .input-area {
@@ -1226,6 +1274,11 @@ watch([currentSessionId, sessions], () => {
 
   .messages-area {
     padding: 20px 14px 14px;
+  }
+
+  .scroll-bottom-btn {
+    right: 14px;
+    bottom: 92px;
   }
 
   .message-body {

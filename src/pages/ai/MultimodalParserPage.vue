@@ -113,7 +113,7 @@
                 <button class="ghost-btn" @click="clearResult">清空</button>
               </div>
             </div>
-            <div class="result-content" v-html="formatResult(analysisResult)"></div>
+            <div class="result-content ai-markdown" v-html="formatResult(analysisResult)"></div>
           </div>
 
           <div v-else class="result-empty">
@@ -137,8 +137,7 @@
 <script setup>
 import { ref, h } from 'vue'
 import { ElMessage } from 'element-plus'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
+import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import { useThemeStore } from '@/stores/modules/theme'
 import AIToolHeader from './components/AIToolHeader.vue'
 
@@ -251,7 +250,7 @@ const startAnalysis = async () => {
   }
 }
 
-const formatResult = (content) => content ? DOMPurify.sanitize(marked.parse(content)) : ''
+const formatResult = (content) => renderAiMarkdown(content)
 
 const copyResult = async () => {
   if (!analysisResult.value) return
@@ -601,55 +600,6 @@ const clearResult = () => { analysisResult.value = '' }
   color: var(--ai-text);
   font-size: 14px;
   line-height: 1.8;
-}
-
-.result-content :deep(h2) {
-  margin: 0 0 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--ai-border);
-  font-size: 18px;
-  color: var(--ai-text);
-}
-
-.result-content :deep(h3) {
-  margin: 16px 0 8px;
-  color: var(--ai-accent);
-  font-size: 15px;
-}
-
-.result-content :deep(p),
-.result-content :deep(li) {
-  margin: 0 0 10px;
-}
-
-.result-content :deep(ul),
-.result-content :deep(ol) {
-  padding-left: 20px;
-}
-
-.result-content :deep(pre) {
-  margin: 12px 0;
-  padding: 14px;
-  border-radius: 10px;
-  background: #111827;
-  overflow-x: auto;
-}
-
-.result-content :deep(code) {
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
-.result-content :deep(table) {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.result-content :deep(th),
-.result-content :deep(td) {
-  padding: 8px 10px;
-  border: 1px solid var(--ai-border);
-  text-align: left;
 }
 
 .capability-strip {

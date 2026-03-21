@@ -38,7 +38,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'change', 'blur'])
 
 const content = ref(props.modelValue)
-const tinymceApiKey = import.meta.env.VITE_TINYMCE_API_KEY || 'no-api-key'
+const DEFAULT_TINYMCE_API_KEY = 'ptydh8oiy1q12bscwm8hx2ex2yw7vuy3pblt3k9l2tu75g8j'
+const tinymceApiKey = (import.meta.env.VITE_TINYMCE_API_KEY || DEFAULT_TINYMCE_API_KEY).trim()
 
 watch(() => props.modelValue, (newVal) => {
   content.value = newVal

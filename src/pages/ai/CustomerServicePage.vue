@@ -25,7 +25,7 @@
               </div>
             </div>
             <div class="message-body">
-              <div class="message-content" v-html="formatMessage(message.content)"></div>
+              <div class="message-content ai-markdown" v-html="formatMessage(message.content)"></div>
               <div class="message-time">{{ formatTime(message.timestamp) }}</div>
             </div>
           </div>
@@ -138,20 +138,8 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/modules/user'
 import { useThemeStore } from '@/stores/modules/theme'
 import { customerServiceChat, customerServiceChatStream } from '@/api/modules/ai/chat'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
-import hljs from 'highlight.js'
-import 'highlight.js/styles/github-dark.css'
+import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
-
-marked.setOptions({
-  highlight: function(code, lang) {
-    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-    return hljs.highlight(code, { language }).value;
-  },
-  breaks: true,
-  gfm: true
-})
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -261,8 +249,7 @@ const clearChat = () => {
 }
 
 const formatMessage = (content) => {
-  if (!content) return ''
-  return DOMPurify.sanitize(marked.parse(content))
+  return renderAiMarkdown(content)
 }
 
 const formatTime = (timestamp) => {
@@ -440,25 +427,30 @@ onMounted(() => {
   border-bottom-left-radius: 4px;
 }
 
-.message-content :deep(pre) {
-  background: #1e293b;
-  border-radius: 10px;
-  padding: 14px;
-  overflow-x: auto;
-  margin: 10px 0;
-}
-
-.message-content :deep(code) {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-}
-
 .message-content :deep(p) {
   margin: 0 0 10px 0;
 }
 
 .message-content :deep(p:last-child) {
   margin-bottom: 0;
+}
+
+.chat-message.user .message-content :deep(a) {
+  color: inherit;
+}
+
+.chat-message.user .message-content :deep(code):not(pre code) {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff7ed;
+}
+
+.chat-message.user .message-content :deep(blockquote) {
+  background: rgba(255, 255, 255, 0.12);
+  border-left-color: rgba(255, 255, 255, 0.35);
+}
+
+.chat-message.user .message-content :deep(hr) {
+  border-top-color: rgba(255, 255, 255, 0.2);
 }
 
 .message-time {
