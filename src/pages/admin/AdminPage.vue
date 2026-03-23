@@ -92,6 +92,7 @@ import SubjectManagement from '@/pages/admin/components/SubjectManagement.vue'
 import Statistics from '@/pages/admin/components/Statistics.vue'
 import BlogStatistics from '@/pages/admin/components/BlogStatistics.vue'
 import NoticeManagement from '@/pages/admin/components/NoticeManagement.vue'
+import RoleTemplateManagement from '@/pages/admin/components/RoleTemplateManagement.vue'
 
 const router = useRouter()
 
@@ -103,6 +104,7 @@ const loadedTabs = reactive({
   tags: false,
   problems: false,
   notices: false,
+  roleTemplates: false,
   statistics: false,
   blogStatistics: false
 })
@@ -194,6 +196,16 @@ const navItems = [
     ])
   },
   {
+    id: 'roleTemplates',
+    label: '角色模板',
+    icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
+      h('path', { d: 'M12 12c2.76 0 5-2.24 5-5S14.76 2 12 2 7 4.24 7 7s2.24 5 5 5z' }),
+      h('path', { d: 'M4 22c0-3.31 3.58-6 8-6s8 2.69 8 6' }),
+      h('path', { d: 'M19 8h3' }),
+      h('path', { d: 'M20.5 6.5v3' })
+    ])
+  },
+  {
     id: 'notices',
     label: '公告管理',
     icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
@@ -225,6 +237,7 @@ const tabTitles = {
   categories: { title: '分类管理', desc: '管理题目分类和层级结构' },
   tags: { title: '标签管理', desc: '管理题目标签和关键词' },
   problems: { title: '题目管理', desc: '管理题库内容和信息' },
+  roleTemplates: { title: '角色模板管理', desc: '管理角色对话的人设、提示词和变量配置' },
   notices: { title: '公告管理', desc: '管理首页公告、弹窗策略和过期时间' },
   blogStatistics: { title: '博客统计', desc: '查看文章表现与后台管理动作的真实数据' },
   statistics: { title: '数据统计', desc: '查看系统运营数据和趋势' }
@@ -239,6 +252,7 @@ const currentComponent = computed(() => {
     categories: CategoryManagement,
     tags: TagManagement,
     problems: SubjectManagement,
+    roleTemplates: RoleTemplateManagement,
     notices: NoticeManagement,
     blogStatistics: BlogStatistics,
     statistics: Statistics

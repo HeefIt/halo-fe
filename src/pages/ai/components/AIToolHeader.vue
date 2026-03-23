@@ -58,7 +58,7 @@ const router = useRouter()
 
 const toolItems = [
   { label: '通用对话', path: '/ai/chatbot', icon: '◌' },
-  { label: '练习助手', path: '/ai/practice-assistant', icon: '△' },
+  { label: '角色对话', path: '/ai/role-chat', icon: '◈' },
   { label: '智能客服', path: '/ai/customer-service', icon: '◇' },
   { label: '多模态解析', path: '/ai/multimodal', icon: '▣' }
 ]

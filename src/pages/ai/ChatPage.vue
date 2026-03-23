@@ -86,6 +86,28 @@
         </aside>
 
         <section class="chat-stage">
+          <div v-if="currentRoleMeta?.sceneType === 'ROLE_CHAT'" class="role-banner">
+            <div class="role-banner__main">
+              <span class="role-banner__avatar">{{ currentRoleMeta.roleAvatar || 'AI' }}</span>
+              <div class="role-banner__copy">
+                <strong>{{ currentRoleMeta.roleName || currentSession?.title || '角色会话' }}</strong>
+                <span>{{ currentRoleMeta.roleCategory || 'role chat' }}</span>
+              </div>
+            </div>
+            <div v-if="currentRoleVariables.length" class="role-banner__meta">
+              <span
+                v-for="[key, value] in currentRoleVariables"
+                :key="key"
+                class="role-banner__chip"
+              >
+                {{ key }}: {{ value }}
+              </span>
+            </div>
+            <button class="role-banner__action" type="button" @click="router.push('/ai/role-chat')">
+              换个角色
+            </button>
+          </div>
+
           <div class="messages-area" ref="messagesContainer" @scroll="handleMessagesScroll">
             <div v-if="currentMessages.length === 0 && !isLoading" class="empty-state">
               <div class="empty-orb"></div>
@@ -189,7 +211,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
 import { useThemeStore } from '@/stores/modules/theme'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -198,6 +220,7 @@ import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 
@@ -232,9 +255,40 @@ const currentMessages = computed(() => {
   return [...messages].sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0))
 })
 
+const currentRoleMeta = computed(() => parseSessionExt(currentSession.value?.extJson))
+
+const currentRoleVariables = computed(() => {
+  const variables = currentRoleMeta.value?.variables
+  if (!variables || typeof variables !== 'object') {
+    return []
+  }
+
+  return Object.entries(variables)
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim())
+    .slice(0, 4)
+})
+
 const showScrollToBottom = computed(() => currentMessages.value.length > 0 && !isUserNearBottom.value)
 
 const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value }
+
+const parseSessionExt = (extJson) => {
+  if (!extJson) {
+    return null
+  }
+
+  try {
+    return JSON.parse(extJson)
+  } catch (error) {
+    console.error('解析会话扩展信息失败:', error)
+    return null
+  }
+}
+
+const isRoleSession = (session) => {
+  const sessionMeta = parseSessionExt(session?.extJson)
+  return sessionMeta?.sceneType === 'ROLE_CHAT'
+}
 
 const loadSessions = async () => {
   try {
@@ -374,6 +428,7 @@ const buildDraftTitle = (message) => {
 
 const shouldAutoGenerateTitle = (session) => {
   if (!session || session.titleSource === 'MANUAL') return false
+  if (isRoleSession(session)) return false
   const messages = Array.isArray(session.messages) ? session.messages : []
   return !messages.some(item => item.role === 'user' && item.content?.trim())
 }
@@ -592,12 +647,27 @@ onMounted(async () => {
 
   try {
     await loadSessions()
+    const preferredSessionId = typeof route.query.sessionId === 'string' ? route.query.sessionId : ''
     if (sessions.value.length === 0) await createNewSession()
+    else if (preferredSessionId) await selectSession(preferredSessionId)
     else await selectSession(sessions.value[0].sessionId)
   } catch (error) {
     console.error('初始化失败:', error)
     ElMessage.error('初始化失败: ' + error.message)
   }
+})
+
+watch(() => route.query.sessionId, async (newSessionId) => {
+  if (typeof newSessionId !== 'string' || !newSessionId || newSessionId === currentSessionId.value) {
+    return
+  }
+
+  const exists = sessions.value.some(session => session.sessionId === newSessionId)
+  if (!exists) {
+    await loadSessions()
+  }
+
+  await selectSession(newSessionId)
 })
 
 watch([currentSessionId, sessions], () => {
@@ -895,6 +965,87 @@ watch([currentSessionId, sessions], () => {
   min-height: 0;
   min-width: 0;
   background: var(--ai-chat-bg);
+}
+
+.role-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--ai-border);
+  background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
+}
+
+.role-banner__main,
+.role-banner__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.role-banner__main {
+  min-width: 0;
+}
+
+.role-banner__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.role-banner__copy {
+  display: grid;
+  min-width: 0;
+}
+
+.role-banner__copy strong {
+  color: var(--ai-text);
+  font-size: 14px;
+}
+
+.role-banner__copy span {
+  color: var(--ai-text-faint);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.role-banner__meta {
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.role-banner__chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.role-banner__action {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-border);
+  background: var(--ai-surface);
+  color: var(--ai-text);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .messages-area {
@@ -1274,6 +1425,11 @@ watch([currentSessionId, sessions], () => {
 
   .messages-area {
     padding: 20px 14px 14px;
+  }
+
+  .role-banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .scroll-bottom-btn {

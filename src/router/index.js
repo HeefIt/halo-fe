@@ -104,9 +104,14 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/ai/role-chat',
+    name: 'RoleChat',
+    component: () => import('@/pages/ai/RoleChatPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/ai/practice-assistant',
-    name: 'PracticeAssistant',
-    component: () => import('@/pages/ai/PracticeAssistantPage.vue'),
+    redirect: '/ai/role-chat',
     meta: { requiresAuth: true }
   },
   {

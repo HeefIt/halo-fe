@@ -434,12 +434,12 @@ const aiTools = [
     icon: '◌'
   },
   {
-    title: '练习助手',
-    desc: '根据当前训练表现给出下一步建议。',
+    title: '角色对话',
+    desc: '选择系统角色，进入更稳定的模拟对话场景。',
     badge: '推荐',
-    path: '/ai/practice-assistant',
-    tone: 'practice',
-    icon: '△'
+    path: '/ai/role-chat',
+    tone: 'role',
+    icon: '◈'
   },
   {
     title: '智能客服',
@@ -1123,8 +1123,8 @@ watch(
   color: #2563eb;
 }
 
-.utility-featured__icon.is-practice,
-.utility-row-mark.is-practice {
+.utility-featured__icon.is-role,
+.utility-row-mark.is-role {
   background: rgba(217, 119, 6, 0.1);
   color: #b45309;
 }
@@ -1280,8 +1280,8 @@ watch(
   color: #93c5fd;
 }
 
-.home.is-dark .utility-featured__icon.is-practice,
-.home.is-dark .utility-row-mark.is-practice {
+.home.is-dark .utility-featured__icon.is-role,
+.home.is-dark .utility-row-mark.is-role {
   color: #fdba74;
 }
 

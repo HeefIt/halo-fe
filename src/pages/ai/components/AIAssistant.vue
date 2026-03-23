@@ -2,7 +2,7 @@
   AI助手页面
   功能描述：AI应用入口页面，提供四个AI功能模块导航
   主要功能：
-    - 显示AI应用导航栏（机器人对话、刷题助手、智能客服、多模态解析）
+    - 显示AI应用导航栏（机器人对话、角色对话、智能客服、多模态解析）
     - 选择AI功能模块进入对应页面
   使用位置：路由 /ai
 -->
@@ -32,11 +32,11 @@
             </span>
             <span 
               class="ai-nav-item" 
-              :class="{ active: isActive('practice-assistant') }"
-              @click="navigateTo('practice-assistant')"
+              :class="{ active: isActive('role-chat') }"
+              @click="navigateTo('role-chat')"
             >
               <el-icon><Edit /></el-icon>
-              <span>练习助手</span>
+              <span>角色对话</span>
             </span>
             <span 
               class="ai-nav-item" 
@@ -89,12 +89,12 @@
             </div>
           </div>
           
-          <div class="feature-card practice-card" @click="navigateTo('practice-assistant')">
+          <div class="feature-card practice-card" @click="navigateTo('role-chat')">
             <div class="feature-icon">
               <el-icon :size="48"><Edit /></el-icon>
             </div>
-            <h3 class="feature-title">练习助手</h3>
-            <p class="feature-description">根据表现推荐题目、定位薄弱点，并给出更有针对性的训练建议</p>
+            <h3 class="feature-title">角色对话</h3>
+            <p class="feature-description">进入预设角色场景，用更稳定的人设完成模拟对话</p>
             <div class="feature-status">
               <span>进阶</span>
             </div>
