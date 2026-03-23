@@ -10,6 +10,7 @@
         <section class="page-lead animate-slide-up">
           <div class="lead-main">
             <span class="lead-kicker">Halo Study Desk</span>
+            <p class="lead-prefix">{{ greetingPrefixText }}</p>
             <h1 class="lead-title">
               {{ greetingText }}<span>{{ displayName }}</span>
             </h1>
@@ -290,16 +291,79 @@ let greetingTimer = null
 
 const defaultProblemGoal = 10
 const defaultTimeGoal = 3600
+const greetingPresets = [
+  {
+    key: 'lateNight',
+    start: 0,
+    end: 5,
+    greeting: '凌晨好，',
+    prefixes: ['夜色还浓，慢一点也没关系。', '这么晚还在坚持，真的很不容易。', '先和今天打个照面，再慢慢进入状态。']
+  },
+  {
+    key: 'morning',
+    start: 5,
+    end: 11,
+    greeting: '早上好，',
+    prefixes: ['新的一天开始了，我们慢慢热起来。', '先把节奏找回来，今天也会很顺。', '清晨的这段时间，很适合开个好头。']
+  },
+  {
+    key: 'noon',
+    start: 11,
+    end: 13,
+    greeting: '中午好，',
+    prefixes: ['忙里也别忘了歇一会儿，再继续往前推。', '午间这段空档，刚好适合整理一下状态。', '先喘口气，再把下午的节奏续上。']
+  },
+  {
+    key: 'afternoon',
+    start: 13,
+    end: 18,
+    greeting: '下午好，',
+    prefixes: ['这会儿正适合进入状态，继续稳稳推进。', '下午的专注力，最适合拿来做一轮完整练习。', '别急，按自己的节奏往前走就很好。']
+  },
+  {
+    key: 'dusk',
+    start: 18,
+    end: 19,
+    greeting: '傍晚好，',
+    prefixes: ['天色慢慢柔和下来了，也该收一收白天的节奏。', '傍晚这会儿，适合把散掉的注意力重新拢起来。', '把白天留给你的杂音放一放，我们继续做自己的事。']
+  },
+  {
+    key: 'evening',
+    start: 19,
+    end: 23,
+    greeting: '晚上好，',
+    prefixes: ['今晚也一起把节奏续上，慢慢沉下来。', '夜晚很适合专心做点属于自己的推进。', '白天再忙，晚上也能留一点时间给自己。']
+  },
+  {
+    key: 'deepNight',
+    start: 23,
+    end: 24,
+    greeting: '深夜好，',
+    prefixes: ['夜深了也别太辛苦，能推进一点就很好。', '还在努力的你，先给自己一点肯定。', '深夜适合安静做事，也别忘了照顾自己。']
+  }
+]
 
 const displayName = computed(() => userStore.userName || '学习者')
 
-const greetingText = computed(() => {
+const greetingPreset = computed(() => {
   const hour = currentTime.value.getHours()
-  if (hour < 5) return '夜深了，'
-  if (hour < 11) return '早上好，'
-  if (hour < 13) return '中午好，'
-  if (hour < 18) return '下午好，'
-  return '晚上好，'
+  return greetingPresets.find(item => hour >= item.start && hour < item.end) || greetingPresets[0]
+})
+
+const greetingSeed = computed(() => {
+  return currentTime.value.getDate() + currentTime.value.getMonth() + currentTime.value.getFullYear() + currentTime.value.getHours()
+})
+
+const greetingPrefixText = computed(() => {
+  const prefixes = greetingPreset.value.prefixes || []
+  if (!prefixes.length) {
+    return ''
+  }
+  return prefixes[greetingSeed.value % prefixes.length]
+})
+
+const greetingText = computed(() => {
+  return greetingPreset.value.greeting
 })
 
 const currentDay = computed(() => currentTime.value.getDate())
@@ -649,12 +713,20 @@ watch(
 
 .lead-title {
   max-width: 720px;
-  margin: 22px 0 16px;
+  margin: 10px 0 16px;
   color: var(--color-text);
   font-family: var(--font-display);
   font-size: clamp(38px, 5vw, 62px);
   line-height: 0.96;
   letter-spacing: -0.04em;
+}
+
+.lead-prefix {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 .lead-title span {
@@ -1229,6 +1301,7 @@ watch(
   color: var(--text-1);
 }
 
+.home.is-dark .lead-prefix,
 .home.is-dark .lead-copy,
 .home.is-dark .signal-note,
 .home.is-dark .rail-row p,
