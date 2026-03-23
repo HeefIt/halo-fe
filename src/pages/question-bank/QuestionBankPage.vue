@@ -758,6 +758,8 @@ function handleSearch() {
  */
 function goToProblem(problemId) {
   practiceStore.setProblemList(problems.value)
+  practiceStore.clearPracticeSession()
+  practiceStore.setPracticeContext(buildPracticeContext())
   practiceStore.setCurrentProblemId(problemId)
   router.push(`/practice/${problemId}`)
 }
@@ -768,6 +770,9 @@ function goToProblem(problemId) {
 async function startRandomPractice() {
   if (problems.value.length > 0) {
     const sortedProblems = [...problems.value].sort((a, b) => a.id - b.id)
+    practiceStore.setProblemList(sortedProblems)
+    practiceStore.clearPracticeSession()
+    practiceStore.setPracticeContext(buildPracticeContext(5))
     router.push(`/practice/${sortedProblems[0].id}`)
     return
   }
@@ -776,6 +781,9 @@ async function startRandomPractice() {
     await fetchSubjects()
     if (problems.value.length > 0) {
       const sortedProblems = [...problems.value].sort((a, b) => a.id - b.id)
+      practiceStore.setProblemList(sortedProblems)
+      practiceStore.clearPracticeSession()
+      practiceStore.setPracticeContext(buildPracticeContext(5))
       router.push(`/practice/${sortedProblems[0].id}`)
       return
     }
@@ -785,6 +793,25 @@ async function startRandomPractice() {
   } catch (err) {
     ElMessage.error(`获取题目列表失败: ${err.message}`)
     router.push('/practice')
+  }
+}
+
+/**
+ * 构造练习会话上下文，便于答题页创建真实练习记录。
+ *
+ * @param {number} sourceType 练习来源类型
+ * @returns {Object} 练习上下文快照
+ */
+function buildPracticeContext(sourceType = 1) {
+  const category = selectedCategories.secondary || selectedCategories.primary
+  return {
+    sourceType,
+    subjectType: filters.subjectType || 0,
+    categoryId: category?.id || null,
+    categoryNameSnapshot: category?.categoryName || scopeText.value || '全部题目',
+    labelNames: currentLabels.value
+      .filter((label) => selectedLabels[label.id])
+      .map((label) => label.labelName)
   }
 }
 

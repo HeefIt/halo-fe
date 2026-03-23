@@ -34,7 +34,7 @@
           <article class="summary-unit">
             <span class="summary-label">获得积分</span>
             <strong class="summary-value">{{ practiceDetail.earnedPoints }}</strong>
-            <span class="summary-meta">最高得分 {{ practiceDetail.maxScore }}</span>
+            <span class="summary-meta">待判题 {{ practiceDetail.pendingCount || 0 }} 道</span>
           </article>
         </section>
 
@@ -68,20 +68,20 @@
                 v-for="(question, index) in displayedQuestions"
                 :key="question.id"
                 class="question-row"
-                :class="{ incorrect: !question.isCorrect }"
+                :class="{ incorrect: question.stateClass === 'wrong' }"
               >
                 <div class="question-head">
                   <div class="question-index-row">
                     <span class="question-index">Q{{ index + 1 }}</span>
-                    <span class="question-state" :class="{ correct: question.isCorrect }">
-                      {{ question.isCorrect ? '正确' : '错误' }}
+                    <span class="question-state" :class="question.stateClass">
+                      {{ question.stateLabel }}
                     </span>
                   </div>
 
                   <div class="question-actions">
                     <button class="action-btn" @click="reviewQuestion(question)">复习</button>
                     <button
-                      v-if="!question.isCorrect"
+                      v-if="question.canRepractice"
                       class="action-btn action-btn-primary"
                       @click="repracticeQuestion(question)"
                     >
@@ -95,7 +95,7 @@
                 <div class="answer-grid">
                   <div class="answer-item">
                     <span class="answer-label">你的答案</span>
-                    <strong class="answer-value" :class="{ wrong: !question.isCorrect }">
+                    <strong class="answer-value" :class="question.answerClass">
                       {{ question.userAnswer }}
                     </strong>
                   </div>
@@ -103,6 +103,42 @@
                   <div class="answer-item">
                     <span class="answer-label">正确答案</span>
                     <strong class="answer-value correct">{{ question.correctAnswer }}</strong>
+                  </div>
+                </div>
+
+                <div
+                  v-if="question.judgeReason || question.matchedPoints.length || question.missedPoints.length"
+                  class="judge-feedback"
+                >
+                  <div v-if="question.judgeReason" class="feedback-row">
+                    <span class="feedback-label">判题说明</span>
+                    <p class="feedback-text">{{ question.judgeReason }}</p>
+                  </div>
+
+                  <div v-if="question.matchedPoints.length" class="feedback-row">
+                    <span class="feedback-label">命中得分点</span>
+                    <div class="feedback-tags">
+                      <span
+                        v-for="point in question.matchedPoints"
+                        :key="`matched-${question.id}-${point}`"
+                        class="feedback-tag feedback-tag-positive"
+                      >
+                        {{ point }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div v-if="question.missedPoints.length" class="feedback-row">
+                    <span class="feedback-label">缺失得分点</span>
+                    <div class="feedback-tags">
+                      <span
+                        v-for="point in question.missedPoints"
+                        :key="`missed-${question.id}-${point}`"
+                        class="feedback-tag feedback-tag-warning"
+                      >
+                        {{ point }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </article>
@@ -163,72 +199,39 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { getPracticeSessionDetail } from '@/api/modules/question/practiceSession'
 import { useThemeStore } from '@/stores/modules/theme'
+import { usePracticeStore } from '@/stores/modules/practice'
 import Header from '@/layouts/AppHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
 const themeStore = useThemeStore()
+const practiceStore = usePracticeStore()
 
 const activeTab = ref('all')
+const loading = ref(false)
 
 const practiceDetail = ref({
-  id: 1001,
-  practiceDate: '2025-11-25T14:30:00',
-  subjectCount: 20,
-  correctCount: 18,
-  timeSpent: 1800,
-  subjectType: 1,
-  maxScore: 180,
-  earnedPoints: 18,
-  questions: [
-    {
-      id: 1,
-      title: 'Java中String是不可变的吗？',
-      userAnswer: '是',
-      correctAnswer: '是',
-      isCorrect: true,
-      difficulty: 1
-    },
-    {
-      id: 2,
-      title: 'Java中int和Integer有什么区别？',
-      userAnswer: 'int是基本类型，Integer是包装类',
-      correctAnswer: 'int是基本类型，Integer是包装类',
-      isCorrect: true,
-      difficulty: 1
-    },
-    {
-      id: 3,
-      title: 'Java中final关键字的作用是什么？',
-      userAnswer: '用于修饰不可变的变量',
-      correctAnswer: '用于修饰不可变的变量、方法和类',
-      isCorrect: false,
-      difficulty: 2
-    },
-    {
-      id: 4,
-      title: 'Java中equals和==有什么区别？',
-      userAnswer: 'equals比较值，==比较引用',
-      correctAnswer: 'equals比较值，==比较引用',
-      isCorrect: true,
-      difficulty: 2
-    },
-    {
-      id: 5,
-      title: 'Java中接口和抽象类有什么区别？',
-      userAnswer: '接口只能有抽象方法，抽象类可以有具体方法',
-      correctAnswer: '接口只能有抽象方法，抽象类可以有具体方法',
-      isCorrect: false,
-      difficulty: 3
-    }
-  ]
+  id: null,
+  practiceDate: '',
+  subjectCount: 0,
+  correctCount: 0,
+  pendingCount: 0,
+  timeSpent: 0,
+  subjectType: 0,
+  categoryId: null,
+  categoryNameSnapshot: '',
+  labelNameSnapshot: '',
+  earnedPoints: 0,
+  questions: []
 })
 
 const incorrectQuestions = computed(() => {
-  return practiceDetail.value.questions.filter(q => !q.isCorrect)
+  return practiceDetail.value.questions.filter(q => q.stateClass === 'wrong')
 })
 
 const displayedQuestions = computed(() => {
@@ -242,20 +245,54 @@ const accuracyRate = computed(() => {
   return Math.round((practiceDetail.value.correctCount / practiceDetail.value.subjectCount) * 100)
 })
 
+const splitJudgePoints = (text) => {
+  if (!text) {
+    return []
+  }
+
+  return text
+    .split(/[、,，;；\n]/)
+    .map(item => item.trim())
+    .filter(Boolean)
+}
+
 const goBack = () => {
   router.push('/practice-history')
 }
 
 const refreshData = () => {
-  console.log('刷新数据')
+  fetchPracticeDetail()
+}
+
+const buildRepracticeContext = () => {
+  return {
+    sourceType: 2,
+    subjectType: Number(practiceDetail.value.subjectType ?? 0),
+    categoryId: Number(practiceDetail.value.categoryId ?? 0) || null,
+    categoryNameSnapshot: practiceDetail.value.categoryNameSnapshot || '练习记录复盘',
+    labelNames: splitJudgePoints(practiceDetail.value.labelNameSnapshot)
+  }
+}
+
+const openQuestionPractice = (question) => {
+  practiceStore.setProblemList([
+    {
+      id: question.subjectId,
+      subjectType: Number(practiceDetail.value.subjectType ?? 0)
+    }
+  ])
+  practiceStore.clearPracticeSession()
+  practiceStore.setPracticeContext(buildRepracticeContext())
+  practiceStore.setCurrentProblemId(question.subjectId)
+  router.push(`/practice/${question.subjectId}`)
 }
 
 const reviewQuestion = (question) => {
-  console.log('复习题目:', question)
+  openQuestionPractice(question)
 }
 
 const repracticeQuestion = (question) => {
-  console.log('重练题目:', question)
+  openQuestionPractice(question)
 }
 
 const formatDate = (dateString) => {
@@ -271,6 +308,7 @@ const formatTime = (seconds) => {
 
 const getSubjectTypeLabel = (type) => {
   const typeMap = {
+    0: '混合题型',
     1: '单选题',
     2: '多选题',
     3: '判断题',
@@ -279,8 +317,69 @@ const getSubjectTypeLabel = (type) => {
   return typeMap[type] || '未知'
 }
 
+const resolveJudgeState = (question) => {
+  const judgeStatus = Number(question.judgeStatus)
+  if (judgeStatus === 1) {
+    return { stateLabel: '正确', stateClass: 'correct', answerClass: '', canRepractice: false }
+  }
+  if (judgeStatus === 2) {
+    return { stateLabel: '部分正确', stateClass: 'partial', answerClass: 'partial', canRepractice: true }
+  }
+  if (judgeStatus === 3 || judgeStatus === 4) {
+    return { stateLabel: '待判定', stateClass: 'pending', answerClass: 'pending', canRepractice: false }
+  }
+  return { stateLabel: '错误', stateClass: 'wrong', answerClass: 'wrong', canRepractice: true }
+}
+
+const fetchPracticeDetail = async () => {
+  loading.value = true
+  try {
+    const res = await getPracticeSessionDetail(route.params.id)
+    if (res.code !== 200) {
+      ElMessage.error(res.message || '获取练习详情失败')
+      if ((res.message || '').includes('练习会话不存在')) {
+        router.replace('/practice-history')
+      }
+      return
+    }
+
+    const detail = res.data || {}
+    practiceDetail.value = {
+      id: detail.id,
+      practiceDate: detail.completedTime || detail.lastAnswerTime || detail.startedTime,
+      subjectCount: Number(detail.subjectCount ?? 0),
+      correctCount: Number(detail.correctCount ?? 0),
+      pendingCount: Number(detail.pendingCount ?? 0),
+      timeSpent: Number(detail.totalTime ?? 0),
+      subjectType: Number(detail.subjectType ?? 0),
+      categoryId: Number(detail.categoryId ?? 0) || null,
+      categoryNameSnapshot: detail.categoryNameSnapshot || '',
+      labelNameSnapshot: detail.labelNameSnapshot || '',
+      earnedPoints: Number(detail.totalScore ?? 0),
+      questions: (detail.questions || []).map((question) => ({
+        id: question.id,
+        subjectId: question.subjectId,
+        title: question.subjectName || `题目 #${question.subjectId}`,
+        userAnswer: question.userAnswer || '未作答',
+        correctAnswer: question.correctAnswer || '暂无参考答案',
+        judgeStatus: Number(question.judgeStatus ?? 0),
+        isCorrect: Number(question.isCorrect ?? 0) === 1,
+        judgeReason: question.judgeReason || '',
+        matchedPoints: splitJudgePoints(question.matchedPoints),
+        missedPoints: splitJudgePoints(question.missedPoints),
+        ...resolveJudgeState(question)
+      }))
+    }
+  } catch (error) {
+    console.error('获取练习详情失败:', error)
+    ElMessage.error('获取练习详情失败')
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
-  console.log('获取练习详情数据，ID:', route.params.id)
+  fetchPracticeDetail()
 })
 </script>
 
@@ -530,6 +629,18 @@ onMounted(() => {
   color: #15803d;
 }
 
+.question-state.partial {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
+.question-state.pending {
+  border-color: rgba(59, 130, 246, 0.18);
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+}
+
 .practice-detail-page.is-dark .question-state {
   color: #fca5a5;
 }
@@ -559,6 +670,62 @@ onMounted(() => {
   border: 1px solid var(--detail-line);
 }
 
+.judge-feedback {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--detail-line);
+  background: var(--detail-surface-soft);
+}
+
+.feedback-row {
+  display: grid;
+  gap: 8px;
+}
+
+.feedback-label {
+  color: var(--detail-text-faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.feedback-text {
+  margin: 0;
+  color: var(--detail-text);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.feedback-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feedback-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.feedback-tag-positive {
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+}
+
+.feedback-tag-warning {
+  border-color: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+
 .answer-value {
   color: var(--detail-text);
   font-size: 14px;
@@ -569,6 +736,14 @@ onMounted(() => {
   color: #b91c1c;
 }
 
+.answer-value.partial {
+  color: #b45309;
+}
+
+.answer-value.pending {
+  color: #2563eb;
+}
+
 .answer-value.correct {
   color: #15803d;
 }
@@ -577,8 +752,24 @@ onMounted(() => {
   color: #fca5a5;
 }
 
+.practice-detail-page.is-dark .answer-value.partial {
+  color: #fcd34d;
+}
+
+.practice-detail-page.is-dark .answer-value.pending {
+  color: #93c5fd;
+}
+
 .practice-detail-page.is-dark .answer-value.correct {
   color: #86efac;
+}
+
+.practice-detail-page.is-dark .feedback-tag-positive {
+  color: #86efac;
+}
+
+.practice-detail-page.is-dark .feedback-tag-warning {
+  color: #fcd34d;
 }
 
 .note-item,

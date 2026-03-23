@@ -1,5 +1,5 @@
 <template>
-  <div class="blog-detail" v-if="article">
+  <div class="blog-detail" :class="{ 'is-dark': themeStore.isDark }" v-if="article">
     <div class="reading-progress">
       <div class="reading-progress-bar" :style="{ width: `${readingProgress}%` }"></div>
     </div>
@@ -268,10 +268,12 @@ import 'highlight.js/styles/github-dark.css'
 import { marked } from 'marked'
 import { ElMessage } from 'element-plus'
 import { blogApi } from '@/api/modules/blog'
+import { useThemeStore } from '@/stores/modules/theme'
 import { useUserStore } from '@/stores/modules/user'
 
 const route = useRoute()
 const router = useRouter()
+const themeStore = useThemeStore()
 const userStore = useUserStore()
 
 const article = ref(null)
@@ -719,9 +721,70 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .blog-detail {
+  --detail-surface: var(--color-bg-elevated);
+  --detail-surface-soft: rgba(255, 255, 255, 0.88);
+  --detail-surface-subtle: rgba(148, 163, 184, 0.08);
+  --detail-surface-subtle-strong: rgba(148, 163, 184, 0.12);
+  --detail-hero-bg:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.92));
+  --detail-heading: #0f172a;
+  --detail-strong: #0f172a;
+  --detail-link: #2563eb;
+  --detail-link-hover: #1d4ed8;
+  --detail-quote-bg: rgba(59, 130, 246, 0.06);
+  --detail-quote-border: #60a5fa;
+  --detail-inline-code-color: #be123c;
+  --detail-inline-code-bg: rgba(244, 63, 94, 0.08);
+  --detail-table-bg: #ffffff;
+  --detail-table-head-bg: rgba(241, 245, 249, 0.9);
+  --detail-table-head-color: #0f172a;
+  --detail-button-bg: #ffffff;
+  --detail-button-hover: #2563eb;
+  --detail-liked-bg: rgba(254, 242, 242, 0.95);
+  --detail-nav-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
+  --detail-question-bg: linear-gradient(180deg, rgba(239, 246, 255, 0.72), rgba(248, 250, 252, 0.94));
+  --detail-question-item-bg: rgba(255, 255, 255, 0.88);
+  --detail-input-bg: var(--color-bg);
+  --detail-login-bg: rgba(148, 163, 184, 0.08);
+  --detail-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  --detail-card-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  --detail-card-hover-shadow: 0 20px 40px rgba(37, 99, 235, 0.12);
   max-width: 1360px;
   margin: 0 auto;
   padding: 32px 20px 56px;
+}
+
+.blog-detail.is-dark {
+  --detail-surface: rgba(15, 23, 42, 0.92);
+  --detail-surface-soft: rgba(15, 23, 42, 0.78);
+  --detail-surface-subtle: rgba(148, 163, 184, 0.1);
+  --detail-surface-subtle-strong: rgba(148, 163, 184, 0.16);
+  --detail-hero-bg:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(10, 15, 27, 0.96));
+  --detail-heading: var(--text-1);
+  --detail-strong: var(--text-1);
+  --detail-link: #93c5fd;
+  --detail-link-hover: #bfdbfe;
+  --detail-quote-bg: rgba(59, 130, 246, 0.12);
+  --detail-quote-border: #93c5fd;
+  --detail-inline-code-color: #fda4af;
+  --detail-inline-code-bg: rgba(244, 63, 94, 0.14);
+  --detail-table-bg: rgba(15, 23, 42, 0.92);
+  --detail-table-head-bg: rgba(30, 41, 59, 0.92);
+  --detail-table-head-color: var(--text-1);
+  --detail-button-bg: rgba(15, 23, 42, 0.92);
+  --detail-button-hover: #93c5fd;
+  --detail-liked-bg: rgba(127, 29, 29, 0.28);
+  --detail-nav-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(11, 18, 32, 0.94));
+  --detail-question-bg: linear-gradient(180deg, rgba(30, 41, 59, 0.88), rgba(15, 23, 42, 0.92));
+  --detail-question-item-bg: rgba(15, 23, 42, 0.78);
+  --detail-input-bg: rgba(15, 23, 42, 0.88);
+  --detail-login-bg: rgba(30, 41, 59, 0.88);
+  --detail-shadow: 0 18px 40px rgba(2, 6, 23, 0.36);
+  --detail-card-shadow: 0 18px 40px rgba(2, 6, 23, 0.3);
+  --detail-card-hover-shadow: 0 20px 44px rgba(59, 130, 246, 0.16);
 }
 
 .reading-progress {
@@ -757,9 +820,9 @@ onBeforeUnmount(() => {
 .article-card,
 .comments-section,
 .sidebar-card {
-  background: var(--color-bg-elevated);
+  background: var(--detail-surface);
   border: 1px solid var(--color-border);
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  box-shadow: var(--detail-shadow);
 }
 
 .article-card {
@@ -769,9 +832,7 @@ onBeforeUnmount(() => {
 
 .article-hero {
   padding: 32px 40px 28px;
-  background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.92));
+  background: var(--detail-hero-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -827,7 +888,7 @@ onBeforeUnmount(() => {
   font-size: var(--text-base);
   line-height: 1.8;
   color: var(--color-text-secondary);
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--detail-surface-subtle);
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 20px;
 }
@@ -891,7 +952,7 @@ onBeforeUnmount(() => {
 .stat-pill {
   min-width: 86px;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.75);
+  background: var(--detail-surface-soft);
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 18px;
   text-align: center;
@@ -941,7 +1002,7 @@ onBeforeUnmount(() => {
   margin: 2.4em 0 0.85em;
   line-height: 1.35;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--detail-heading);
 }
 
 .article-content :deep(h1) {
@@ -987,25 +1048,25 @@ onBeforeUnmount(() => {
 }
 
 .article-content :deep(strong) {
-  color: #0f172a;
+  color: var(--detail-strong);
   font-weight: 700;
 }
 
 .article-content :deep(a) {
-  color: #2563eb;
+  color: var(--detail-link);
   text-decoration: none;
   border-bottom: 1px solid rgba(37, 99, 235, 0.25);
 }
 
 .article-content :deep(a:hover) {
-  color: #1d4ed8;
+  color: var(--detail-link-hover);
 }
 
 .article-content :deep(.content-quote) {
   padding: 18px 20px;
   color: var(--color-text-secondary);
-  background: rgba(59, 130, 246, 0.06);
-  border-left: 4px solid #60a5fa;
+  background: var(--detail-quote-bg);
+  border-left: 4px solid var(--detail-quote-border);
   border-radius: 0 18px 18px 0;
 }
 
@@ -1025,8 +1086,8 @@ onBeforeUnmount(() => {
 
 .article-content :deep(:not(pre) > code) {
   padding: 2px 8px;
-  color: #be123c;
-  background: rgba(244, 63, 94, 0.08);
+  color: var(--detail-inline-code-color);
+  background: var(--detail-inline-code-bg);
   border-radius: 999px;
 }
 
@@ -1090,7 +1151,7 @@ onBeforeUnmount(() => {
   width: 100%;
   border-collapse: collapse;
   min-width: 640px;
-  background: #fff;
+  background: var(--detail-table-bg);
 }
 
 .article-content :deep(th),
@@ -1101,8 +1162,8 @@ onBeforeUnmount(() => {
 }
 
 .article-content :deep(th) {
-  background: rgba(241, 245, 249, 0.9);
-  color: #0f172a;
+  background: var(--detail-table-head-bg);
+  color: var(--detail-table-head-color);
 }
 
 .article-tags {
@@ -1134,7 +1195,7 @@ onBeforeUnmount(() => {
 .article-questions {
   margin-top: 32px;
   padding: 24px;
-  background: linear-gradient(180deg, rgba(239, 246, 255, 0.72), rgba(248, 250, 252, 0.94));
+  background: var(--detail-question-bg);
   border: 1px solid rgba(147, 197, 253, 0.22);
   border-radius: 24px;
 }
@@ -1173,7 +1234,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--detail-question-item-bg);
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 16px;
   cursor: pointer;
@@ -1229,7 +1290,7 @@ onBeforeUnmount(() => {
   padding: 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--detail-button-bg);
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
   cursor: pointer;
@@ -1237,12 +1298,12 @@ onBeforeUnmount(() => {
 
 .action-btn:hover {
   border-color: rgba(59, 130, 246, 0.3);
-  color: #2563eb;
+  color: var(--detail-button-hover);
 }
 
 .action-btn.liked {
   color: #dc2626;
-  background: rgba(254, 242, 242, 0.95);
+  background: var(--detail-liked-bg);
   border-color: rgba(239, 68, 68, 0.2);
 }
 
@@ -1262,18 +1323,18 @@ onBeforeUnmount(() => {
   padding: 22px;
   border: 1px solid var(--color-border);
   border-radius: 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
+  background: var(--detail-nav-bg);
   color: var(--color-text);
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--detail-card-shadow);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .nav-card:hover {
   transform: translateY(-2px);
   border-color: rgba(59, 130, 246, 0.24);
-  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.12);
+  box-shadow: var(--detail-card-hover-shadow);
 }
 
 .nav-card-next {
@@ -1378,7 +1439,7 @@ onBeforeUnmount(() => {
 }
 
 .toc-link.active {
-  color: #2563eb;
+  color: var(--detail-link);
   background: rgba(59, 130, 246, 0.08);
   border-color: rgba(59, 130, 246, 0.18);
 }
@@ -1433,7 +1494,7 @@ onBeforeUnmount(() => {
   padding: 16px 18px;
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  background: var(--color-bg);
+  background: var(--detail-input-bg);
   color: var(--color-text);
   font-size: var(--text-sm);
   resize: vertical;
@@ -1471,12 +1532,12 @@ onBeforeUnmount(() => {
   margin: 18px 0 28px;
   text-align: center;
   border-radius: 18px;
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--detail-login-bg);
   color: var(--color-text-muted);
 }
 
 .login-tip a {
-  color: #2563eb;
+  color: var(--detail-link);
 }
 
 .comments-list {
@@ -1554,6 +1615,26 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.blog-detail.is-dark .question-index,
+.blog-detail.is-dark .nav-label {
+  color: #bfdbfe;
+}
+
+.blog-detail.is-dark .article-content :deep(td) {
+  color: var(--color-text-secondary);
+}
+
+.blog-detail.is-dark .article-content :deep(.article-table-wrap),
+.blog-detail.is-dark .header-cover,
+.blog-detail.is-dark .question-item,
+.blog-detail.is-dark .stat-pill {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+.blog-detail.is-dark .toc-link:hover {
+  background: rgba(148, 163, 184, 0.12);
 }
 
 @media (max-width: 1120px) {

@@ -7,6 +7,18 @@ export const usePracticeStore = defineStore('practice', () => {
   
   // 当前题目在列表中的索引
   const currentProblemIndex = ref(-1)
+
+  // 当前练习会话ID
+  const practiceSessionId = ref(null)
+
+  // 练习上下文快照
+  const practiceContext = ref({
+    sourceType: 1,
+    subjectType: 0,
+    categoryId: null,
+    categoryNameSnapshot: '',
+    labelNames: []
+  })
   
   // 当前题目ID
   const currentProblemId = computed(() => {
@@ -29,7 +41,7 @@ export const usePracticeStore = defineStore('practice', () => {
   
   // 设置当前题目ID
   const setCurrentProblemId = (problemId) => {
-    const index = problemList.value.findIndex(p => p.id === problemId)
+    const index = problemList.value.findIndex(p => String(p.id) === String(problemId))
     if (index !== -1) {
       currentProblemIndex.value = index
     }
@@ -73,12 +85,43 @@ export const usePracticeStore = defineStore('practice', () => {
   const clearProblemList = () => {
     problemList.value = []
     currentProblemIndex.value = -1
+    practiceSessionId.value = null
+    practiceContext.value = {
+      sourceType: 1,
+      subjectType: 0,
+      categoryId: null,
+      categoryNameSnapshot: '',
+      labelNames: []
+    }
+  }
+
+  // 设置练习上下文
+  const setPracticeContext = (context = {}) => {
+    practiceContext.value = {
+      sourceType: context.sourceType ?? 1,
+      subjectType: context.subjectType ?? 0,
+      categoryId: context.categoryId ?? null,
+      categoryNameSnapshot: context.categoryNameSnapshot ?? '',
+      labelNames: Array.isArray(context.labelNames) ? context.labelNames : []
+    }
+  }
+
+  // 设置练习会话ID
+  const setPracticeSessionId = (sessionId) => {
+    practiceSessionId.value = sessionId ?? null
+  }
+
+  // 清除练习会话ID
+  const clearPracticeSession = () => {
+    practiceSessionId.value = null
   }
   
   return {
     // 状态
     problemList,
     currentProblemIndex,
+    practiceSessionId,
+    practiceContext,
     // 计算属性
     currentProblemId,
     hasPrevProblem,
@@ -90,6 +133,9 @@ export const usePracticeStore = defineStore('practice', () => {
     getPrevProblemId,
     moveToNext,
     moveToPrev,
-    clearProblemList
+    clearProblemList,
+    setPracticeContext,
+    setPracticeSessionId,
+    clearPracticeSession
   }
 })

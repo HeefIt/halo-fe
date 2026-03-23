@@ -205,15 +205,14 @@
 import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getSubjectInfo, savePracticeRecord } from '@/api/modules/question/subject'
+import { getSubjectInfo } from '@/api/modules/question/subject'
+import { startPracticeSession, submitPracticeAnswer } from '@/api/modules/question/practiceSession'
 import { analyzeSubjectWithAI, analyzeSubjectWithAIStream } from '@/api/modules/ai/practice'
-import { useUserStore } from '@/stores/modules/user'
 import { usePracticeStore } from '@/stores/modules/practice'
 import Header from '@/layouts/AppHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 const practiceStore = usePracticeStore()
 
 const loading = ref(false)
@@ -306,7 +305,7 @@ const checkAnswer = (userAnswer, correctAnswer) => {
   return false
 }
 
-const submitAnswer = () => {
+const submitAnswer = async () => {
   let answer = ''
   let correctAnswer = ''
   
@@ -340,33 +339,137 @@ const submitAnswer = () => {
   
   const endTime = new Date()
   const timeCost = startTime.value ? Math.floor((endTime - startTime.value) / 1000) : 0
-  
-  if (currentProblem.subjectType === 4) {
-    ElMessage.success('回答得很好，详细请看题目解析')
-  } else {
-    const isCorrect = checkAnswer(answer, correctAnswer)
-    ElMessage({ type: isCorrect ? 'success' : 'error', message: isCorrect ? '回答正确！' : '回答错误，请查看解析' })
-  }
-  
-  saveRecord(answer, correctAnswer, timeCost)
-}
 
-const saveRecord = async (userAnswer, correctAnswer, timeCost) => {
   try {
-    const isCorrect = checkAnswer(userAnswer, correctAnswer) ? 1 : 0
-    const recordData = {
-      userId: userStore.userInfo?.id,
-      subjectId: currentProblem.id,
-      userAnswer: userAnswer,
-      isCorrect: isCorrect,
-      answerTime: new Date(),
-      timeCost: timeCost,
-      score: isCorrect ? 100 : 0
-    }
-    await savePracticeRecord(recordData)
+    const recordResult = await saveRecord(answer, timeCost)
+    showSubmitMessage(recordResult)
   } catch (error) {
     console.error('保存刷题记录失败:', error)
+    ElMessage.error('提交答案失败，请稍后重试')
   }
+}
+
+const saveRecord = async (answer, timeCost) => {
+  let lastError = null
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const practiceSessionId = await ensurePracticeSession(attempt > 0)
+    const problemSnapshot = practiceStore.problemList.length > 0
+      ? practiceStore.problemList
+      : [{ id: currentProblem.id, subjectType: currentProblem.subjectType }]
+    const context = practiceStore.practiceContext || {}
+    const recordData = {
+      practiceSessionId,
+      subjectId: currentProblem.id,
+      questionOrder: Math.max(1, practiceStore.currentProblemIndex + 1),
+      userAnswer: answer,
+      timeCost,
+      sourceType: context.sourceType ?? 1,
+      subjectType: resolvePracticeSubjectType(problemSnapshot, context.subjectType),
+      categoryId: context.categoryId ?? null,
+      categoryNameSnapshot: context.categoryNameSnapshot || currentProblem.subjectName || '题库练习',
+      labelNames: Array.isArray(context.labelNames) ? context.labelNames : [],
+      subjectIds: problemSnapshot.map((item) => Number(item.id)).filter(Boolean)
+    }
+    const res = await submitPracticeAnswer(recordData)
+    if (res.code === 200) {
+      if (res.data?.practiceSessionId) {
+        practiceStore.setPracticeSessionId(res.data.practiceSessionId)
+      }
+      return res.data
+    }
+
+    lastError = new Error(res.message || '提交答案失败')
+    if (!isInvalidPracticeSessionError(res.message)) {
+      throw lastError
+    }
+
+    practiceStore.clearPracticeSession()
+  }
+
+  throw lastError || new Error('提交答案失败')
+}
+
+const ensurePracticeSession = async (forceRecreate = false) => {
+  if (forceRecreate) {
+    practiceStore.clearPracticeSession()
+  }
+
+  if (practiceStore.practiceSessionId) {
+    return practiceStore.practiceSessionId
+  }
+
+  const problemSnapshot = practiceStore.problemList.length > 0
+    ? practiceStore.problemList
+    : [{ id: currentProblem.id, subjectType: currentProblem.subjectType }]
+  const context = practiceStore.practiceContext || {}
+  const res = await startPracticeSession({
+    sourceType: context.sourceType ?? 1,
+    subjectType: resolvePracticeSubjectType(problemSnapshot, context.subjectType),
+    categoryId: context.categoryId ?? null,
+    categoryNameSnapshot: context.categoryNameSnapshot || currentProblem.subjectName || '题库练习',
+    labelNames: Array.isArray(context.labelNames) && context.labelNames.length > 0
+      ? context.labelNames
+      : currentProblem.labelName || [],
+    subjectIds: problemSnapshot.map((item) => Number(item.id)).filter(Boolean)
+  })
+
+  if (res.code !== 200 || !res.data?.sessionId) {
+    throw new Error(res.message || '创建练习会话失败')
+  }
+
+  practiceStore.setPracticeSessionId(res.data.sessionId)
+  return res.data.sessionId
+}
+
+const isInvalidPracticeSessionError = (message) => {
+  return typeof message === 'string' && message.includes('练习会话不存在')
+}
+
+const resetPracticeContextForStandalone = () => {
+  const currentId = String(route.params.id)
+  const isInCurrentList = practiceStore.problemList.some(item => String(item.id) === currentId)
+  if (isInCurrentList) {
+    return
+  }
+
+  practiceStore.clearProblemList()
+  practiceStore.setPracticeContext({
+    sourceType: 1,
+    subjectType: 0,
+    categoryId: null,
+    categoryNameSnapshot: '单题练习',
+    labelNames: []
+  })
+}
+
+const resolvePracticeSubjectType = (problemSnapshot, fallbackType = 0) => {
+  if (fallbackType && Number(fallbackType) > 0) {
+    return Number(fallbackType)
+  }
+
+  const typeSet = new Set(problemSnapshot.map((item) => Number(item.subjectType)).filter(Boolean))
+  if (typeSet.size === 1) {
+    return Array.from(typeSet)[0]
+  }
+  return currentProblem.subjectType || 0
+}
+
+const showSubmitMessage = (recordResult) => {
+  const judgeStatus = Number(recordResult?.judgeStatus)
+  if (judgeStatus === 1) {
+    ElMessage.success('回答正确，记录已保存')
+    return
+  }
+  if (judgeStatus === 2) {
+    ElMessage.warning('回答部分正确，系统已按得分点记录')
+    return
+  }
+  if (judgeStatus === 3 || judgeStatus === 4) {
+    ElMessage.info('答案已提交，当前题目仍在判定中')
+    return
+  }
+  ElMessage.error('回答错误，请查看解析继续复盘')
 }
 
 const prevProblem = () => {
@@ -397,6 +500,9 @@ const fetchSubjectInfo = async (problemId) => {
     const res = await getSubjectInfo(problemId)
     if (res.code === 200) {
       Object.assign(currentProblem, res.data)
+      if (practiceStore.problemList.length === 0) {
+        practiceStore.setProblemList([{ id: res.data.id, subjectType: res.data.subjectType }])
+      }
       if (currentProblem.subjectType === 1 || currentProblem.subjectType === 3) {
         selectedOption.value = null
       } else if (currentProblem.subjectType === 2) {
@@ -553,7 +659,8 @@ const formatAIAnalysisContent = (content) => {
 onMounted(() => {
   const problemId = route.params.id
   if (problemId) {
-    practiceStore.setCurrentProblemId(parseInt(problemId))
+    resetPracticeContextForStandalone()
+    practiceStore.setCurrentProblemId(problemId)
     fetchSubjectInfo(problemId)
   } else {
     ElMessage.warning('题目ID不存在')
@@ -563,7 +670,8 @@ onMounted(() => {
 
 watch(() => route.params.id, (newId) => {
   if (newId) {
-    practiceStore.setCurrentProblemId(parseInt(newId))
+    resetPracticeContextForStandalone()
+    practiceStore.setCurrentProblemId(newId)
     fetchSubjectInfo(newId)
   }
 })

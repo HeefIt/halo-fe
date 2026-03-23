@@ -169,7 +169,7 @@
             <div class="snapshot-item">
               <span class="snapshot-label">最近练习时间</span>
               <strong class="snapshot-value">
-                {{ practiceRecords[0] ? formatDateTime(practiceRecords[0].answerTime) : '暂无记录' }}
+                {{ practiceRecords[0] ? formatDateTime(practiceRecords[0].practiceDate) : '暂无记录' }}
               </strong>
             </div>
             <div class="snapshot-item">
@@ -190,7 +190,7 @@
         <article class="section-shell list-panel">
           <div class="section-head">
             <div>
-              <h3 class="section-title">最近刷题记录</h3>
+              <h3 class="section-title">最近练习会话</h3>
             </div>
             <button class="text-btn" @click="router.push('/practice-history')">查看全部</button>
           </div>
@@ -204,15 +204,16 @@
             >
               <div class="record-main">
                 <div class="record-title-row">
-                  <strong>{{ record.subjectName || `题目 #${record.subjectId}` }}</strong>
-                  <span class="status-pill" :class="{ success: record.isCorrect === 1, danger: record.isCorrect !== 1 }">
-                    {{ record.isCorrect === 1 ? '通过' : '未通过' }}
+                  <strong>{{ record.title }}</strong>
+                  <span class="status-pill" :class="{ success: record.status === 1, danger: record.status !== 1 }">
+                    {{ record.status === 1 ? '已完成' : '进行中' }}
                   </span>
                 </div>
                 <div class="record-meta">
-                  <span>{{ record.categoryName || '未分类' }}</span>
-                  <span>{{ formatDateTime(record.answerTime) }}</span>
+                  <span>{{ record.categoryName || '题库练习' }}</span>
+                  <span>{{ formatDateTime(record.practiceDate) }}</span>
                   <span>{{ formatDuration(record.timeCost) }}</span>
+                  <span>正确率 {{ record.accuracyRate }}%</span>
                 </div>
               </div>
             </button>
@@ -348,10 +349,10 @@ import { useRouter } from 'vue-router'
 import { ElLoading, ElMessage } from 'element-plus'
 import { blogApi } from '@/api/modules/blog'
 import { fileApi } from '@/api/modules/file'
+import { getPracticeSessionPage } from '@/api/modules/question/practiceSession'
 import {
   getAttemptedProblemsCount,
   getDailyStatistics,
-  getPracticeRecordsByUser,
   getSolvedProblemsCount
 } from '@/api/modules/question/subject'
 import { useThemeStore } from '@/stores/modules/theme'
@@ -658,7 +659,7 @@ const fetchStatistics = async () => {
 }
 
 /**
- * 拉取最近刷题记录。
+ * 拉取最近练习会话。
  * 只保留最新几条，保证个人中心内容紧凑。
  */
 const fetchPracticeRecords = async () => {
@@ -667,15 +668,24 @@ const fetchPracticeRecords = async () => {
   }
 
   try {
-    const response = await getPracticeRecordsByUser(currentUser.value.id)
-    if (response?.code !== 200 || !Array.isArray(response.data)) {
+    const response = await getPracticeSessionPage({
+      pageNo: 1,
+      pageSize: 6
+    })
+    if (response?.code !== 200) {
       practiceRecords.value = []
       return
     }
 
-    practiceRecords.value = [...response.data]
-      .sort((left, right) => new Date(right.answerTime || 0) - new Date(left.answerTime || 0))
-      .slice(0, 6)
+    practiceRecords.value = (response.data?.result || []).map((item) => ({
+      id: item.id,
+      title: item.subjectType === 0 ? '混合练习' : `${formatSubjectType(item.subjectType)}专项练习`,
+      status: Number(item.status ?? 0),
+      categoryName: item.categoryNameSnapshot || '',
+      practiceDate: item.completedTime || item.lastAnswerTime || item.startedTime,
+      timeCost: Number(item.totalTime ?? 0),
+      accuracyRate: Math.round(Number(item.accuracyRate ?? 0))
+    }))
   } catch (error) {
     console.error('获取刷题记录失败:', error)
     practiceRecords.value = []
@@ -800,6 +810,20 @@ function formatRoleLabel(roleKey) {
     return '普通用户'
   }
   return roleKey
+}
+
+/**
+ * 将题型值转成更友好的展示文案。
+ */
+function formatSubjectType(value) {
+  const map = {
+    0: '混合题型',
+    1: '单选题',
+    2: '多选题',
+    3: '判断题',
+    4: '简答题'
+  }
+  return map[value] || '练习'
 }
 
 onMounted(() => {

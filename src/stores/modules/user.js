@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { authApi } from '@/api/modules/auth'
+import { usePracticeStore } from '@/stores/modules/practice'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref(JSON.parse(localStorage.getItem('halo_user_info')) || null)
@@ -13,6 +14,7 @@ export const useUserStore = defineStore('user', () => {
   const isAdmin = computed(() => userInfo.value?.roleKeys?.includes('admin_user') || false)
 
   const login = async (loginForm) => {
+    const practiceStore = usePracticeStore()
     try {
       const loginAccount = loginForm.loginAccount?.trim() || loginForm.userName?.trim() || ''
       const response = await authApi.login({
@@ -22,6 +24,7 @@ export const useUserStore = defineStore('user', () => {
       })
 
       if (response.success && response.code === 200) {
+        practiceStore.clearProblemList()
         token.value = response.data.tokenValue
         localStorage.setItem('halo_token', token.value)
 
@@ -151,6 +154,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = async (showMessage = true) => {
+    const practiceStore = usePracticeStore()
     try {
       if (token.value) {
         await authApi.logout({})
@@ -160,6 +164,7 @@ export const useUserStore = defineStore('user', () => {
     } finally {
       token.value = ''
       userInfo.value = null
+      practiceStore.clearProblemList()
       localStorage.removeItem('halo_token')
       localStorage.removeItem('halo_user_info')
       if (showMessage) {

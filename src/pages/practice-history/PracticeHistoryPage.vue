@@ -13,7 +13,9 @@
             <h1 class="hero-title">练习记录</h1>
           </div>
 
-          <button class="export-btn" @click="exportHistory">导出记录</button>
+          <button class="export-btn" :disabled="exporting" @click="exportHistory">
+            {{ exporting ? '导出中...' : '导出记录' }}
+          </button>
         </section>
 
         <section class="stats-strip">
@@ -33,6 +35,10 @@
           <article class="stat-unit">
             <span class="stat-label">累计用时</span>
             <strong class="stat-value">{{ formatTotalTime(stats.totalTime) }}</strong>
+          </article>
+          <article class="stat-unit">
+            <span class="stat-label">最近练习</span>
+            <strong class="stat-value stat-value-sm">{{ formatDate(stats.lastPracticeTime) }}</strong>
           </article>
         </section>
 
@@ -62,6 +68,15 @@
             </div>
           </div>
 
+          <div class="toolbar-group">
+            <span class="toolbar-label">练习状态</span>
+            <select v-model="filterForm.status" class="toolbar-input">
+              <option value="">全部状态</option>
+              <option :value="0">进行中</option>
+              <option :value="1">已完成</option>
+            </select>
+          </div>
+
           <div class="toolbar-actions">
             <button class="toolbar-btn toolbar-btn-primary" @click="fetchPracticeHistory">筛选</button>
             <button class="toolbar-btn" @click="resetFilters">重置</button>
@@ -89,13 +104,32 @@
                   <span class="record-type" :class="`type-${record.subjectType}`">
                     {{ getSubjectTypeLabel(record.subjectType) }}
                   </span>
+                  <span class="record-status" :class="getStatusClass(record.status)">
+                    {{ getStatusLabel(record.status) }}
+                  </span>
                 </div>
 
                 <div class="record-date">{{ formatDate(record.practiceDate) }}</div>
 
+                <div v-if="record.categoryNameSnapshot || record.labelNameSnapshot" class="record-snapshot">
+                  <span v-if="record.categoryNameSnapshot" class="snapshot-chip">
+                    {{ record.categoryNameSnapshot }}
+                  </span>
+                  <span
+                    v-for="label in parseSnapshotLabels(record.labelNameSnapshot)"
+                    :key="`${record.id}-${label}`"
+                    class="snapshot-chip snapshot-chip-light"
+                  >
+                    {{ label }}
+                  </span>
+                </div>
+
                 <div class="record-stats">
                   <span>{{ record.subjectCount }} 题</span>
+                  <span>已答 {{ record.answeredCount }}/{{ record.subjectCount }}</span>
                   <span>答对 {{ record.correctCount }} 题</span>
+                  <span v-if="record.partialCount > 0">部分正确 {{ record.partialCount }} 题</span>
+                  <span v-if="record.pendingCount > 0">待判定 {{ record.pendingCount }} 题</span>
                   <span>耗时 {{ formatTime(record.timeSpent) }}</span>
                 </div>
               </div>
@@ -105,12 +139,12 @@
                 <div class="progress-track">
                   <div
                     class="progress-fill"
-                    :class="getAccuracyClass(record.correctCount, record.subjectCount)"
-                    :style="{ width: `${(record.correctCount / record.subjectCount) * 100}%` }"
+                    :class="getAccuracyClass(record.accuracyRate)"
+                    :style="{ width: `${getAccuracyPercent(record)}%` }"
                   ></div>
                 </div>
                 <strong class="progress-value">
-                  {{ Math.round((record.correctCount / record.subjectCount) * 100) }}%
+                  {{ getAccuracyPercent(record) }}%
                 </strong>
               </div>
 
@@ -238,11 +272,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { exportPracticeSessionHistory, getPracticeSessionPage, getPracticeSessionSummary } from '@/api/modules/question/practiceSession'
 import { useThemeStore } from '@/stores/modules/theme'
 import Header from '@/layouts/AppHeader.vue'
 
+const router = useRouter()
 const loading = ref(false)
+const exporting = ref(false)
 const themeStore = useThemeStore()
 const showTypeDropdown = ref(false)
 const showDetailDialog = ref(false)
@@ -251,14 +290,16 @@ const selectedPractice = ref(null)
 const filterForm = reactive({
   startDate: '',
   endDate: '',
-  subjectType: ''
+  subjectType: '',
+  status: ''
 })
 
 const stats = ref({
-  totalPracticeCount: 25,
-  totalSubjectCount: 320,
-  averageAccuracy: 82.5,
-  totalTime: 45000
+  totalPracticeCount: 0,
+  totalSubjectCount: 0,
+  averageAccuracy: 0,
+  totalTime: 0,
+  lastPracticeTime: ''
 })
 
 const pagination = reactive({
@@ -270,7 +311,7 @@ const pagination = reactive({
 const practiceHistory = ref([])
 
 const totalPages = computed(() => {
-  return Math.ceil(pagination.total / pagination.pageSize)
+  return Math.ceil(pagination.total / pagination.pageSize) || 1
 })
 
 const visiblePages = computed(() => {
@@ -285,6 +326,7 @@ const visiblePages = computed(() => {
 
 const getSubjectTypeLabel = (type) => {
   const typeMap = {
+    0: '混合题型',
     1: '单选题',
     2: '多选题',
     3: '判断题',
@@ -298,72 +340,198 @@ const selectType = (type) => {
   showTypeDropdown.value = false
 }
 
-const getAccuracyClass = (correct, total) => {
-  const accuracy = correct / total
-  if (accuracy >= 0.9) return 'high'
-  if (accuracy >= 0.7) return 'medium'
+const getAccuracyClass = (accuracyRate) => {
+  const accuracy = Number(accuracyRate || 0)
+  if (accuracy >= 90) return 'high'
+  if (accuracy >= 70) return 'medium'
   return 'low'
 }
 
+const getAccuracyPercent = (record) => {
+  return Math.max(0, Math.min(100, Math.round(Number(record?.accuracyRate || 0))))
+}
+
+const getStatusLabel = (status) => {
+  return Number(status) === 1 ? '已完成' : '进行中'
+}
+
+const getStatusClass = (status) => {
+  return Number(status) === 1 ? 'record-status-completed' : 'record-status-progress'
+}
+
+const parseSnapshotLabels = (labelText) => {
+  if (!labelText) {
+    return []
+  }
+
+  return labelText
+    .split(/[、,，;；]/)
+    .map(item => item.trim())
+    .filter(Boolean)
+}
+
 const formatDate = (dateString) => {
+  if (!dateString) return '暂无时间'
   const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return '暂无时间'
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
 const formatTime = (seconds) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = seconds % 60
+  const safeSeconds = Number(seconds || 0)
+  const mins = Math.floor(safeSeconds / 60)
+  const secs = safeSeconds % 60
   return `${mins}分${secs}秒`
 }
 
 const formatTotalTime = (seconds) => {
-  const hours = Math.floor(seconds / 3600)
-  const mins = Math.floor((seconds % 3600) / 60)
+  const safeSeconds = Number(seconds || 0)
+  const hours = Math.floor(safeSeconds / 3600)
+  const mins = Math.floor((safeSeconds % 3600) / 60)
   if (hours > 0) {
     return `${hours}h${mins}m`
   }
   return `${mins}分钟`
 }
 
-const fetchPracticeHistory = () => {
+const fetchSummary = async () => {
+  try {
+    const res = await getPracticeSessionSummary()
+    if (res.code !== 200) {
+      ElMessage.error(res.message || '获取练习统计失败')
+      return
+    }
+    stats.value = {
+      totalPracticeCount: res.data?.totalPracticeCount || 0,
+      totalSubjectCount: res.data?.totalSubjectCount || 0,
+      averageAccuracy: res.data?.averageAccuracy || 0,
+      totalTime: res.data?.totalTime || 0,
+      lastPracticeTime: res.data?.lastPracticeTime || ''
+    }
+  } catch (error) {
+    console.error('获取练习统计失败:', error)
+  }
+}
+
+const fetchPracticeHistory = async () => {
+  if (filterForm.startDate && filterForm.endDate && filterForm.startDate > filterForm.endDate) {
+    ElMessage.warning('开始日期不能晚于结束日期')
+    return
+  }
+
   loading.value = true
-  setTimeout(() => {
-    practiceHistory.value = [
-      { id: 1001, practiceDate: '2025-11-25T14:30:00', subjectCount: 20, correctCount: 18, timeSpent: 1800, subjectType: 1 },
-      { id: 1002, practiceDate: '2025-11-24T10:15:00', subjectCount: 15, correctCount: 12, timeSpent: 1200, subjectType: 2 },
-      { id: 1003, practiceDate: '2025-11-23T16:45:00', subjectCount: 25, correctCount: 22, timeSpent: 2100, subjectType: 3 },
-      { id: 1004, practiceDate: '2025-11-22T09:00:00', subjectCount: 18, correctCount: 15, timeSpent: 1500, subjectType: 1 },
-      { id: 1005, practiceDate: '2025-11-21T13:20:00', subjectCount: 22, correctCount: 19, timeSpent: 1980, subjectType: 4 },
-      { id: 1006, practiceDate: '2025-11-20T15:00:00', subjectCount: 30, correctCount: 27, timeSpent: 2400, subjectType: 1 },
-      { id: 1007, practiceDate: '2025-11-19T11:30:00', subjectCount: 12, correctCount: 10, timeSpent: 900, subjectType: 2 },
-      { id: 1008, practiceDate: '2025-11-18T14:45:00', subjectCount: 28, correctCount: 24, timeSpent: 2200, subjectType: 3 }
-    ]
-    pagination.total = practiceHistory.value.length
+  try {
+    const res = await getPracticeSessionPage({
+      pageNo: pagination.pageNo,
+      pageSize: pagination.pageSize,
+      startDate: filterForm.startDate || undefined,
+      endDate: filterForm.endDate || undefined,
+      subjectType: filterForm.subjectType === '' ? undefined : Number(filterForm.subjectType),
+      status: filterForm.status === '' ? undefined : Number(filterForm.status)
+    })
+
+    if (res.code !== 200) {
+      ElMessage.error(res.message || '获取练习记录失败')
+      practiceHistory.value = []
+      pagination.total = 0
+      return
+    }
+
+    const result = res.data?.result || []
+    practiceHistory.value = result.map((item) => ({
+      id: item.id,
+      sessionNo: item.sessionNo,
+      subjectType: Number(item.subjectType ?? 0),
+      practiceDate: item.completedTime || item.lastAnswerTime || item.startedTime,
+      subjectCount: Number(item.subjectCount ?? 0),
+      answeredCount: Number(item.answeredCount ?? 0),
+      correctCount: Number(item.correctCount ?? 0),
+      partialCount: Number(item.partialCount ?? 0),
+      pendingCount: Number(item.pendingCount ?? 0),
+      incorrectCount: Number(item.incorrectCount ?? 0),
+      timeSpent: Number(item.totalTime ?? 0),
+      accuracyRate: Number(item.accuracyRate ?? 0),
+      status: Number(item.status ?? 0),
+      categoryNameSnapshot: item.categoryNameSnapshot || '',
+      labelNameSnapshot: item.labelNameSnapshot || '',
+      totalScore: Number(item.totalScore ?? 0)
+    }))
+    pagination.total = res.data?.total || 0
+  } catch (error) {
+    console.error('获取练习记录失败:', error)
+    practiceHistory.value = []
+    pagination.total = 0
+    ElMessage.error('获取练习记录失败')
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 
 const resetFilters = () => {
   filterForm.startDate = ''
   filterForm.endDate = ''
   filterForm.subjectType = ''
+  filterForm.status = ''
+  pagination.pageNo = 1
   fetchPracticeHistory()
 }
 
 const viewPracticeDetail = (record) => {
-  selectedPractice.value = {
-    ...record,
-    questions: [
-      { id: 1, title: 'Java中String是不可变的吗？', userAnswer: '是', correctAnswer: '是', isCorrect: true },
-      { id: 2, title: 'Java中int和Integer有什么区别？', userAnswer: 'int是基本类型，Integer是包装类', correctAnswer: 'int是基本类型，Integer是包装类', isCorrect: true },
-      { id: 3, title: 'Java中final关键字的作用是什么？', userAnswer: '用于修饰不可变的变量', correctAnswer: '用于修饰不可变的变量、方法和类', isCorrect: false }
-    ]
-  }
-  showDetailDialog.value = true
+  router.push(`/practice-history/${record.id}`)
 }
 
 const exportHistory = () => {
-  console.log('导出记录')
+  if (filterForm.startDate && filterForm.endDate && filterForm.startDate > filterForm.endDate) {
+    ElMessage.warning('开始日期不能晚于结束日期')
+    return
+  }
+
+  exporting.value = true
+  exportPracticeSessionHistory({
+    startDate: filterForm.startDate || undefined,
+    endDate: filterForm.endDate || undefined,
+    subjectType: filterForm.subjectType === '' ? undefined : Number(filterForm.subjectType),
+    status: filterForm.status === '' ? undefined : Number(filterForm.status)
+  }).then((response) => {
+    const blob = response?.data
+    if (!(blob instanceof Blob) || blob.size === 0) {
+      ElMessage.error('导出失败，未获取到文件内容')
+      return
+    }
+
+    const downloadUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = resolveExportFileName(response.headers?.['content-disposition'])
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(downloadUrl)
+    ElMessage.success('练习记录导出成功')
+  }).catch((error) => {
+    console.error('导出练习记录失败:', error)
+    ElMessage.error('导出练习记录失败')
+  }).finally(() => {
+    exporting.value = false
+  })
+}
+
+const resolveExportFileName = (contentDisposition) => {
+  if (!contentDisposition) {
+    return `practice-history-${Date.now()}.xlsx`
+  }
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1])
+  }
+
+  const normalMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
+  if (normalMatch?.[1]) {
+    return decodeURIComponent(normalMatch[1])
+  }
+
+  return `practice-history-${Date.now()}.xlsx`
 }
 
 const changePage = (page) => {
@@ -379,6 +547,7 @@ const handleSizeChange = () => {
 }
 
 onMounted(() => {
+  fetchSummary()
   fetchPracticeHistory()
 })
 </script>
@@ -489,6 +658,17 @@ onMounted(() => {
   font-weight: 700;
 }
 
+.export-btn:disabled,
+.toolbar-btn:disabled,
+.detail-btn:disabled,
+.page-btn:disabled,
+.page-num:disabled,
+.modal-close:disabled,
+.dropdown-item:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .toolbar-btn-primary {
   border-color: var(--history-accent);
   background: var(--history-accent);
@@ -501,7 +681,7 @@ onMounted(() => {
 
 .stats-strip {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr));
   margin-top: 14px;
 }
 
@@ -525,6 +705,12 @@ onMounted(() => {
   font-size: clamp(24px, 3vw, 34px);
   line-height: 1.1;
   letter-spacing: -0.04em;
+}
+
+.stat-value-sm {
+  font-size: clamp(18px, 2.2vw, 24px);
+  line-height: 1.4;
+  letter-spacing: -0.02em;
 }
 
 .toolbar {
@@ -715,6 +901,44 @@ onMounted(() => {
 .progress-label {
   color: var(--history-text-soft);
   font-size: 13px;
+}
+
+.record-snapshot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.snapshot-chip,
+.record-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border: 1px solid var(--history-border);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.snapshot-chip {
+  color: var(--history-text);
+  background: var(--history-surface-soft);
+}
+
+.snapshot-chip-light {
+  color: var(--history-text-soft);
+}
+
+.record-status-progress {
+  color: #2563eb;
+  border-color: rgba(37, 99, 235, 0.16);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.record-status-completed {
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.08);
 }
 
 .record-stats {
