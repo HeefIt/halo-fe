@@ -87,7 +87,7 @@ Vite 开发代理配置见：
 
 推荐先导入总 SQL：
 
-- [../data/halo_all_in_one.sql](E:/ToSchool/halo_project/data/halo_all_in_one.sql)
+- [../data/base/halo_all_in_one.sql](E:/ToSchool/halo_project/data/base/halo_all_in_one.sql)
 
 当前前端已经对接的重点能力包括：
 
