@@ -1,6 +1,5 @@
-<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect x="12" y="12" width="232" height="232" rx="64" fill="#F7F3EA"/>
-  <path d="M68 112C56 106 48 94 48 80C48 67 55 55 66 48C70 26 87 12 108 12C120 12 132 17 140 26C146 23 152 22 159 22C175 22 190 35 190 52C190 59 188 66 183 73" transform="translate(4 20)" stroke="#082B72" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M86 172C96 180 109 184 124 184C138 184 151 180 161 172" stroke="#082B72" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="128" y="152" text-anchor="middle" fill="#082B72" font-size="96" font-weight="700" font-family="'Brush Script MT','Segoe Script','Snell Roundhand',cursive">h</text>
+<svg width="256" height="216" viewBox="0 0 256 216" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M56 166C36 157 22 137 22 114C22 94 33 76 50 66C56 32 86 8 122 8C143 8 162 16 176 30C186 26 197 24 208 24C235 24 258 46 258 74C258 86 254 98 247 108" transform="translate(-12 0)" stroke="#082B72" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M70 188C85 201 105 208 128 208C149 208 168 201 183 189" stroke="#082B72" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="127" y="136" text-anchor="middle" fill="#082B72" font-size="112" font-weight="700" font-family="'Brush Script MT','Segoe Script','Snell Roundhand',cursive">hcd</text>
 </svg>
