@@ -20,7 +20,7 @@
                 进入题库
               </button>
               <button class="action-secondary" @click="goTo('/study-plan')">
-                查看学习计划
+                进入圈子社区
               </button>
             </div>
 
@@ -469,10 +469,10 @@ const leadSignals = computed(() => [
 
 const supportEntries = [
   {
-    title: '学习计划',
-    desc: '把长期目标拆成当前这周会真正执行的安排。',
+    title: '圈子社区',
+    desc: '看看大家今天在吐槽什么、分享什么，也可以自己发动态参与讨论。',
     path: '/study-plan',
-    tag: '规划'
+    tag: '交流'
   },
   {
     title: '排行榜',

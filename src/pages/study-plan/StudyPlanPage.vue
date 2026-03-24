@@ -1,863 +1,1549 @@
 <template>
-  <div
-    class="study-plan-page app-shell app-shell--internal"
-    :class="{ 'is-dark': themeStore.isDark }"
-  >
+  <div class="community-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <Header />
 
-    <main class="main-content">
-      <div class="container">
-        <section class="plan-hero">
-          <div class="hero-copy">
-            <span class="hero-kicker">PLAN DESK</span>
-            <h1 class="hero-title">学习计划</h1>
-          </div>
+    <main class="community-main">
+      <section class="community-topbar">
+        <div class="topbar-copy">
+          <span class="topbar-kicker">COMMUNITY HUB</span>
+          <h1 class="topbar-title">圈子社区</h1>
+          <p class="topbar-text">
+            吐槽刷题、聊面试、发梗图、晒心得，把站内用户的即时分享组织成一个更清晰的社区信息流。
+          </p>
 
-          <button class="hero-action" @click="createPlan">
-            <span class="hero-action-plus">+</span>
-            <span>新建计划</span>
+          <div class="summary-strip">
+            <div class="summary-chip">
+              <span class="summary-chip__label">动态总数</span>
+              <strong class="summary-chip__value">{{ totalMoments }}</strong>
+            </div>
+            <div class="summary-chip">
+              <span class="summary-chip__label">圈子数量</span>
+              <strong class="summary-chip__value">{{ circles.length }}</strong>
+            </div>
+            <div class="summary-chip">
+              <span class="summary-chip__label">当前可见作者</span>
+              <strong class="summary-chip__value">{{ activeAuthorCount }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="topbar-cta">
+          <div class="cta-card">
+            <span class="cta-eyebrow">当前浏览</span>
+            <strong class="cta-title">{{ selectedCircle ? selectedCircle.circleName : '全部圈子' }}</strong>
+            <p class="cta-text">{{ selectedCircle ? '只查看该圈子的动态讨论' : '聚合所有圈子的最新动态' }}</p>
+            <div class="cta-actions">
+              <button type="button" class="secondary-btn" @click="switchCircle('all')">查看全部</button>
+              <button type="button" class="primary-btn" @click="scrollToComposer">发动态</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="circle-nav-band">
+        <div class="circle-nav-band__head">
+          <div>
+            <h2>圈子导航</h2>
+            <p>只保留一套主筛选入口，避免在页面里反复出现同样的圈子列表。</p>
+          </div>
+          <span class="circle-nav-band__meta">{{ visibleMomentText }}</span>
+        </div>
+
+        <div class="circle-nav">
+          <button
+            type="button"
+            class="circle-nav__item circle-nav__item--all"
+            :class="{ active: selectedCircleId === 'all' }"
+            @click="switchCircle('all')"
+          >
+            <span class="circle-nav__text">全部</span>
+            <span class="circle-nav__meta">{{ totalMoments }}</span>
           </button>
-        </section>
 
-        <section class="stats-strip">
-          <article class="stat-unit stat-unit-strong">
-            <span class="stat-label">全部计划</span>
-            <strong class="stat-value">{{ studyPlans.length }}</strong>
-            <span class="stat-meta">当前已规划 {{ totalTopics }} 个主题</span>
-          </article>
-          <article class="stat-unit">
-            <span class="stat-label">进行中</span>
-            <strong class="stat-value">{{ activePlans.length }}</strong>
-            <span class="stat-meta">优先关注正在推进的计划</span>
-          </article>
-          <article class="stat-unit">
-            <span class="stat-label">已完成</span>
-            <strong class="stat-value">{{ completedPlansCount }}</strong>
-            <span class="stat-meta">已完成主题 {{ totalTopicsCompleted }}</span>
-          </article>
-          <article class="stat-unit">
-            <span class="stat-label">平均进度</span>
-            <strong class="stat-value">{{ averageProgress }}%</strong>
-            <span class="stat-meta">按全部计划完成度计算</span>
-          </article>
-        </section>
-
-        <section class="toolbar">
-          <div class="toolbar-tabs">
-            <button
-              v-for="tab in statusTabs"
-              :key="tab.value"
-              class="toolbar-tab"
-              :class="{ active: currentStatus === tab.value }"
-              @click="currentStatus = tab.value"
-            >
-              <span>{{ tab.label }}</span>
-              <span class="toolbar-count">{{ getPlanCountByStatus(tab.value) }}</span>
-            </button>
-          </div>
-
-          <div class="toolbar-note">
-            <span class="toolbar-note-key">当前视图</span>
-            <span class="toolbar-note-value">
-              {{ currentStatus === 'all' ? '全部计划' : getStatusText(currentStatus) }}
+          <button
+            v-for="circle in circles"
+            :key="circle.id"
+            type="button"
+            class="circle-nav__item"
+            :class="{ active: String(selectedCircleId) === String(circle.id) }"
+            @click="switchCircle(circle.id)"
+          >
+            <span class="circle-nav__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
+              <img
+                v-if="isCircleImage(circle.icon)"
+                :src="circle.icon"
+                :alt="circle.circleName"
+                class="circle-nav__image"
+              />
+              <span v-else class="circle-nav__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
             </span>
-          </div>
-        </section>
+            <span class="circle-nav__text">{{ circle.circleName }}</span>
+            <span class="circle-nav__meta">{{ getCircleVisibleCount(circle.id) }}</span>
+          </button>
+        </div>
+      </section>
 
-        <div class="workspace" v-if="filteredPlans.length > 0">
-          <section class="primary-column">
-            <div class="section-head">
-              <div>
-                <h2 class="section-title">计划列表</h2>
+      <section class="workspace">
+        <div class="primary-column">
+          <section ref="composerPanelRef" class="composer-card">
+            <div class="composer-card__head">
+              <div class="composer-user" @click="goToOwnProfile">
+                <img v-if="userStore.userAvatar" :src="userStore.userAvatar" :alt="userStore.userName" class="avatar-image" />
+                <span v-else class="avatar-fallback">{{ currentUserInitial }}</span>
               </div>
-              <span class="section-meta">{{ filteredPlans.length }} 项</span>
+
+              <div class="composer-intro">
+                <strong>{{ userStore.userName || '你' }}</strong>
+                <span>把今天想说的发出来，文字、截图、表情包都可以。</span>
+              </div>
+
+              <div class="composer-target">
+                <span class="composer-target__label">发布到</span>
+                <button type="button" class="composer-target__value" @click="focusSelectedCircle">
+                  {{ composerCircleName }}
+                </button>
+              </div>
             </div>
 
-            <div class="plan-stream">
-              <article
-                v-for="plan in filteredPlans"
-                :key="plan.id"
-                class="plan-row"
-                :class="`status-${plan.status}`"
-                @click="viewPlan(plan)"
+            <div class="composer-circle-picker">
+              <button
+                v-for="circle in circles"
+                :key="`composer-${circle.id}`"
+                type="button"
+                class="composer-circle"
+                :class="{ active: String(momentForm.circleId || '') === String(circle.id || '') }"
+                @click="selectComposerCircle(circle.id)"
               >
-                <div class="plan-main">
-                  <div class="plan-headline">
-                    <div class="headline-copy">
-                      <span class="plan-status" :class="`status-${plan.status}`">
-                        {{ getStatusText(plan.status) }}
-                      </span>
-                      <h3 class="plan-title">{{ plan.title }}</h3>
-                    </div>
-                    <span class="plan-percent">
-                      {{ Math.round((plan.completedTopics / plan.totalTopics) * 100) }}%
-                    </span>
-                  </div>
+                <span class="composer-circle__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
+                  <img
+                    v-if="isCircleImage(circle.icon)"
+                    :src="circle.icon"
+                    :alt="circle.circleName"
+                    class="composer-circle__image"
+                  />
+                  <span v-else class="composer-circle__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
+                </span>
+                <span class="composer-circle__label">{{ circle.circleName }}</span>
+              </button>
+            </div>
 
-                  <div class="plan-meta">
-                    <span>{{ formatDateRange(plan.startDate, plan.endDate) }}</span>
-                    <span>{{ plan.totalTopics }} 个主题</span>
-                    <span>已完成 {{ plan.completedTopics }} 个</span>
-                  </div>
+            <textarea
+              v-model.trim="momentForm.content"
+              class="composer-input"
+              rows="5"
+              maxlength="1200"
+              :placeholder="`在 ${composerCircleName} 里发点什么？比如吐槽、心得、梗图上下文都可以写出来。`"
+            ></textarea>
 
-                  <div class="plan-progress">
-                    <div class="progress-track">
-                      <div
-                        class="progress-fill"
-                        :style="{ width: `${(plan.completedTopics / plan.totalTopics) * 100}%` }"
-                      ></div>
-                    </div>
-                    <div class="progress-foot">
-                      <span>{{ plan.completedTopics }}/{{ plan.totalTopics }}</span>
-                      <span v-if="plan.status === 2">剩余 {{ getRemainingDays(plan.endDate) }} 天</span>
-                      <span v-else-if="plan.status === 1">{{ getDaysUntilStart(plan.startDate) }} 天后开始</span>
-                      <span v-else>已按计划完成</span>
-                    </div>
-                  </div>
+            <div v-if="momentForm.pictures.length" class="upload-grid">
+              <div v-for="(picture, index) in momentForm.pictures" :key="`${picture}-${index}`" class="upload-card">
+                <img :src="picture" alt="moment" />
+                <button type="button" class="upload-remove" @click="removePicture(index)">×</button>
+              </div>
+            </div>
+
+            <div class="composer-footer">
+              <div class="composer-actions">
+                <button type="button" class="secondary-btn" :disabled="uploadingImage" @click="pickImages">
+                  {{ uploadingImage ? '上传中...' : '添加图片/表情包' }}
+                </button>
+                <div class="composer-helper">
+                  <span>{{ momentForm.content.length }}/1200</span>
+                  <span>最多 9 张图，单图不超过 5MB</span>
                 </div>
+              </div>
 
-                <div class="plan-side">
-                  <span class="side-label">下一步</span>
-                  <strong class="side-value" v-if="plan.status === 2">继续推进</strong>
-                  <strong class="side-value" v-else-if="plan.status === 1">准备启动</strong>
-                  <strong class="side-value" v-else>复盘整理</strong>
-                  <span class="side-arrow">查看详情</span>
-                </div>
-              </article>
+              <button type="button" class="primary-btn primary-btn--strong" :disabled="postingMoment" @click="submitMoment">
+                {{ postingMoment ? '发布中...' : '发布动态' }}
+              </button>
             </div>
           </section>
 
-          <aside class="secondary-column">
-            <section class="side-panel">
-              <div class="section-head">
-                <div>
-                  <h2 class="section-title">计划摘要</h2>
-                </div>
-              </div>
+          <section class="feed-header">
+            <div class="feed-header__copy">
+              <h2>{{ selectedCircle ? `${selectedCircle.circleName} 动态` : '全部动态' }}</h2>
+              <p>{{ selectedCircle ? '当前只展示这个圈子的发帖内容。' : '正在查看社区的完整动态流。' }}</p>
+            </div>
+            <div class="feed-header__meta">
+              <span class="feed-header__count">{{ visibleMomentText }}</span>
+            </div>
+          </section>
 
-              <div class="summary-list">
-                <div class="summary-item">
-                  <span class="summary-label">最近要开始</span>
-                  <strong class="summary-value">
-                    {{ upcomingPlan ? upcomingPlan.title : '暂无待开始计划' }}
-                  </strong>
-                  <span class="summary-meta" v-if="upcomingPlan">
-                    {{ getDaysUntilStart(upcomingPlan.startDate) }} 天后开始
-                  </span>
+          <section class="feed-panel">
+            <div v-if="loading && !momentList.length" class="feed-empty">社区加载中...</div>
+
+            <template v-else-if="momentList.length">
+              <article v-for="moment in momentList" :key="moment.id" class="moment-card">
+                <div class="moment-head">
+                  <div class="moment-author">
+                    <button type="button" class="author-link" @click="goToUser(moment.author?.userId)">
+                      <img v-if="moment.author?.avatar" :src="moment.author.avatar" :alt="moment.author?.nickName" class="avatar-image" />
+                      <span v-else class="avatar-fallback">{{ getAuthorInitial(moment.author) }}</span>
+                    </button>
+
+                    <div class="moment-meta">
+                      <div class="moment-title-row">
+                        <button type="button" class="author-name" @click="goToUser(moment.author?.userId)">
+                          {{ moment.author?.nickName || '未知用户' }}
+                        </button>
+                        <span class="circle-badge">
+                          <span class="circle-badge__visual" :class="{ 'is-image': isCircleImage(moment.circleIcon) }">
+                            <img
+                              v-if="isCircleImage(moment.circleIcon)"
+                              :src="moment.circleIcon"
+                              :alt="moment.circleName || '圈子'"
+                              class="circle-badge__image"
+                            />
+                            <span v-else class="circle-badge__emoji">{{ getCircleVisualText(moment.circleIcon, moment.circleName) }}</span>
+                          </span>
+                          <span class="circle-badge__label">{{ moment.circleName || '默认圈子' }}</span>
+                        </span>
+                      </div>
+                      <div class="moment-subline">
+                        <span>@{{ moment.author?.userName || 'unknown' }}</span>
+                        <span>{{ formatTime(moment.createdTime) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    v-if="moment.ownedByCurrentUser"
+                    type="button"
+                    class="ghost-btn ghost-btn--danger"
+                    @click.stop="handleDeleteMoment(moment)"
+                  >
+                    删除
+                  </button>
                 </div>
 
-                <div class="summary-item">
-                  <span class="summary-label">最接近完成</span>
-                  <strong class="summary-value">
-                    {{ focusPlan ? focusPlan.title : '暂无进行中计划' }}
-                  </strong>
-                  <span class="summary-meta" v-if="focusPlan">
-                    完成度 {{ Math.round((focusPlan.completedTopics / focusPlan.totalTopics) * 100) }}%
-                  </span>
-                </div>
-              </div>
-            </section>
+                <div class="moment-body" @click="goToDetail(moment.id)">
+                  <p class="moment-content">{{ moment.content || `分享了 ${moment.pictures?.length || 1} 张图片` }}</p>
 
-            <section class="side-panel">
-              <div class="section-head">
-                <div>
-                  <h2 class="section-title">状态分布</h2>
+                  <div
+                    v-if="moment.pictures?.length"
+                    class="moment-media"
+                    :class="getMomentMediaClass(getPreviewPictures(moment).length)"
+                  >
+                    <div
+                      v-for="(picture, index) in getPreviewPictures(moment)"
+                      :key="`${moment.id}-${index}`"
+                      class="moment-media__item"
+                    >
+                      <img
+                        :src="picture"
+                        :alt="`${moment.author?.nickName || '用户'} 的动态图片`"
+                        class="moment-media__image"
+                      />
+                      <span
+                        v-if="getHiddenImageCount(moment) > 0 && index === getPreviewPictures(moment).length - 1"
+                        class="moment-media__more"
+                      >
+                        +{{ getHiddenImageCount(moment) }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div class="status-list">
-                <div class="status-row">
-                  <span>进行中</span>
-                  <strong>{{ activePlans.length }}</strong>
+                <div class="moment-footer">
+                  <button type="button" class="text-action" @click="goToDetail(moment.id)">
+                    评论 {{ moment.commentCount || 0 }}
+                  </button>
+                  <button type="button" class="text-action" @click="goToDetail(moment.id)">
+                    查看讨论
+                  </button>
                 </div>
-                <div class="status-row">
-                  <span>未开始</span>
-                  <strong>{{ pendingPlans.length }}</strong>
-                </div>
-                <div class="status-row">
-                  <span>已完成</span>
-                  <strong>{{ completedPlans.length }}</strong>
-                </div>
+              </article>
+
+              <div class="feed-loadmore">
+                <button type="button" class="secondary-btn" :disabled="loadingMore || !hasMore" @click="loadMoments(false)">
+                  {{ hasMore ? (loadingMore ? '加载中...' : '继续查看更多') : '已经到底了' }}
+                </button>
               </div>
-            </section>
-          </aside>
+            </template>
+
+            <div v-else class="feed-empty">
+              <strong>还没有动态</strong>
+              <span>社区刚开场，你发第一条会让这里马上热起来。</span>
+            </div>
+          </section>
         </div>
 
-        <section v-else class="empty-state">
-          <span class="empty-kicker">NO PLAN</span>
-          <h2 class="empty-title">还没有学习计划</h2>
-          <button class="hero-action" @click="createPlan">
-            <span class="hero-action-plus">+</span>
-            <span>创建第一份计划</span>
-          </button>
-        </section>
-      </div>
+        <aside class="secondary-column">
+          <section class="side-panel side-panel--light">
+            <div class="side-panel__head">
+              <h3>热门圈子</h3>
+              <span>{{ recommendedCircles.length }} 个推荐</span>
+            </div>
+
+            <div class="highlight-list">
+              <button
+                v-for="circle in recommendedCircles"
+                :key="`highlight-${circle.id}`"
+                type="button"
+                class="highlight-item"
+                :class="{ active: String(selectedCircleId) === String(circle.id) }"
+                @click="switchCircle(circle.id)"
+              >
+                <span class="highlight-item__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
+                  <img
+                    v-if="isCircleImage(circle.icon)"
+                    :src="circle.icon"
+                    :alt="circle.circleName"
+                    class="highlight-item__image"
+                  />
+                  <span v-else class="highlight-item__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
+                </span>
+                <span class="highlight-item__copy">
+                  <strong>{{ circle.circleName }}</strong>
+                  <span>{{ getCircleVisibleCount(circle.id) }} 条可见动态</span>
+                </span>
+              </button>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <div class="side-panel__head">
+              <h3>社区提示</h3>
+            </div>
+            <div class="tips-list">
+              <div class="tip-item">
+                <strong>主按钮只保留一个重点</strong>
+                <span>发帖区里“发布动态”是主操作，“添加图片”是辅助操作，视觉层级更清楚。</span>
+              </div>
+              <div class="tip-item">
+                <strong>图片展示已限制范围</strong>
+                <span>单图会限高展示，多图自动宫格，避免原图把整张卡片撑得失控。</span>
+              </div>
+              <div class="tip-item">
+                <strong>头像和昵称都可点</strong>
+                <span>讨论时可以快速查看对方资料，形成更真实的社区互动感。</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="side-panel side-panel--compact">
+            <div class="side-panel__head">
+              <h3>今日热议</h3>
+              <span>{{ hotTopics.length }} 条</span>
+            </div>
+
+            <div v-if="hotTopics.length" class="topic-list">
+              <button
+                v-for="topic in hotTopics"
+                :key="`topic-${topic.id}`"
+                type="button"
+                class="topic-item"
+                @click="goToDetail(topic.id)"
+              >
+                <strong>{{ topic.circleName || '默认圈子' }}</strong>
+                <span>{{ getMomentSummary(topic) }}</span>
+              </button>
+            </div>
+
+            <div v-else class="topic-empty">等有更多动态后，这里会自动出现热议内容。</div>
+          </section>
+        </aside>
+      </section>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useThemeStore } from '@/stores/modules/theme'
+import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import Header from '@/layouts/AppHeader.vue'
+import { useThemeStore } from '@/stores/modules/theme'
+import { useUserStore } from '@/stores/modules/user'
+import { shareApi } from '@/api/modules/share'
+import { fileApi } from '@/api/modules/file'
 
 const router = useRouter()
 const themeStore = useThemeStore()
+const userStore = useUserStore()
 
-const studyPlans = ref([])
-const currentStatus = ref('all')
+const composerPanelRef = ref(null)
+const circles = ref([])
+const momentList = ref([])
+const selectedCircleId = ref('all')
+const loading = ref(false)
+const loadingMore = ref(false)
+const postingMoment = ref(false)
+const uploadingImage = ref(false)
+const totalMoments = ref(0)
 
-const statusTabs = [
-  { label: '全部', value: 'all' },
-  { label: '进行中', value: 2 },
-  { label: '未开始', value: 1 },
-  { label: '已完成', value: 3 }
-]
-
-const filteredPlans = computed(() => {
-  if (currentStatus.value === 'all') {
-    return studyPlans.value
-  }
-  return studyPlans.value.filter(plan => plan.status === currentStatus.value)
+const pageState = reactive({
+  pageNum: 1,
+  pageSize: 10
 })
 
-const activePlans = computed(() => studyPlans.value.filter(plan => plan.status === 2))
-const pendingPlans = computed(() => studyPlans.value.filter(plan => plan.status === 1))
-const completedPlans = computed(() => studyPlans.value.filter(plan => plan.status === 3))
-
-const completedPlansCount = computed(() => completedPlans.value.length)
-
-const totalTopicsCompleted = computed(() => {
-  return studyPlans.value.reduce((sum, plan) => sum + plan.completedTopics, 0)
+const momentForm = reactive({
+  circleId: null,
+  content: '',
+  pictures: []
 })
 
-const totalTopics = computed(() => {
-  return studyPlans.value.reduce((sum, plan) => sum + plan.totalTopics, 0)
+const currentUserInitial = computed(() => (userStore.userName || 'U').charAt(0).toUpperCase())
+const hasMore = computed(() => momentList.value.length < totalMoments.value)
+const selectedCircle = computed(() => circles.value.find(circle => String(circle.id) === String(selectedCircleId.value)) || null)
+const composerCircle = computed(() => circles.value.find(circle => String(circle.id) === String(momentForm.circleId)) || circles.value[0] || null)
+const composerCircleName = computed(() => composerCircle.value?.circleName || '默认圈子')
+const visibleMomentText = computed(() => `${momentList.value.length} 条动态正在显示`)
+const activeAuthorCount = computed(() => {
+  const authorIds = new Set(
+    momentList.value
+      .map(item => item.author?.userId)
+      .filter(Boolean)
+      .map(item => String(item))
+  )
+  return authorIds.size
 })
 
-const averageProgress = computed(() => {
-  if (!studyPlans.value.length) {
+const circleVisibleMap = computed(() => {
+  return momentList.value.reduce((map, moment) => {
+    const circleId = String(moment.circleId || '')
+    if (!circleId) {
+      return map
+    }
+    map[circleId] = (map[circleId] || 0) + 1
+    return map
+  }, {})
+})
+
+const getCircleVisibleCount = (circleId) => {
+  if (!circleId) {
     return 0
   }
-  const total = studyPlans.value.reduce((sum, plan) => {
-    return sum + (plan.completedTopics / plan.totalTopics) * 100
-  }, 0)
-  return Math.round(total / studyPlans.value.length)
-})
-
-const upcomingPlan = computed(() => {
-  return [...pendingPlans.value].sort((left, right) => new Date(left.startDate) - new Date(right.startDate))[0]
-})
-
-const focusPlan = computed(() => {
-  return [...activePlans.value].sort((left, right) => {
-    const leftRate = left.completedTopics / left.totalTopics
-    const rightRate = right.completedTopics / right.totalTopics
-    return rightRate - leftRate
-  })[0]
-})
-
-const getPlanCountByStatus = (status) => {
-  if (status === 'all') return studyPlans.value.length
-  return studyPlans.value.filter(plan => plan.status === status).length
+  return Number(circleVisibleMap.value[String(circleId)] || 0)
 }
 
-const getStatusText = (status) => {
-  const statusMap = {
-    1: '未开始',
-    2: '进行中',
-    3: '已完成'
+const recommendedCircles = computed(() => {
+  return [...circles.value]
+    .sort((prev, next) => {
+      const prevActive = String(prev.id) === String(selectedCircleId.value) ? 1 : 0
+      const nextActive = String(next.id) === String(selectedCircleId.value) ? 1 : 0
+      if (prevActive !== nextActive) {
+        return nextActive - prevActive
+      }
+
+      const nextCount = getCircleVisibleCount(next.id)
+      const prevCount = getCircleVisibleCount(prev.id)
+      if (nextCount !== prevCount) {
+        return nextCount - prevCount
+      }
+
+      return String(prev.id).localeCompare(String(next.id))
+    })
+    .slice(0, 5)
+})
+
+const hotTopics = computed(() => momentList.value.slice(0, 3))
+
+const isCircleImage = (icon) => {
+  if (!icon || typeof icon !== 'string') return false
+  const normalizedIcon = icon.trim()
+  return /^https?:\/\//i.test(normalizedIcon) || /^data:image\//i.test(normalizedIcon) || normalizedIcon.startsWith('/')
+}
+
+const getCircleVisualText = (icon, circleName) => {
+  const normalizedIcon = typeof icon === 'string' ? icon.trim() : ''
+  if (!normalizedIcon || isCircleImage(normalizedIcon)) {
+    return (circleName || '圈').charAt(0)
   }
-  return statusMap[status] || '未知'
+  if (normalizedIcon.length <= 4) {
+    return normalizedIcon
+  }
+  return (circleName || normalizedIcon).charAt(0)
 }
 
-const formatDateRange = (startDate, endDate) => {
-  const start = new Date(startDate)
-  const end = new Date(endDate)
-  const format = (date) => `${date.getMonth() + 1}/${date.getDate()}`
-  return `${format(start)} - ${format(end)}`
+const getMomentSummary = (moment) => {
+  const content = (moment?.content || '').replace(/\s+/g, ' ').trim()
+  if (content) {
+    return content.length > 34 ? `${content.slice(0, 34)}...` : content
+  }
+  const pictureCount = moment?.pictures?.length || 0
+  return pictureCount > 0 ? `分享了 ${pictureCount} 张图片` : '发起了一条新动态'
 }
 
-const getRemainingDays = (endDate) => {
-  const end = new Date(endDate)
-  const now = new Date()
-  const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24))
-  return Math.max(0, diff)
+const getPreviewPictures = (moment) => {
+  return (moment?.pictures || []).slice(0, 4)
 }
 
-const getDaysUntilStart = (startDate) => {
-  const start = new Date(startDate)
-  const now = new Date()
-  const diff = Math.ceil((start - now) / (1000 * 60 * 60 * 24))
-  return Math.max(0, diff)
+const getHiddenImageCount = (moment) => {
+  return Math.max(0, (moment?.pictures?.length || 0) - 4)
 }
 
-const viewPlan = (plan) => {
-  router.push(`/study-plan/${plan.id}`)
+const getMomentMediaClass = (count) => {
+  if (count <= 1) return 'count-1'
+  if (count === 2) return 'count-2'
+  if (count === 3) return 'count-3'
+  return 'count-4'
 }
 
-const createPlan = () => {
-  console.log('创建学习计划')
+const scrollToComposer = () => {
+  composerPanelRef.value?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
 }
 
-const fetchStudyPlans = () => {
-  studyPlans.value = [
-    {
-      id: 1,
-      title: '后端基础与 API 设计',
-      status: 2,
-      startDate: '2025-11-01',
-      endDate: '2025-12-31',
-      totalTopics: 25,
-      completedTopics: 10
-    },
-    {
-      id: 2,
-      title: 'Spring 与服务治理',
-      status: 1,
-      startDate: '2026-01-01',
-      endDate: '2026-02-28',
-      totalTopics: 18,
-      completedTopics: 0
-    },
-    {
-      id: 3,
-      title: '数据库建模与性能优化',
-      status: 3,
-      startDate: '2025-09-01',
-      endDate: '2025-10-31',
-      totalTopics: 15,
-      completedTopics: 15
-    },
-    {
-      id: 4,
-      title: '分布式系统实践',
-      status: 2,
-      startDate: '2025-11-15',
-      endDate: '2026-01-15',
-      totalTopics: 22,
-      completedTopics: 8
-    },
-    {
-      id: 5,
-      title: '前端工程协作',
-      status: 1,
-      startDate: '2026-02-01',
-      endDate: '2026-03-31',
-      totalTopics: 20,
-      completedTopics: 0
-    },
-    {
-      id: 6,
-      title: '算法与数据结构进阶',
-      status: 2,
-      startDate: '2025-10-01',
-      endDate: '2025-12-31',
-      totalTopics: 30,
-      completedTopics: 22
+const focusSelectedCircle = () => {
+  scrollToComposer()
+}
+
+const selectComposerCircle = (circleId) => {
+  momentForm.circleId = circleId
+}
+
+const fetchCircles = async () => {
+  const response = await shareApi.getCircleList()
+  if (response?.code !== 200) {
+    throw new Error(response?.message || '获取圈子失败')
+  }
+
+  circles.value = response.data || []
+  if (!momentForm.circleId && circles.value.length) {
+    momentForm.circleId = circles.value[0].id
+  }
+}
+
+const loadMoments = async (reset = true) => {
+  if (reset) {
+    loading.value = true
+    pageState.pageNum = 1
+  } else {
+    if (!hasMore.value) {
+      return
     }
-  ]
+    loadingMore.value = true
+    pageState.pageNum += 1
+  }
+
+  try {
+    const response = await shareApi.getMomentPage({
+      pageNum: pageState.pageNum,
+      pageSize: pageState.pageSize,
+      circleId: selectedCircleId.value === 'all' ? undefined : selectedCircleId.value
+    })
+
+    if (response?.code !== 200) {
+      throw new Error(response?.message || '获取动态失败')
+    }
+
+    const result = response.data?.result || []
+    totalMoments.value = Number(response.data?.total || 0)
+    momentList.value = reset ? result : [...momentList.value, ...result]
+  } catch (error) {
+    console.error('获取社区动态失败:', error)
+    ElMessage.error(error.message || '获取社区动态失败')
+    if (!reset) {
+      pageState.pageNum = Math.max(1, pageState.pageNum - 1)
+    }
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
 }
 
-onMounted(() => {
-  fetchStudyPlans()
+const switchCircle = async (circleId) => {
+  selectedCircleId.value = circleId
+  if (circleId !== 'all') {
+    momentForm.circleId = circleId
+  }
+  await loadMoments(true)
+}
+
+const pickImages = () => {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.multiple = true
+  input.accept = 'image/*'
+
+  input.onchange = async (event) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length) return
+
+    if (momentForm.pictures.length + files.length > 9) {
+      ElMessage.warning('一条动态最多上传 9 张图片')
+      return
+    }
+
+    const invalidFile = files.find(file => file.size > 5 * 1024 * 1024)
+    if (invalidFile) {
+      ElMessage.warning('单张图片不能超过 5MB')
+      return
+    }
+
+    const loadingInstance = ElLoading.service({
+      lock: true,
+      text: '图片上传中...',
+      background: 'rgba(15, 23, 42, 0.24)'
+    })
+    uploadingImage.value = true
+
+    try {
+      const uploadedUrls = []
+      for (const file of files) {
+        const response = await fileApi.uploadImage(file, '社区动态图片')
+        const fileUrl = response?.data?.filePath
+        if (!response || response.code !== 200 || !fileUrl) {
+          throw new Error(response?.message || '图片上传失败')
+        }
+        uploadedUrls.push(fileUrl)
+      }
+
+      momentForm.pictures = [...momentForm.pictures, ...uploadedUrls]
+      ElMessage.success('图片上传成功')
+    } catch (error) {
+      console.error('上传社区图片失败:', error)
+      ElMessage.error(error.message || '图片上传失败')
+    } finally {
+      uploadingImage.value = false
+      loadingInstance.close()
+    }
+  }
+
+  input.click()
+}
+
+const removePicture = (index) => {
+  momentForm.pictures.splice(index, 1)
+}
+
+const submitMoment = async () => {
+  if (!momentForm.content && !momentForm.pictures.length) {
+    ElMessage.warning('请输入内容或上传图片后再发布')
+    return
+  }
+  if (!momentForm.circleId) {
+    ElMessage.warning('请先选择一个圈子')
+    return
+  }
+
+  postingMoment.value = true
+  try {
+    const response = await shareApi.createMoment({
+      circleId: momentForm.circleId,
+      content: momentForm.content,
+      pictures: momentForm.pictures
+    })
+
+    if (response?.code !== 200) {
+      throw new Error(response?.message || '发布失败')
+    }
+
+    momentForm.content = ''
+    momentForm.pictures = []
+    ElMessage.success('动态发布成功')
+    await loadMoments(true)
+  } catch (error) {
+    console.error('发布动态失败:', error)
+    ElMessage.error(error.message || '发布动态失败')
+  } finally {
+    postingMoment.value = false
+  }
+}
+
+const handleDeleteMoment = async (moment) => {
+  try {
+    await ElMessageBox.confirm('确认删除这条动态吗？删除后评论也会一并隐藏。', '删除动态', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消'
+    })
+
+    const response = await shareApi.deleteMoment(moment.id)
+    if (response?.code !== 200) {
+      throw new Error(response?.message || '删除失败')
+    }
+
+    ElMessage.success('动态已删除')
+    await loadMoments(true)
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除动态失败:', error)
+      ElMessage.error(error.message || '删除动态失败')
+    }
+  }
+}
+
+const goToDetail = (id) => {
+  router.push(`/study-plan/${id}`)
+}
+
+const goToUser = (userId) => {
+  if (!userId) return
+  router.push(`/profile/${userId}`)
+}
+
+const goToOwnProfile = () => {
+  router.push('/profile')
+}
+
+const getAuthorInitial = (author) => {
+  return (author?.nickName || author?.userName || 'U').charAt(0).toUpperCase()
+}
+
+const formatTime = (value) => {
+  if (!value) return '刚刚'
+  const time = new Date(value).getTime()
+  const diff = Date.now() - time
+  if (diff < 60 * 1000) return '刚刚'
+  if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} 分钟前`
+  if (diff < 24 * 60 * 60 * 1000) return `${Math.floor(diff / (60 * 60 * 1000))} 小时前`
+  return new Date(value).toLocaleString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+onMounted(async () => {
+  try {
+    await fetchCircles()
+    await loadMoments(true)
+  } catch (error) {
+    console.error('初始化社区页面失败:', error)
+    ElMessage.error(error.message || '社区页面加载失败')
+  }
 })
 </script>
 
 <style scoped>
-.study-plan-page {
-  --plan-bg: #f3f5f8;
-  --plan-surface: #ffffff;
-  --plan-surface-soft: #eef2f6;
-  --plan-surface-strong: #e7edf4;
-  --plan-border: rgba(15, 23, 42, 0.1);
-  --plan-line: rgba(15, 23, 42, 0.06);
-  --plan-text: var(--color-text);
-  --plan-text-soft: var(--color-text-secondary);
-  --plan-text-faint: var(--color-text-muted);
-  --plan-accent: #0f766e;
-  --plan-accent-soft: rgba(15, 118, 110, 0.08);
-  --plan-accent-line: rgba(15, 118, 110, 0.16);
+.community-page {
+  --community-bg: #f3f6fb;
+  --community-surface: rgba(255, 255, 255, 0.92);
+  --community-surface-strong: #ffffff;
+  --community-surface-muted: #eef3f8;
+  --community-border: rgba(15, 23, 42, 0.08);
+  --community-border-strong: rgba(15, 23, 42, 0.14);
+  --community-text: #0f172a;
+  --community-text-soft: #475569;
+  --community-text-faint: #64748b;
+  --community-accent: #0f766e;
+  --community-accent-deep: #0b5d57;
+  --community-accent-soft: rgba(15, 118, 110, 0.12);
+  --community-accent-line: rgba(15, 118, 110, 0.22);
   min-height: 100vh;
-  background: var(--plan-bg);
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.07), transparent 24%),
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 26%),
+    var(--community-bg);
+  color: var(--community-text);
 }
 
-.study-plan-page.is-dark {
-  --plan-bg: #09111c;
-  --plan-surface: #0f172a;
-  --plan-surface-soft: #111c31;
-  --plan-surface-strong: #162338;
-  --plan-border: rgba(148, 163, 184, 0.14);
-  --plan-line: rgba(148, 163, 184, 0.1);
-  --plan-text: var(--text-1);
-  --plan-text-soft: var(--text-2);
-  --plan-text-faint: var(--text-3);
-  --plan-accent: #5eead4;
-  --plan-accent-soft: rgba(94, 234, 212, 0.12);
-  --plan-accent-line: rgba(94, 234, 212, 0.18);
+.community-page.is-dark {
+  --community-bg: #09111f;
+  --community-surface: rgba(15, 23, 42, 0.92);
+  --community-surface-strong: #121d31;
+  --community-surface-muted: #162338;
+  --community-border: rgba(148, 163, 184, 0.14);
+  --community-border-strong: rgba(148, 163, 184, 0.22);
+  --community-text: #e2e8f0;
+  --community-text-soft: #cbd5e1;
+  --community-text-faint: #94a3b8;
+  --community-accent: #2dd4bf;
+  --community-accent-deep: #18b9a7;
+  --community-accent-soft: rgba(45, 212, 191, 0.14);
+  --community-accent-line: rgba(45, 212, 191, 0.26);
 }
 
-.main-content {
-  padding: 94px 20px 36px;
-}
-
-.container {
-  max-width: 1280px;
+.community-main {
+  max-width: 1340px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 18px 20px 28px;
 }
 
-.plan-hero,
-.stats-strip,
-.toolbar,
-.side-panel,
-.empty-state {
-  border: 1px solid var(--plan-border);
-  background: var(--plan-surface);
+.community-topbar,
+.circle-nav-band,
+.composer-card,
+.feed-panel,
+.side-panel {
+  border: 1px solid var(--community-border);
+  background: var(--community-surface);
+  backdrop-filter: blur(18px);
+  border-radius: 18px;
 }
 
-.plan-hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  gap: 24px;
+.community-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) 320px;
+  gap: 18px;
   padding: 22px 24px;
+  margin-bottom: 18px;
 }
 
-.hero-kicker,
-.stat-label,
-.toolbar-note-key,
-.summary-label,
-.side-label {
-  color: var(--plan-text-faint);
+.topbar-kicker {
+  display: inline-flex;
+  align-items: center;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
+  color: var(--community-text-faint);
+  text-transform: uppercase;
 }
 
-.hero-title {
-  margin: 6px 0 0;
-  color: var(--plan-text);
-  font-size: clamp(30px, 4vw, 42px);
-  line-height: 0.96;
-  letter-spacing: -0.04em;
+.topbar-title {
+  margin: 10px 0 12px;
+  font-size: clamp(32px, 5vw, 44px);
+  line-height: 1.04;
 }
 
-.hero-subtitle {
-  max-width: 620px;
-  margin: 10px 0 0;
-  color: var(--plan-text-soft);
+.topbar-text {
+  max-width: 700px;
+  margin: 0;
+  color: var(--community-text-soft);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.summary-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 132px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--community-border);
+  background: var(--community-surface-strong);
+}
+
+.summary-chip__label {
+  color: var(--community-text-faint);
+  font-size: 12px;
+}
+
+.summary-chip__value {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.topbar-cta {
+  display: flex;
+}
+
+.cta-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--community-accent-line);
+  background: linear-gradient(145deg, var(--community-accent-soft), transparent);
+}
+
+.cta-eyebrow {
+  color: var(--community-text-faint);
+  font-size: 12px;
+}
+
+.cta-title {
+  font-size: 26px;
+}
+
+.cta-text {
+  margin: 0;
+  color: var(--community-text-soft);
   font-size: 14px;
   line-height: 1.7;
 }
 
-.hero-action {
+.cta-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.circle-nav-band {
+  margin-bottom: 18px;
+  padding: 18px 20px;
+}
+
+.circle-nav-band__head,
+.composer-card__head,
+.composer-footer,
+.feed-header,
+.side-panel__head,
+.moment-head,
+.moment-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.circle-nav-band__head {
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.circle-nav-band__head h2,
+.feed-header__copy h2,
+.side-panel__head h3 {
+  margin: 0;
+}
+
+.circle-nav-band__head p,
+.feed-header__copy p {
+  margin: 6px 0 0;
+  color: var(--community-text-faint);
+  font-size: 13px;
+}
+
+.circle-nav-band__meta,
+.feed-header__count,
+.side-panel__head span {
+  color: var(--community-text-faint);
+  font-size: 13px;
+}
+
+.circle-nav {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.circle-nav__item {
+  position: relative;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  min-height: 42px;
-  padding: 0 16px;
-  border: 1px solid var(--plan-accent);
-  background: var(--plan-accent);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--community-border);
+  border-radius: 14px;
+  background: var(--community-surface-strong);
+  color: var(--community-text-soft);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.study-plan-page.is-dark .hero-action {
-  color: #06201d;
+.circle-nav__item:hover {
+  border-color: var(--community-border-strong);
+  transform: translateY(-1px);
 }
 
-.hero-action-plus {
-  font-size: 18px;
-  line-height: 1;
+.circle-nav__item.active {
+  border-color: var(--community-accent-line);
+  background: var(--community-accent-soft);
+  color: var(--community-text);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
 }
 
-.stats-strip {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 1fr));
-  margin-top: 14px;
+.circle-nav__item.active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--community-accent);
 }
 
-.stat-unit {
-  display: grid;
-  gap: 8px;
-  padding: 16px 18px;
-  border-right: 1px solid var(--plan-line);
-}
-
-.stat-unit:last-child {
-  border-right: none;
-}
-
-.stat-unit-strong {
-  background: var(--plan-surface-soft);
-}
-
-.stat-value {
-  color: var(--plan-text);
-  font-size: clamp(28px, 3vw, 38px);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.stat-meta,
-.toolbar-note-value,
-.section-desc,
-.summary-meta {
-  color: var(--plan-text-soft);
-  font-size: 13px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: center;
-  margin-top: 14px;
-  padding: 12px 16px;
-}
-
-.toolbar-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.toolbar-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid var(--plan-border);
-  background: transparent;
-  color: var(--plan-text-soft);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.toolbar-tab.active {
-  border-color: var(--plan-accent-line);
-  background: var(--plan-accent-soft);
-  color: var(--plan-accent);
-}
-
-.toolbar-count {
+.circle-nav__visual,
+.composer-circle__visual,
+.circle-badge__visual,
+.highlight-item__visual {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  background: var(--plan-surface-soft);
-  font-size: 11px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--community-surface-muted);
+}
+
+.circle-nav__image,
+.composer-circle__image,
+.circle-badge__image,
+.highlight-item__image,
+.moment-media__image,
+.upload-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.circle-nav__emoji,
+.composer-circle__emoji,
+.circle-badge__emoji,
+.highlight-item__emoji {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--community-text);
+}
+
+.circle-nav__text,
+.composer-circle__label,
+.circle-badge__label {
+  white-space: nowrap;
+}
+
+.circle-nav__meta {
+  display: inline-flex;
+  min-width: 22px;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--community-text-faint);
+  font-size: 12px;
   font-weight: 700;
 }
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.36fr) minmax(280px, 0.74fr);
-  gap: 16px;
-  margin-top: 16px;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
 }
 
 .primary-column,
 .secondary-column {
-  display: grid;
-  gap: 16px;
-  align-content: start;
+  min-width: 0;
 }
 
-.section-head {
+.primary-column {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 16px;
-  align-items: start;
 }
 
-.section-title {
-  margin: 0;
-  color: var(--plan-text);
-  font-size: 18px;
+.secondary-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.section-desc {
-  margin: 6px 0 0;
-  line-height: 1.6;
+.composer-card {
+  padding: 20px;
 }
 
-.section-meta {
-  color: var(--plan-text-faint);
-  font-size: 12px;
-  font-weight: 700;
+.composer-card__head {
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.plan-stream {
-  display: grid;
-  gap: 10px;
-}
-
-.plan-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 132px;
-  gap: 18px;
-  padding: 18px;
-  border: 1px solid var(--plan-border);
-  background: var(--plan-surface);
+.composer-user,
+.author-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
   cursor: pointer;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.plan-row:hover {
-  background: var(--plan-surface-soft);
-}
-
-.plan-row.status-2 {
-  border-left: 3px solid var(--plan-accent);
-}
-
-.plan-row.status-1 {
-  border-left: 3px solid #d97706;
-}
-
-.plan-row.status-3 {
-  border-left: 3px solid #15803d;
-}
-
-.plan-main,
-.plan-progress {
-  display: grid;
-  gap: 10px;
-}
-
-.plan-headline {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: start;
-}
-
-.headline-copy {
-  display: grid;
-  gap: 8px;
-}
-
-.plan-status {
+.avatar-image,
+.avatar-fallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
-  width: fit-content;
-  min-height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--plan-border);
-  font-size: 12px;
+  justify-content: center;
+  object-fit: cover;
+  background: var(--community-surface-muted);
+  color: var(--community-text);
   font-weight: 700;
 }
 
-.plan-status.status-1 {
-  color: #b45309;
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(245, 158, 11, 0.16);
-}
-
-.plan-status.status-2 {
-  color: var(--plan-accent);
-  background: var(--plan-accent-soft);
-  border-color: var(--plan-accent-line);
-}
-
-.plan-status.status-3 {
-  color: #15803d;
-  background: rgba(34, 197, 94, 0.08);
-  border-color: rgba(34, 197, 94, 0.16);
-}
-
-.study-plan-page.is-dark .plan-status.status-1 {
-  color: #fdba74;
-}
-
-.study-plan-page.is-dark .plan-status.status-3 {
-  color: #86efac;
-}
-
-.plan-title {
-  margin: 0;
-  color: var(--plan-text);
-  font-size: 22px;
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-}
-
-.plan-percent {
-  color: var(--plan-text);
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-.plan-meta,
-.progress-foot {
+.composer-intro {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  color: var(--plan-text-soft);
+  flex-direction: column;
+  gap: 4px;
+}
+
+.composer-intro strong {
+  font-size: 16px;
+}
+
+.composer-intro span,
+.composer-helper,
+.moment-subline,
+.topic-item span,
+.tip-item span,
+.highlight-item__copy span {
+  color: var(--community-text-faint);
+}
+
+.composer-intro span,
+.tip-item span {
   font-size: 13px;
-}
-
-.progress-track {
-  width: 100%;
-  height: 8px;
-  overflow: hidden;
-  background: var(--plan-surface-strong);
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--plan-accent);
-}
-
-.plan-side {
-  display: grid;
-  gap: 6px;
-  align-content: start;
-  padding-left: 18px;
-  border-left: 1px solid var(--plan-line);
-}
-
-.side-value {
-  color: var(--plan-text);
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-.side-arrow {
-  color: var(--plan-text-soft);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.side-panel {
-  padding: 16px;
-}
-
-.summary-list,
-.status-list {
-  display: grid;
-  gap: 0;
-  margin-top: 14px;
-}
-
-.summary-item,
-.status-row {
-  display: grid;
-  gap: 6px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--plan-line);
-}
-
-.summary-item:last-child,
-.status-row:last-child {
-  border-bottom: none;
-}
-
-.summary-value {
-  color: var(--plan-text);
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.status-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  color: var(--plan-text-soft);
-  font-size: 14px;
-}
-
-.status-row strong {
-  color: var(--plan-text);
-  font-size: 16px;
-}
-
-.empty-state {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
-  margin-top: 16px;
-  padding: 28px 24px;
-}
-
-.empty-kicker {
-  color: var(--plan-text-faint);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.empty-title {
-  margin: 0;
-  color: var(--plan-text);
-  font-size: 28px;
-  letter-spacing: -0.04em;
-}
-
-.empty-desc {
-  max-width: 480px;
-  margin: 0;
-  color: var(--plan-text-soft);
-  font-size: 14px;
   line-height: 1.7;
 }
 
-@media (max-width: 1080px) {
-  .main-content {
-    padding: 94px 16px 28px;
-  }
+.composer-target {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
 
-  .container {
-    padding: 0 16px;
-  }
+.composer-target__label {
+  color: var(--community-text-faint);
+  font-size: 12px;
+}
 
-  .stats-strip,
+.composer-target__value {
+  border: 1px solid var(--community-accent-line);
+  background: var(--community-accent-soft);
+  color: var(--community-accent);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.composer-circle-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.composer-circle {
+  border: 1px solid var(--community-border);
+  background: transparent;
+  color: var(--community-text-soft);
+  border-radius: 999px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.composer-circle:hover {
+  border-color: var(--community-border-strong);
+}
+
+.composer-circle.active {
+  border-color: var(--community-accent-line);
+  background: var(--community-accent-soft);
+  color: var(--community-text);
+  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.04);
+}
+
+.composer-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 148px;
+  border: 1px solid var(--community-border);
+  border-radius: 16px;
+  background: var(--community-surface-strong);
+  color: var(--community-text);
+  padding: 16px 18px;
+  line-height: 1.8;
+  outline: none;
+}
+
+.upload-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 12px;
+}
+
+.upload-card {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: var(--community-surface-muted);
+}
+
+.upload-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  cursor: pointer;
+}
+
+.composer-footer {
+  margin-top: 16px;
+  gap: 14px;
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.composer-helper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn,
+.text-action,
+.author-name {
+  font: inherit;
+}
+
+.primary-btn,
+.secondary-btn,
+.ghost-btn {
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.primary-btn {
+  border: 0;
+  background: var(--community-accent);
+  color: #fff;
+}
+
+.primary-btn:hover {
+  background: var(--community-accent-deep);
+}
+
+.primary-btn--strong {
+  min-width: 132px;
+  min-height: 48px;
+  font-weight: 700;
+}
+
+.secondary-btn {
+  border: 1px solid var(--community-border-strong);
+  background: var(--community-surface-strong);
+  color: var(--community-text);
+}
+
+.secondary-btn:hover {
+  border-color: var(--community-accent-line);
+  color: var(--community-accent);
+}
+
+.ghost-btn {
+  border: 0;
+  background: transparent;
+  color: var(--community-text-faint);
+}
+
+.ghost-btn--danger:hover {
+  color: #ef4444;
+}
+
+.feed-header {
+  padding: 0 4px;
+  gap: 16px;
+}
+
+.feed-header__copy h2 {
+  font-size: 24px;
+}
+
+.feed-panel {
+  padding: 8px 0;
+}
+
+.moment-card {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--community-border);
+}
+
+.moment-card:last-child {
+  border-bottom: 0;
+}
+
+.moment-head {
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.moment-author {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 14px;
+}
+
+.moment-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.moment-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.moment-subline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+.author-name {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--community-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.circle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--community-accent-soft);
+  color: var(--community-accent);
+  font-size: 12px;
+  max-width: min(100%, 220px);
+}
+
+.moment-body {
+  margin: 16px 0 14px;
+  cursor: pointer;
+}
+
+.moment-content {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.9;
+  font-size: 15px;
+}
+
+.moment-media {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+  max-width: 760px;
+}
+
+.moment-media.count-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.moment-media.count-2,
+.moment-media.count-3,
+.moment-media.count-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.moment-media__item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--community-surface-muted);
+  min-height: 188px;
+  max-height: 220px;
+}
+
+.count-1 .moment-media__item {
+  min-height: 280px;
+  max-height: 420px;
+}
+
+.count-3 .moment-media__item:first-child {
+  grid-column: 1 / -1;
+  min-height: 260px;
+  max-height: 300px;
+}
+
+.moment-media__more {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.48);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.moment-footer {
+  justify-content: flex-start;
+  gap: 18px;
+}
+
+.text-action {
+  border: 0;
+  background: transparent;
+  color: var(--community-text-faint);
+  padding: 0;
+  cursor: pointer;
+}
+
+.text-action:hover {
+  color: var(--community-accent);
+}
+
+.feed-loadmore {
+  padding: 18px 20px 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.feed-empty,
+.topic-empty {
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--community-text-faint);
+}
+
+.side-panel {
+  padding: 18px;
+}
+
+.side-panel--light {
+  background: linear-gradient(145deg, var(--community-accent-soft), transparent);
+}
+
+.side-panel--compact {
+  padding-bottom: 8px;
+}
+
+.highlight-list,
+.tips-list,
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.highlight-item,
+.topic-item {
+  width: 100%;
+  border: 1px solid var(--community-border);
+  background: var(--community-surface-strong);
+  color: var(--community-text);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.highlight-item.active {
+  border-color: var(--community-accent-line);
+  background: var(--community-accent-soft);
+}
+
+.highlight-item__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.highlight-item__copy strong,
+.tip-item strong,
+.topic-item strong {
+  font-size: 14px;
+}
+
+.topic-item {
+  display: grid;
+  gap: 6px;
+}
+
+.topic-item span {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1180px) {
+  .community-topbar,
   .workspace {
     grid-template-columns: 1fr;
   }
+}
 
-  .stat-unit {
-    border-right: none;
-    border-bottom: 1px solid var(--plan-line);
+@media (max-width: 900px) {
+  .community-main {
+    padding: 14px 14px 24px;
   }
 
-  .stat-unit:last-child {
-    border-bottom: none;
+  .composer-card__head,
+  .composer-footer,
+  .feed-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .composer-target {
+    align-items: flex-start;
+  }
+
+  .moment-media.count-2,
+  .moment-media.count-3,
+  .moment-media.count-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .count-3 .moment-media__item:first-child {
+    grid-column: auto;
+    min-height: 220px;
+    max-height: 280px;
   }
 }
 
-@media (max-width: 768px) {
-  .plan-hero,
-  .toolbar,
-  .plan-row {
-    grid-template-columns: 1fr;
+@media (max-width: 640px) {
+  .summary-strip,
+  .cta-actions,
+  .composer-actions,
+  .circle-nav {
+    width: 100%;
+  }
+
+  .summary-strip,
+  .cta-actions,
+  .composer-actions {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .plan-hero,
-  .toolbar {
-    align-items: start;
-  }
-
-  .plan-row {
-    gap: 14px;
-  }
-
-  .plan-side {
-    padding-left: 0;
-    border-left: none;
-    border-top: 1px solid var(--plan-line);
-    padding-top: 12px;
+  .moment-author,
+  .moment-head {
+    flex-direction: column;
   }
 }
 </style>

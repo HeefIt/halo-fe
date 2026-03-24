@@ -29,7 +29,7 @@
           :class="{ active: isActive('/study-plan') }"
           @click="navigateTo('/study-plan')"
         >
-          学习计划
+          圈子社区
         </button>
         <button 
           class="nav-item" 
