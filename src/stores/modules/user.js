@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { authApi } from '@/api/modules/auth'
 import { usePracticeStore } from '@/stores/modules/practice'
+import { useCustomerServiceStore } from '@/stores/modules/customerService'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref(JSON.parse(localStorage.getItem('halo_user_info')) || null)
@@ -156,6 +157,7 @@ export const useUserStore = defineStore('user', () => {
 
   const logout = async (showMessage = true) => {
     const practiceStore = usePracticeStore()
+    const customerServiceStore = useCustomerServiceStore()
     try {
       if (token.value) {
         await authApi.logout({})
@@ -166,6 +168,7 @@ export const useUserStore = defineStore('user', () => {
       token.value = ''
       userInfo.value = null
       practiceStore.clearProblemList()
+      customerServiceStore.clearStore()
       localStorage.removeItem('halo_token')
       localStorage.removeItem('halo_user_info')
       if (showMessage) {
