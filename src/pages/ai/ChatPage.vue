@@ -8,80 +8,86 @@
 
       <section class="chatbot-workspace">
         <aside class="sessions-panel" :class="{ collapsed: isSidebarCollapsed }">
-          <div class="panel-header">
-            <button class="new-session-btn" @click="createNewSession">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-              </svg>
-              <span v-if="!isSidebarCollapsed">新对话</span>
-            </button>
-            <button class="toggle-btn" @click="toggleSidebar">
-              <svg v-if="isSidebarCollapsed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6"></polyline>
-              </svg>
-              <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
-
-          <div v-if="!isSidebarCollapsed" class="panel-meta">
-            <span>会话</span>
-            <strong>{{ sessions.length }}</strong>
-          </div>
-
-          <div v-if="!isSidebarCollapsed" class="sessions-list">
-            <div
-              v-for="session in sessions"
-              :key="session.sessionId"
-              class="session-card"
-              :class="{ active: currentSessionId === session.sessionId }"
-              @click="selectChat(session.sessionId)"
-            >
-              <div class="session-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          <div class="sessions-panel__top">
+            <div class="panel-header">
+              <button class="new-session-btn" @click="createNewSession">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-              </div>
-              <div class="session-info">
-                <div class="session-title-row">
-                  <div v-if="!session.editingTitle" class="session-title" @dblclick.stop="startEditingTitle(session)">
-                    {{ getSessionDisplayTitle(session) }}
-                  </div>
-                  <input
-                    v-else
-                    v-model="session.tempTitle"
-                    class="title-input"
-                    autofocus
-                    @blur="finishEditingTitle(session)"
-                    @keyup.enter="finishEditingTitle(session)"
-                    @keyup.esc="cancelEditingTitle(session)"
-                  />
-                  <button
-                    v-if="!session.editingTitle"
-                    class="edit-btn"
-                    title="编辑标题"
-                    @click.stop="startEditingTitle(session)"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-                    </svg>
-                  </button>
-                </div>
-                <div class="session-meta">
-                  <span>{{ formatTime(session.updatedAt) }}</span>
-                  <span>{{ session.messages?.length || 0 }} 条消息</span>
-                </div>
-              </div>
-              <button class="delete-btn" @click.stop="deleteChat(session.sessionId)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <span v-if="!isSidebarCollapsed">新对话</span>
+              </button>
+              <button class="toggle-btn" @click="toggleSidebar">
+                <svg v-if="isSidebarCollapsed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
                 </svg>
               </button>
             </div>
+
+            <div v-if="!isSidebarCollapsed" class="panel-meta">
+              <span>会话</span>
+              <strong>{{ sessions.length }}</strong>
+            </div>
+          </div>
+
+          <div v-if="!isSidebarCollapsed" class="sessions-scroll">
+            <div ref="sessionsListRef" class="sessions-list">
+              <div
+                v-for="session in sessions"
+                :key="session.sessionId"
+                :data-session-id="session.sessionId"
+                class="session-card"
+                :class="{ active: currentSessionId === session.sessionId }"
+                @click="selectChat(session.sessionId)"
+              >
+                <div class="session-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                </div>
+                <div class="session-info">
+                  <div class="session-title-row">
+                    <div v-if="!session.editingTitle" class="session-title" @dblclick.stop="startEditingTitle(session)">
+                      {{ getSessionDisplayTitle(session) }}
+                    </div>
+                    <input
+                      v-else
+                      v-model="session.tempTitle"
+                      class="title-input"
+                      autofocus
+                      @blur="finishEditingTitle(session)"
+                      @keyup.enter="finishEditingTitle(session)"
+                      @keyup.esc="cancelEditingTitle(session)"
+                    />
+                    <button
+                      v-if="!session.editingTitle"
+                      class="edit-btn"
+                      title="编辑标题"
+                      @click.stop="startEditingTitle(session)"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="session-meta">
+                    <span>{{ formatTime(session.updatedAt) }}</span>
+                    <span>{{ session.messages?.length || 0 }} 条消息</span>
+                  </div>
+                </div>
+                <button class="delete-btn" @click.stop="deleteChat(session.sessionId)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="sessions-fade-mask" aria-hidden="true"></div>
           </div>
         </aside>
 
@@ -229,6 +235,7 @@ const inputMessage = ref('')
 const isLoading = ref(false)
 const messagesContainer = ref(null)
 const textareaRef = ref(null)
+const sessionsListRef = ref(null)
 const isStreamingMode = ref(true)
 const isUserNearBottom = ref(true)
 const sessions = ref([])
@@ -290,12 +297,44 @@ const isRoleSession = (session) => {
   return sessionMeta?.sceneType === 'ROLE_CHAT'
 }
 
+const getSessionActivityTime = (session) => {
+  const updatedAt = session?.updatedAt ? new Date(session.updatedAt).getTime() : 0
+  const createdAt = session?.createdAt ? new Date(session.createdAt).getTime() : 0
+  const latestMessageTime = Array.isArray(session?.messages) && session.messages.length > 0
+    ? new Date(session.messages[session.messages.length - 1]?.timestamp || 0).getTime()
+    : 0
+
+  const timestamp = Math.max(updatedAt || 0, createdAt || 0, latestMessageTime || 0)
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
+const sortSessionsByRecent = () => {
+  sessions.value = [...sessions.value].sort((left, right) => {
+    const activityDiff = getSessionActivityTime(right) - getSessionActivityTime(left)
+    if (activityDiff !== 0) {
+      return activityDiff
+    }
+
+    return (right?.sessionId || '').localeCompare(left?.sessionId || '')
+  })
+}
+
+const syncCurrentSessionState = ({ scrollIntoView = false } = {}) => {
+  syncCurrentSessionToList()
+  sortSessionsByRecent()
+
+  if (scrollIntoView) {
+    scrollActiveSessionIntoView()
+  }
+}
+
 const loadSessions = async () => {
   try {
     const response = await aiApi.getUserSessions(userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value = (response.data || []).map(normalizeSession)
       sessions.value.forEach(session => session.messages.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0)))
+      sortSessionsByRecent()
     }
   } catch (error) {
     console.error('加载会话列表失败:', error)
@@ -308,6 +347,7 @@ const createNewSession = async () => {
     const response = await aiApi.createSession('', userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value.unshift(normalizeSession(response.data))
+      sortSessionsByRecent()
       await selectSession(response.data.sessionId)
       ElMessage.success('新会话创建成功')
     }
@@ -332,7 +372,9 @@ const selectSession = async (sessionId) => {
       currentSession.value = normalizeSession(response.data)
       const sessionIndex = sessions.value.findIndex(s => s.sessionId === sessionId)
       if (sessionIndex !== -1) Object.assign(sessions.value[sessionIndex], normalizeSession(response.data))
+      sortSessionsByRecent()
       await nextTick()
+      scrollActiveSessionIntoView()
       scrollToBottom({ force: true })
     }
   } catch (error) {
@@ -443,6 +485,7 @@ const autoGenerateSessionTitle = async (sessionId, question) => {
       if (currentSessionId.value === sessionId && currentSession.value?.titleSource !== 'MANUAL') {
         Object.assign(currentSession.value, updatedSession)
       }
+      sortSessionsByRecent()
     }
   } catch (error) {
     console.error('自动生成会话标题失败:', error)
@@ -469,11 +512,14 @@ const handleSendMessage = async () => {
 
   if (!currentSession.value.messages) currentSession.value.messages = []
   currentSession.value.messages.push(userMessage)
+  currentSession.value.updatedAt = userMessage.timestamp
+
+  syncCurrentSessionState({ scrollIntoView: true })
 
   if (shouldGenerateTitle) {
     currentSession.value.title = buildDraftTitle(message)
     currentSession.value.titleSource = 'AUTO'
-    syncCurrentSessionToList()
+    syncCurrentSessionState({ scrollIntoView: true })
   }
 
   inputMessage.value = ''
@@ -489,7 +535,7 @@ const handleSendMessage = async () => {
         timestamp: new Date().toISOString()
       })
       currentSession.value.updatedAt = new Date().toISOString()
-      syncCurrentSessionToList()
+      syncCurrentSessionState({ scrollIntoView: true })
     }
     if (shouldGenerateTitle) autoGenerateSessionTitle(currentSessionId.value, message)
   } catch (error) {
@@ -543,6 +589,8 @@ const sendMessageToAI = async (sessionId, content) => {
             const lastMessage = currentSession.value.messages[currentSession.value.messages.length - 1]
             if (lastMessage.role === 'assistant') lastMessage.content = fullResponse
           }
+          currentSession.value.updatedAt = new Date().toISOString()
+          syncCurrentSessionState({ scrollIntoView: true })
           resolve(fullResponse)
         }
       ).catch(error => {
@@ -596,6 +644,7 @@ const finishEditingTitle = async (session) => {
         const updatedSession = normalizeSession(response.data)
         Object.assign(session, updatedSession)
         if (currentSessionId.value === session.sessionId && currentSession.value) Object.assign(currentSession.value, updatedSession)
+        sortSessionsByRecent()
         ElMessage.success('标题更新成功')
       }
     } catch (error) {
@@ -638,6 +687,26 @@ const scrollMessagesToBottom = () => {
   scrollToBottom({ force: true, behavior: 'smooth' })
 }
 
+const scrollActiveSessionIntoView = () => {
+  nextTick(() => {
+    const listElement = sessionsListRef.value
+    if (!listElement || !currentSessionId.value) {
+      return
+    }
+
+    const activeElement = listElement.querySelector(`[data-session-id="${currentSessionId.value}"]`)
+    if (!activeElement) {
+      return
+    }
+
+    activeElement.scrollIntoView({
+      block: 'nearest',
+      inline: 'nearest',
+      behavior: 'smooth'
+    })
+  })
+}
+
 onMounted(async () => {
   if (!userStore.userInfo?.id) {
     ElMessage.error('请先登录')
@@ -668,6 +737,10 @@ watch(() => route.query.sessionId, async (newSessionId) => {
   }
 
   await selectSession(newSessionId)
+})
+
+watch(currentSessionId, () => {
+  scrollActiveSessionIntoView()
 })
 
 watch([currentSessionId, sessions], () => {
@@ -708,19 +781,34 @@ watch([currentSessionId, sessions], () => {
   --ai-chat-bg: rgba(9, 17, 29, 0.72);
 }
 
+.chatbot-page :deep(.ai-tool-header) {
+  gap: 8px;
+  padding: 10px 12px 8px;
+}
+
+.chatbot-page :deep(.ai-tool-header__main) {
+  gap: 10px;
+}
+
+.chatbot-page :deep(.ai-tool-nav) {
+  gap: 5px;
+}
+
 .chatbot-main {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 10px 16px 12px;
+  padding: 8px 14px 10px;
   height: 100dvh;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
+  gap: 8px;
 }
 
 .chatbot-workspace {
   display: grid;
-  grid-template-columns: 296px minmax(0, 1fr);
+  grid-template-columns: 280px minmax(0, 1fr);
+  height: 100%;
   min-height: 0;
   border: 1px solid var(--ai-border);
   border-radius: 16px;
@@ -731,9 +819,23 @@ watch([currentSessionId, sessions], () => {
 .sessions-panel {
   display: flex;
   flex-direction: column;
+  min-height: 0;
   background: var(--ai-surface-alt);
   border-right: 1px solid var(--ai-border);
+  overflow: hidden;
   transition: width 0.2s ease, transform 0.2s ease;
+}
+
+.sessions-panel__top {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, var(--ai-surface-alt) 0%, rgba(255, 255, 255, 0) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.chatbot-page.is-dark .sessions-panel__top {
+  background: linear-gradient(180deg, rgba(13, 21, 34, 0.98) 0%, rgba(13, 21, 34, 0.78) 72%, rgba(13, 21, 34, 0) 100%);
 }
 
 .sessions-panel.collapsed {
@@ -749,13 +851,13 @@ watch([currentSessionId, sessions], () => {
 }
 
 .panel-header {
-  padding: 16px;
+  padding: 14px 14px 12px;
   border-bottom: 1px solid var(--ai-border);
 }
 
 .panel-meta {
   justify-content: space-between;
-  padding: 14px 16px 10px;
+  padding: 12px 14px 8px;
   color: var(--ai-text-faint);
   font-size: 12px;
   font-weight: 600;
@@ -825,9 +927,33 @@ watch([currentSessionId, sessions], () => {
   min-height: 0;
 }
 
+.sessions-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .sessions-list {
-  flex: 1;
-  padding: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  padding: 8px 8px 18px;
+  overscroll-behavior: contain;
+}
+
+.sessions-fade-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.96) 100%);
+}
+
+.chatbot-page.is-dark .sessions-fade-mask {
+  background: linear-gradient(180deg, rgba(13, 21, 34, 0) 0%, rgba(13, 21, 34, 0.96) 100%);
 }
 
 .sessions-list::-webkit-scrollbar,
@@ -845,6 +971,7 @@ watch([currentSessionId, sessions], () => {
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  min-width: 0;
   padding: 12px;
   border: 1px solid transparent;
   border-radius: 12px;
@@ -965,6 +1092,7 @@ watch([currentSessionId, sessions], () => {
   min-height: 0;
   min-width: 0;
   background: var(--ai-chat-bg);
+  overflow: hidden;
 }
 
 .role-banner {
@@ -972,7 +1100,7 @@ watch([currentSessionId, sessions], () => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--ai-border);
   background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
 }
@@ -1051,7 +1179,7 @@ watch([currentSessionId, sessions], () => {
 .messages-area {
   flex: 1;
   min-height: 0;
-  padding: 28px 28px 18px;
+  padding: 18px 20px 10px;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
 }
@@ -1143,12 +1271,12 @@ watch([currentSessionId, sessions], () => {
 .message {
   display: flex;
   gap: 14px;
-  max-width: 920px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
 .message + .message {
-  margin-top: 22px;
+  margin-top: 16px;
 }
 
 .message.user {
@@ -1175,7 +1303,7 @@ watch([currentSessionId, sessions], () => {
 }
 
 .message-body {
-  max-width: min(72%, 720px);
+  max-width: min(78%, 860px);
 }
 
 .message.user .message-body {
@@ -1250,7 +1378,7 @@ watch([currentSessionId, sessions], () => {
 .scroll-bottom-btn {
   position: absolute;
   right: 24px;
-  bottom: 112px;
+  bottom: 96px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1272,13 +1400,13 @@ watch([currentSessionId, sessions], () => {
 }
 
 .input-area {
-  padding: 16px 24px 20px;
+  padding: 10px 18px 12px;
   border-top: 1px solid var(--ai-border);
   background: var(--ai-surface);
 }
 
 .input-wrapper {
-  max-width: 920px;
+  max-width: 1080px;
   margin: 0 auto;
   border: 1px solid var(--ai-border);
   border-radius: 14px;
@@ -1292,8 +1420,8 @@ watch([currentSessionId, sessions], () => {
 
 .input-wrapper textarea {
   width: 100%;
-  min-height: 58px;
-  padding: 16px 16px 10px;
+  min-height: 52px;
+  padding: 14px 16px 8px;
   border: none;
   background: transparent;
   color: var(--ai-text);
@@ -1385,13 +1513,13 @@ watch([currentSessionId, sessions], () => {
 }
 
 .disclaimer {
-  margin-top: 10px;
+  margin-top: 6px;
   text-align: center;
 }
 
 @media (max-width: 1024px) {
   .chatbot-workspace {
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: 248px minmax(0, 1fr);
   }
 
   .message-body {
@@ -1424,7 +1552,7 @@ watch([currentSessionId, sessions], () => {
   }
 
   .messages-area {
-    padding: 20px 14px 14px;
+    padding: 16px 12px 10px;
   }
 
   .role-banner {
@@ -1434,7 +1562,7 @@ watch([currentSessionId, sessions], () => {
 
   .scroll-bottom-btn {
     right: 14px;
-    bottom: 92px;
+    bottom: 86px;
   }
 
   .message-body {
@@ -1442,7 +1570,7 @@ watch([currentSessionId, sessions], () => {
   }
 
   .input-area {
-    padding: 12px;
+    padding: 10px 12px;
   }
 
   .input-actions {
