@@ -144,12 +144,14 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { getRankList } from '@/api/modules/question/subject.js'
+import { getRankDetail, getRankList } from '@/api/modules/question/subject.js'
 import { useThemeStore } from '@/stores/modules/theme'
+import { useUserStore } from '@/stores/modules/user'
 import Header from '@/layouts/AppHeader.vue'
 
 const loading = ref(false)
 const themeStore = useThemeStore()
+const userStore = useUserStore()
 const timeRange = ref('today')
 const rankingType = ref('problemCount')
 const rankings = ref([])
@@ -213,16 +215,34 @@ const getAvatarColor = (index) => {
   return colors[index % colors.length]
 }
 
+const normalizeRankings = (list = []) => {
+  return list.map((item) => {
+    const userId = item.userId ?? item.id ?? null
+    return {
+      ...item,
+      userId,
+      isMe: userStore.userId && String(userId) === String(userStore.userId)
+    }
+  })
+}
+
 const fetchRankings = async () => {
   loading.value = true
   try {
+    if (userStore.userId) {
+      const response = await getRankDetail(timeRange.value, rankingType.value, userStore.userId)
+      rankings.value = normalizeRankings(response.data?.rankings || [])
+      const currentUserRank = Number(response.data?.currentUserRank || 0)
+      myRank.value = currentUserRank > 0 ? currentUserRank : null
+      return
+    }
+
     const response = await getRankList(timeRange.value, rankingType.value)
-    rankings.value = response.data || []
-    const myIndex = rankings.value.findIndex(r => r.isMe)
-    myRank.value = myIndex !== -1 ? myIndex + 1 : null
+    rankings.value = normalizeRankings(response.data || [])
+    myRank.value = null
   } catch (error) {
     console.error('获取排行榜数据失败:', error)
-    rankings.value = [
+    rankings.value = normalizeRankings([
       { userId: 1, userName: '张三', value: 156, trend: 'up', isMe: false },
       { userId: 2, userName: '李四', value: 142, trend: 'down', isMe: false },
       { userId: 3, userName: '王五', value: 138, trend: 'up', isMe: false },
@@ -233,8 +253,9 @@ const fetchRankings = async () => {
       { userId: 8, userName: '小芳', value: 98, trend: 'same', isMe: false },
       { userId: 9, userName: '小强', value: 92, trend: 'up', isMe: false },
       { userId: 10, userName: '小丽', value: 88, trend: 'down', isMe: false }
-    ]
-    myRank.value = 5
+    ])
+    const myIndex = rankings.value.findIndex(r => r.isMe)
+    myRank.value = myIndex !== -1 ? myIndex + 1 : null
   } finally {
     loading.value = false
   }
@@ -243,6 +264,13 @@ const fetchRankings = async () => {
 watch([timeRange, rankingType], () => {
   fetchRankings()
 })
+
+watch(
+  () => userStore.userId,
+  () => {
+    fetchRankings()
+  }
+)
 
 onMounted(() => {
   fetchRankings()

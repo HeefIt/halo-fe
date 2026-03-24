@@ -9,6 +9,7 @@ export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('halo_token') || '')
 
   const isLoggedIn = computed(() => !!token.value)
+  const userId = computed(() => userInfo.value?.id || null)
   const userName = computed(() => userInfo.value?.nickName || userInfo.value?.userName || '')
   const userAvatar = computed(() => userInfo.value?.avatar || '')
   const isAdmin = computed(() => userInfo.value?.roleKeys?.includes('admin_user') || false)
@@ -214,6 +215,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     token,
     isLoggedIn,
+    userId,
     isAdmin,
     userName,
     userAvatar,

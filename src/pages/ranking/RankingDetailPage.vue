@@ -52,7 +52,7 @@
                 v-for="(item, index) in rankings"
                 :key="item.userId || index"
                 class="ranking-row"
-                :class="{ 'is-current': item.userName === userStore.userName }"
+                :class="{ 'is-current': item.isCurrentUser }"
               >
                 <div class="rank-cell">
                   <span class="rank-number" :class="{ top: index < 3 }">#{{ index + 1 }}</span>
@@ -64,7 +64,7 @@
                   </div>
                   <div class="user-copy">
                     <strong class="user-name">{{ item.userName }}</strong>
-                    <span class="user-mark" v-if="item.userName === userStore.userName">当前用户</span>
+                    <span class="user-mark" v-if="item.isCurrentUser">当前用户</span>
                   </div>
                 </div>
 
@@ -135,7 +135,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
 import { useThemeStore } from '@/stores/modules/theme'
-import { getRankDetail } from '@/api/modules/question/subject.js'
+import { getRankDetail, getRankList } from '@/api/modules/question/subject.js'
 import Header from '@/layouts/AppHeader.vue'
 
 const route = useRoute()
@@ -176,7 +176,7 @@ const valueLabel = computed(() => {
   return typeMap[type]
 })
 
-const userRank = ref(5)
+const userRank = ref(null)
 const rankingValue = ref(0)
 
 const goBack = () => {
@@ -196,6 +196,17 @@ const getTrendText = (trend) => {
   return map[trend] || '持平'
 }
 
+const normalizeRankings = (list = []) => {
+  return list.map((item) => {
+    const userId = item.userId ?? item.id ?? null
+    return {
+      ...item,
+      userId,
+      isCurrentUser: userStore.userId && String(userId) === String(userStore.userId)
+    }
+  })
+}
+
 const fetchRankingDetail = async () => {
   loading.value = true
 
@@ -204,14 +215,25 @@ const fetchRankingDetail = async () => {
     const type = route.query.type || 'problemCount'
     const userId = userStore.userId
 
-    const response = await getRankDetail(time, type, userId)
-    const data = response.data
+    if (!userId) {
+      const response = await getRankList(time, type)
+      rankings.value = normalizeRankings(response.data || [])
+      userRank.value = null
+      rankingValue.value = 0
+      return
+    }
 
-    rankings.value = data.rankings
-    userRank.value = data.currentUserRank
-    rankingValue.value = data.currentUserValue
+    const response = await getRankDetail(time, type, userId)
+    const data = response.data || {}
+
+    rankings.value = normalizeRankings(data.rankings || [])
+    userRank.value = Number(data.currentUserRank || 0) > 0 ? Number(data.currentUserRank) : null
+    rankingValue.value = Number(data.currentUserValue || 0)
   } catch (error) {
     console.error('获取排行榜详情失败:', error)
+    rankings.value = []
+    userRank.value = null
+    rankingValue.value = 0
   } finally {
     loading.value = false
   }
