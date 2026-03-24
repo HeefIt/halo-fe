@@ -203,7 +203,7 @@ const loadProfile = async () => {
 }
 
 const goToMoment = (id) => {
-  router.push(`/study-plan/${id}`)
+  router.push(`/community/${id}`)
 }
 
 const formatDate = (value) => {

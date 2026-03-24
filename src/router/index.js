@@ -68,15 +68,15 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/study-plan',
-    name: 'StudyPlan',
-    component: () => import('@/pages/study-plan/StudyPlanPage.vue'),
+    path: '/community',
+    name: 'Community',
+    component: () => import('@/pages/community/CommunityPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/study-plan/:id',
-    name: 'StudyPlanDetail',
-    component: () => import('@/pages/study-plan/StudyPlanDetailPage.vue'),
+    path: '/community/:id',
+    name: 'CommunityDetail',
+    component: () => import('@/pages/community/CommunityDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {

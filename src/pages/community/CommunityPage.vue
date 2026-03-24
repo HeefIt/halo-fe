@@ -668,7 +668,7 @@ const handleDeleteMoment = async (moment) => {
 }
 
 const goToDetail = (id) => {
-  router.push(`/study-plan/${id}`)
+  router.push(`/community/${id}`)
 }
 
 const goToUser = (userId) => {

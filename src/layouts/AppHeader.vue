@@ -26,8 +26,8 @@
         </button>
         <button 
           class="nav-item" 
-          :class="{ active: isActive('/study-plan') }"
-          @click="navigateTo('/study-plan')"
+          :class="{ active: isActive('/community') }"
+          @click="navigateTo('/community')"
         >
           圈子社区
         </button>

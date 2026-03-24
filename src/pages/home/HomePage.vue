@@ -19,7 +19,7 @@
               <button class="action-primary" @click="goTo('/home/questions')">
                 进入题库
               </button>
-              <button class="action-secondary" @click="goTo('/study-plan')">
+              <button class="action-secondary" @click="goTo('/community')">
                 进入圈子社区
               </button>
             </div>
@@ -471,7 +471,7 @@ const supportEntries = [
   {
     title: '圈子社区',
     desc: '看看大家今天在吐槽什么、分享什么，也可以自己发动态参与讨论。',
-    path: '/study-plan',
+    path: '/community',
     tag: '交流'
   },
   {

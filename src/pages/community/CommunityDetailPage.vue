@@ -6,7 +6,7 @@
       <div class="detail-layout">
         <section class="detail-column">
           <div class="back-row">
-            <button type="button" class="back-btn" @click="router.push('/study-plan')">返回圈子社区</button>
+            <button type="button" class="back-btn" @click="router.push('/community')">返回圈子社区</button>
           </div>
 
           <article v-if="momentDetail" class="moment-shell">
@@ -294,7 +294,7 @@ const getCircleVisualText = (icon, circleName) => {
 const loadMomentDetail = async () => {
   if (!momentId.value) {
     ElMessage.error('动态 ID 不存在')
-    router.push('/study-plan')
+    router.push('/community')
     return
   }
 
@@ -453,7 +453,7 @@ const handleDeleteMoment = async () => {
     }
 
     ElMessage.success('动态已删除')
-    router.push('/study-plan')
+    router.push('/community')
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除动态失败:', error)
