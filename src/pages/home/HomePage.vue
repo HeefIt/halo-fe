@@ -7,101 +7,90 @@
 
     <main class="main">
       <div class="container">
-        <section class="page-lead animate-slide-up">
-          <div class="lead-main">
-            <span class="lead-kicker">Halo Study Desk</span>
-            <p class="lead-prefix">{{ greetingPrefixText }}</p>
-            <h1 class="lead-title">
+        <section class="hero animate-slide-up">
+          <div class="hero-main">
+            <div class="hero-kicker-row">
+              <span class="hero-kicker">Halo Study Desk</span>
+              <span class="hero-date">{{ currentMonth }} {{ currentDay }} 日 · {{ currentWeekday }}</span>
+            </div>
+
+            <p class="hero-prefix">{{ greetingPrefixText }}</p>
+            <h1 class="hero-title">
               {{ greetingText }}<span>{{ displayName }}</span>
             </h1>
+            <p class="hero-copy">
+              今天不用把所有事情都塞进同一个页面。先从最顺手的入口开始，题库、圈子、AI 和博客都在这里，
+              你可以认真推进，也可以先轻松热一下状态。
+            </p>
 
-            <div class="lead-actions">
-              <button class="action-primary" @click="goTo('/home/questions')">
-                进入题库
+            <div class="hero-actions">
+              <button class="btn-primary" @click="goTo('/home/questions')">
+                开始今天的练习
               </button>
-              <button class="action-secondary" @click="goTo('/community')">
-                进入圈子社区
+              <button class="btn-secondary" @click="goTo('/community')">
+                去圈子逛逛
+              </button>
+              <button class="btn-tertiary" @click="goTo('/ai/role-chat')">
+                打开角色对话
               </button>
             </div>
 
             <button
               v-if="activeNotice"
-              class="notice-entry"
+              class="notice-banner"
               type="button"
               @click="showNoticeDialog = true"
             >
-              <span class="notice-entry__icon">公告</span>
-              <span class="notice-entry__title">{{ activeNotice.title }}</span>
-              <span class="notice-entry__arrow">查看</span>
+              <span class="notice-banner__badge">1 条公告</span>
+              <span class="notice-banner__title">{{ activeNotice.title }}</span>
+              <span class="notice-banner__action">查看详情</span>
             </button>
 
-            <div class="signal-row">
+            <div class="stats-strip">
               <div
                 v-for="signal in leadSignals"
                 :key="signal.label"
-                class="signal-item"
+                class="stats-strip__item"
               >
-                <span class="signal-label">{{ signal.label }}</span>
-                <strong class="signal-value">{{ signal.value }}</strong>
-                <p class="signal-note">{{ signal.note }}</p>
+                <span class="stats-strip__label">{{ signal.label }}</span>
+                <strong class="stats-strip__value">{{ signal.value }}</strong>
+                <p class="stats-strip__note">{{ signal.note }}</p>
               </div>
             </div>
           </div>
 
-          <aside class="lead-rail">
-            <div class="rail-head">
-              <span class="rail-kicker">Today</span>
-              <div class="rail-date">
-                <strong>{{ currentMonth }} {{ currentDay }} 日</strong>
-                <span>{{ currentWeekday }}</span>
+          <aside class="hero-side">
+            <section class="profile-card">
+              <div class="profile-card__avatar">
+                <img
+                  v-if="userStore.userAvatar"
+                  :src="userStore.userAvatar"
+                  alt="用户头像"
+                  class="profile-card__avatar-image"
+                />
+                <span v-else>{{ displayInitial }}</span>
               </div>
-            </div>
-
-            <div class="rail-body">
-              <div class="rail-row">
-                <span>刷题数</span>
-                <strong>{{ dailyStats.problemCount }}</strong>
-                <p>目标 {{ defaultProblemGoal }} 题，优先保证连续性。</p>
+              <div class="profile-card__main">
+                <span class="profile-card__eyebrow">今日状态</span>
+                <strong>{{ displayName }}</strong>
+                <p>{{ profileSummary }}</p>
               </div>
-              <div class="rail-row">
-                <span>学习时长</span>
-                <strong>{{ formatTime(dailyStats.totalTime) }}</strong>
-                <p>以 60 分钟为一个完整练习单位。</p>
-              </div>
-              <div class="rail-row">
-                <span>正确率</span>
-                <strong>{{ dailyStats.accuracy }}%</strong>
-                <p>{{ accuracyStatus }}</p>
-              </div>
-            </div>
+            </section>
 
-            <div class="rail-note">
-              <span>今日判断</span>
-              <p>{{ focusInsight.desc }}</p>
-            </div>
-          </aside>
-        </section>
-
-        <section class="priority-zone animate-slide-up" style="animation-delay: 80ms">
-          <div class="section-heading">
-            <div>
-              <span class="section-kicker">Priority</span>
-              <h2 class="section-title">当前推进面板</h2>
-            </div>
-            <span class="section-tag">{{ nextActionTag }}</span>
-          </div>
-
-          <div class="priority-layout">
-            <article class="priority-main">
-              <div class="priority-copy">
-                <span class="priority-mark">正在推进</span>
-                <h3>{{ nextActionTitle }}</h3>
-                <p>{{ nextActionDesc }}</p>
+            <section class="focus-card">
+              <div class="focus-card__head">
+                <div>
+                  <span class="focus-card__eyebrow">Today Focus</span>
+                  <h2>{{ nextActionTitle }}</h2>
+                </div>
+                <span class="focus-card__tag">{{ nextActionTag }}</span>
               </div>
 
-              <div class="progress-board">
-                <div class="progress-row">
-                  <div class="progress-meta">
+              <p class="focus-card__desc">{{ nextActionDesc }}</p>
+
+              <div class="progress-list">
+                <div class="progress-item">
+                  <div class="progress-item__meta">
                     <span>练习进度</span>
                     <strong>{{ problemProgress }}%</strong>
                   </div>
@@ -110,135 +99,159 @@
                   </div>
                 </div>
 
-                <div class="progress-row">
-                  <div class="progress-meta">
+                <div class="progress-item">
+                  <div class="progress-item__meta">
                     <span>专注时长</span>
                     <strong>{{ studyProgress }}%</strong>
                   </div>
-                  <div class="progress-track progress-track-neutral">
-                    <span class="progress-fill progress-fill-neutral" :style="{ width: `${studyProgress}%` }"></span>
+                  <div class="progress-track progress-track--soft">
+                    <span class="progress-fill progress-fill--soft" :style="{ width: `${studyProgress}%` }"></span>
                   </div>
                 </div>
               </div>
 
-              <div class="priority-actions">
-                <button class="action-primary" @click="goTo('/home/questions')">
-                  继续练题
-                </button>
-                <button class="action-secondary" @click="goTo('/practice-history')">
-                  查看练习记录
-                </button>
+              <div class="focus-card__notes">
+                <div class="focus-note">
+                  <span>{{ focusInsight.title }}</span>
+                  <p>{{ focusInsight.desc }}</p>
+                </div>
+                <div class="focus-note">
+                  <span>{{ rhythmInsight.title }}</span>
+                  <p>{{ rhythmInsight.desc }}</p>
+                </div>
               </div>
-            </article>
-
-            <aside class="priority-side">
-              <div class="insight-block">
-                <span class="insight-label">当前建议</span>
-                <strong>{{ focusInsight.title }}</strong>
-                <p>{{ focusInsight.desc }}</p>
-              </div>
-
-              <div class="insight-block">
-                <span class="insight-label">节奏提醒</span>
-                <strong>{{ rhythmInsight.title }}</strong>
-                <p>{{ rhythmInsight.desc }}</p>
-              </div>
-            </aside>
-          </div>
+            </section>
+          </aside>
         </section>
 
-        <section class="workflow-zone animate-slide-up" style="animation-delay: 160ms">
-          <div class="section-heading section-heading-compact">
+        <section class="entry-zone animate-slide-up" style="animation-delay: 80ms">
+          <div class="section-heading">
             <div>
-              <span class="section-kicker">Workflow</span>
-              <h2 class="section-title">常用工作流</h2>
+              <span class="section-kicker">Main Entry</span>
+              <h2 class="section-title">今天可以从这里开始</h2>
             </div>
+            <p class="section-copy">把最常用的路径收成更清楚的四个入口，减少来回切页的成本。</p>
           </div>
 
-          <div class="workflow-layout">
-            <article class="workflow-primary">
-              <span class="workflow-tag">主路径</span>
-              <h3>题库练习</h3>
-
-              <div class="workflow-facts">
-                <div class="workflow-fact">
-                  <span>今日目标</span>
-                  <strong>{{ defaultProblemGoal }} 题</strong>
-                </div>
-                <div class="workflow-fact">
-                  <span>建议时长</span>
-                  <strong>60 分钟</strong>
-                </div>
-                <div class="workflow-fact">
-                  <span>当前状态</span>
-                  <strong>{{ dailyStats.problemCount > 0 ? '已开始' : '待开始' }}</strong>
-                </div>
-              </div>
-
-              <button class="action-primary" @click="goTo('/home/questions')">
-                进入题库练习
-              </button>
-            </article>
-
-            <div class="workflow-secondary">
-              <button
-                v-for="item in supportEntries"
-                :key="item.title"
-                class="workflow-item"
-                @click="goTo(item.path)"
-              >
-                <div class="workflow-item-head">
-                  <span class="workflow-item-tag">{{ item.tag }}</span>
-                  <span class="workflow-item-arrow">→</span>
-                </div>
-                <strong>{{ item.title }}</strong>
-                <p>{{ item.desc }}</p>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <section class="utility-zone animate-slide-up" style="animation-delay: 240ms">
-          <div class="section-heading section-heading-compact">
-            <div>
-              <span class="section-kicker">Utility</span>
-              <h2 class="section-title">辅助工具</h2>
-            </div>
-          </div>
-
-          <div class="utility-layout">
+          <div class="entry-grid">
             <button
-              class="utility-featured"
-              @click="goTo(featuredAiTool.path)"
+              v-for="entry in primaryEntries"
+              :key="entry.title"
+              class="entry-card"
+              :class="[`entry-card--${entry.tone}`, { 'entry-card--wide': entry.featured }]"
+              @click="goTo(entry.path)"
             >
-              <div class="utility-featured__head">
-                <div class="utility-featured__icon" :class="`is-${featuredAiTool.tone}`">
-                  {{ featuredAiTool.icon }}
-                </div>
-                <div class="utility-featured__meta">
-                  <span class="utility-row-badge">{{ featuredAiTool.badge }}</span>
-                  <span class="utility-featured__arrow">进入</span>
+              <div class="entry-card__head">
+                <span class="entry-card__tag">{{ entry.tag }}</span>
+                <span class="entry-card__arrow">进入</span>
+              </div>
+              <strong class="entry-card__title">{{ entry.title }}</strong>
+              <p class="entry-card__desc">{{ entry.desc }}</p>
+              <div class="entry-card__meta">
+                <span>{{ entry.meta }}</span>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <section class="discovery-zone animate-slide-up" style="animation-delay: 160ms">
+          <div class="discovery-grid">
+            <article class="community-spotlight">
+              <div class="community-spotlight__head">
+                <span class="section-kicker">Community</span>
+                <button class="text-link" @click="goTo('/community')">
+                  查看圈子
+                </button>
+              </div>
+
+              <h2 class="community-spotlight__title">不是只有刷题，今天也可以去看看大家在聊什么</h2>
+              <p class="community-spotlight__desc">
+                圈子更适合放轻一点的表达和讨论。你可以发动态、吐槽、丢表情包，也可以顺手点进别人主页，
+                看看最近谁在分享心得、谁又在为一道题吵起来。
+              </p>
+
+              <div class="community-spotlight__chips">
+                <span v-for="chip in communityChips" :key="chip">{{ chip }}</span>
+              </div>
+
+              <div class="community-spotlight__list">
+                <div
+                  v-for="item in communityHighlights"
+                  :key="item.title"
+                  class="community-spotlight__item"
+                >
+                  <strong>{{ item.title }}</strong>
+                  <p>{{ item.desc }}</p>
                 </div>
               </div>
-              <strong class="utility-featured__title">{{ featuredAiTool.title }}</strong>
-            </button>
+            </article>
 
-            <div class="utility-list">
-              <button
-                v-for="tool in secondaryAiTools"
-                :key="tool.title"
-                class="utility-row"
-                @click="goTo(tool.path)"
-              >
-                <div class="utility-row-mark" :class="`is-${tool.tone}`">
-                  <span>{{ tool.icon }}</span>
+            <div class="side-panels">
+              <article class="content-panel content-panel--blog">
+                <div class="content-panel__head">
+                  <span class="section-kicker">Blog</span>
+                  <button class="text-link" @click="goTo('/blog')">
+                    看文章
+                  </button>
                 </div>
-                <div class="utility-row-main">
-                  <span class="utility-row-name">{{ tool.title }}</span>
+                <strong class="content-panel__title">先读一篇文章，也是一种很好的开场</strong>
+                <p class="content-panel__desc">
+                  把题解、经验和一点自己的判断沉淀下来，首页不再只强调效率，也给内容留了更舒服的位置。
+                </p>
+                <div class="content-panel__foot">
+                  <span>适合阅读、整理思路、顺手写点什么</span>
                 </div>
-                <span class="utility-row-badge">{{ tool.badge }}</span>
-              </button>
+              </article>
+
+              <article class="content-panel content-panel--ai">
+                <div class="content-panel__head">
+                  <span class="section-kicker">AI Zone</span>
+                  <button class="text-link" @click="goTo('/ai/customer-service')">
+                    打开客服
+                  </button>
+                </div>
+                <strong class="content-panel__title">需要陪聊、模拟、问路或者拆解问题时，AI 都能接上</strong>
+                <p class="content-panel__desc">
+                  通用对话适合梳理概念，角色对话适合模拟场景，智能客服适合问站内功能，多模态则更适合资料解析。
+                </p>
+                <div class="mini-link-list">
+                  <button
+                    v-for="tool in aiTools"
+                    :key="tool.title"
+                    class="mini-link"
+                    @click="goTo(tool.path)"
+                  >
+                    <span>{{ tool.title }}</span>
+                    <span>{{ tool.badge }}</span>
+                  </button>
+                </div>
+              </article>
             </div>
+          </div>
+        </section>
+
+        <section class="footer-zone animate-slide-up" style="animation-delay: 240ms">
+          <article class="footer-card footer-card--muted">
+            <div class="footer-card__head">
+              <span class="section-kicker">Keep Moving</span>
+              <h2 class="section-title section-title--small">轻量辅助区</h2>
+            </div>
+            <p class="section-copy">
+              不再额外堆很多功能块，只留下几个真的常用的去处，方便你回看、比较和继续推进。
+            </p>
+          </article>
+
+          <div class="footer-links">
+            <button
+              v-for="item in supportEntries"
+              :key="item.title"
+              class="footer-link"
+              @click="goTo(item.path)"
+            >
+              <span class="footer-link__tag">{{ item.tag }}</span>
+              <strong>{{ item.title }}</strong>
+              <p>{{ item.desc }}</p>
+            </button>
           </div>
         </section>
       </div>
@@ -344,6 +357,7 @@ const greetingPresets = [
 ]
 
 const displayName = computed(() => userStore.userName || '学习者')
+const displayInitial = computed(() => displayName.value.charAt(0).toUpperCase())
 
 const greetingPreset = computed(() => {
   const hour = currentTime.value.getHours()
@@ -362,10 +376,7 @@ const greetingPrefixText = computed(() => {
   return prefixes[greetingSeed.value % prefixes.length]
 })
 
-const greetingText = computed(() => {
-  return greetingPreset.value.greeting
-})
-
+const greetingText = computed(() => greetingPreset.value.greeting)
 const currentDay = computed(() => currentTime.value.getDate())
 
 const currentMonth = computed(() => {
@@ -414,7 +425,7 @@ const nextActionDesc = computed(() => {
   if (dailyStats.value.problemCount > 0) {
     return '不要频繁切换入口，保持当前分类和手感，把这一轮完整结束再转到其它模块。'
   }
-  return '题库是今天最合适的切入点。先完成第一轮输入，后面再回到计划和记录做整理。'
+  return '题库是今天最合适的切入点。先完成第一轮输入，后面再回到记录和社区整理自己的节奏。'
 })
 
 const focusInsight = computed(() => {
@@ -449,11 +460,18 @@ const rhythmInsight = computed(() => {
   }
 })
 
+const profileSummary = computed(() => {
+  if (dailyStats.value.problemCount > 0) {
+    return `今天已经开始了 ${dailyStats.value.problemCount} 题，节奏不错，继续往前推就好。`
+  }
+  return '今天还没开始正式练习，可以先找一道熟悉的题，把手感热起来。'
+})
+
 const leadSignals = computed(() => [
   {
     label: '今日题量',
     value: `${dailyStats.value.problemCount} / ${defaultProblemGoal}`,
-    note: dailyStats.value.problemCount > 0 ? '已进入状态，优先保持连续性。' : '今天还没开始，建议先做一轮短练。'
+    note: dailyStats.value.problemCount > 0 ? '已经进入状态，优先保持连续性。' : '还没开始，建议先做一轮短练。'
   },
   {
     label: '学习时长',
@@ -461,22 +479,52 @@ const leadSignals = computed(() => [
     note: '默认按 60 分钟作为一轮完整训练。'
   },
   {
-    label: '当前判断',
+    label: '当前正确率',
     value: `${dailyStats.value.accuracy}%`,
     note: accuracyStatus.value
   }
 ])
 
-const supportEntries = [
+const primaryEntries = computed(() => [
   {
-    title: '圈子社区',
-    desc: '看看大家今天在吐槽什么、分享什么，也可以自己发动态参与讨论。',
-    path: '/community',
-    tag: '交流'
+    title: '题库练习',
+    desc: '今天最适合先推进的主路径，适合热身、刷题和稳定节奏。',
+    path: '/home/questions',
+    tag: '主线',
+    tone: 'question',
+    meta: `${dailyStats.value.problemCount > 0 ? '继续今日进度' : '开启今日首题'}`,
+    featured: true
   },
   {
+    title: '角色对话',
+    desc: '切到女朋友、面试官或其它系统角色，做更有场景感的模拟对话。',
+    path: '/ai/role-chat',
+    tag: 'AI',
+    tone: 'role',
+    meta: '适合陪练、模拟和对练'
+  },
+  {
+    title: '圈子社区',
+    desc: '看看大家在分享什么，也可以自己发动态、评论、接话和围观。',
+    path: '/community',
+    tag: '交流',
+    tone: 'community',
+    meta: '适合表达、吐槽和讨论'
+  },
+  {
+    title: '博客内容',
+    desc: '把题解、心得和判断写下来，也可以先读点别人整理好的内容。',
+    path: '/blog',
+    tag: '内容',
+    tone: 'blog',
+    meta: '适合阅读、沉淀和输出'
+  }
+])
+
+const supportEntries = [
+  {
     title: '排行榜',
-    desc: '观察阶段位置，但不让它替代真正的学习节奏。',
+    desc: '看看阶段位置，但不要让排名替代自己的学习节奏。',
     path: '/ranking',
     tag: '参考'
   },
@@ -485,46 +533,50 @@ const supportEntries = [
     desc: '回看答题轨迹和错题分布，比只看分数更有价值。',
     path: '/practice-history',
     tag: '复盘'
+  },
+  {
+    title: '智能客服',
+    desc: '快速查询站内功能、常见页面和一些使用上的问题。',
+    path: '/ai/customer-service',
+    tag: '支持'
+  }
+]
+
+const communityChips = ['说说动态', '评论互动', '表情包', '用户主页', '轻松讨论']
+
+const communityHighlights = [
+  {
+    title: '轻量表达更容易留下来',
+    desc: '比起正式文章，动态更适合记录一瞬间的想法、吐槽和今天遇到的小问题。'
+  },
+  {
+    title: '讨论关系会自然长出来',
+    desc: '头像、昵称和用户主页让互动更有人味，社区不会像匿名留言板一样飘。'
   }
 ]
 
 const aiTools = [
   {
     title: '通用对话',
-    desc: '用于梳理概念、拆解问题和讨论思路。',
     badge: '基础',
-    path: '/ai/chatbot',
-    tone: 'chat',
-    icon: '◌'
+    path: '/ai/chatbot'
   },
   {
     title: '角色对话',
-    desc: '选择系统角色，进入更稳定的模拟对话场景。',
     badge: '推荐',
-    path: '/ai/role-chat',
-    tone: 'role',
-    icon: '◈'
+    path: '/ai/role-chat'
   },
   {
     title: '智能客服',
-    desc: '快速查询站内功能、使用路径和常见问题。',
-    badge: '支持',
-    path: '/ai/customer-service',
-    tone: 'service',
-    icon: '◇'
+    badge: '导航',
+    path: '/ai/customer-service'
   },
   {
     title: '多模态解析',
-    desc: '辅助阅读图片、资料和 PDF 内容。',
     badge: '扩展',
-    path: '/ai/multimodal',
-    tone: 'multimodal',
-    icon: '▣'
+    path: '/ai/multimodal'
   }
 ]
-
-const featuredAiTool = computed(() => aiTools[1])
-const secondaryAiTools = computed(() => aiTools.filter((_, index) => index !== 1))
 
 function goTo(path) {
   if (!userStore.isLoggedIn) {
@@ -663,11 +715,15 @@ watch(
 <style scoped>
 .home {
   min-height: 100vh;
-  background: var(--app-bg);
+  background:
+    radial-gradient(circle at top left, rgba(60, 179, 113, 0.08), transparent 28%),
+    radial-gradient(circle at 85% 18%, rgba(14, 165, 233, 0.08), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.44), transparent 18%),
+    var(--app-bg);
 }
 
 .main {
-  padding: 88px 0 52px;
+  padding: 90px 0 56px;
 }
 
 .container {
@@ -676,354 +732,357 @@ watch(
   padding: 0 28px;
 }
 
-.page-lead,
-.priority-zone,
-.workflow-zone {
-  margin-bottom: 36px;
+.hero,
+.entry-zone,
+.discovery-zone {
+  margin-bottom: 38px;
 }
 
-.page-lead {
+.hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.72fr);
-  gap: 32px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.78fr);
+  gap: 28px;
+  align-items: start;
 }
 
-.lead-main {
-  padding: 12px 0 0;
+.hero-main {
+  padding-top: 10px;
 }
 
-.lead-kicker,
+.hero-kicker-row,
+.section-heading,
+.focus-card__head,
+.content-panel__head,
+.footer-card__head,
+.community-spotlight__head,
+.entry-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.hero-kicker,
 .section-kicker,
-.rail-kicker,
-.priority-mark,
-.workflow-tag,
-.workflow-item-tag,
-.insight-label {
+.focus-card__eyebrow,
+.profile-card__eyebrow {
   display: inline-flex;
   align-items: center;
   min-height: 24px;
-  padding: 0 8px;
-  background: var(--color-accent-light);
-  color: var(--color-accent);
+  padding: 0 9px;
+  background: rgba(19, 78, 74, 0.08);
+  color: #0f766e;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  border-radius: 999px;
 }
 
-.lead-title {
-  max-width: 720px;
-  margin: 10px 0 16px;
-  color: var(--color-text);
-  font-family: var(--font-display);
-  font-size: clamp(38px, 5vw, 62px);
-  line-height: 0.96;
-  letter-spacing: -0.04em;
+.hero-date,
+.section-copy,
+.content-panel__foot,
+.entry-card__meta span,
+.text-link,
+.notice-banner__action {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-.lead-prefix {
-  max-width: 760px;
+.hero-prefix {
   margin: 18px 0 0;
+  max-width: 720px;
   color: var(--color-text-secondary);
   font-size: 15px;
-  line-height: 1.7;
-}
-
-.lead-title span {
-  color: var(--color-accent);
-}
-
-.lead-copy {
-  max-width: 760px;
-  color: var(--color-text-secondary);
-  font-size: 16px;
   line-height: 1.8;
 }
 
-.lead-actions,
-.priority-actions {
+.hero-title {
+  margin: 12px 0 18px;
+  max-width: 800px;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.8vw, 68px);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.hero-title span {
+  color: #0f766e;
+}
+
+.hero-copy {
+  max-width: 760px;
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.hero-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
-  flex-wrap: wrap;
 }
 
-.notice-entry {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 18px;
-  padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: rgba(37, 99, 235, 0.04);
-  color: var(--color-text);
-  cursor: pointer;
-  text-align: left;
-}
-
-.notice-entry__icon {
+.btn-primary,
+.btn-secondary,
+.btn-tertiary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 42px;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--color-accent-light);
-  color: var(--color-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.notice-entry__title {
-  max-width: 380px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.notice-entry__arrow {
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.action-primary,
-.action-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 16px;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 700;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
-.action-primary {
-  background: var(--color-accent);
+.btn-primary {
+  background: #0f766e;
+  border: 1px solid #0f766e;
   color: #ffffff;
-  border: 1px solid var(--color-accent);
 }
 
-.action-primary:hover {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
+.btn-primary:hover {
+  background: #0d665f;
+  border-color: #0d665f;
+  transform: translateY(-1px);
 }
 
-.action-secondary {
-  background: transparent;
-  color: var(--color-text);
+.btn-secondary,
+.btn-tertiary {
   border: 1px solid var(--color-border);
 }
 
-.action-secondary:hover {
+.btn-secondary {
+  background: var(--internal-panel-bg);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover,
+.btn-tertiary:hover {
   background: var(--color-bg-subtle);
   border-color: var(--color-border-hover);
 }
 
-.signal-row {
+.btn-tertiary {
+  background: transparent;
+  color: var(--color-text-secondary);
+}
+
+.notice-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: 100%;
+  max-width: 840px;
+  margin-top: 22px;
+  padding: 14px 18px;
+  border: 1px solid rgba(15, 118, 110, 0.14);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.05);
+  text-align: left;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.notice-banner:hover {
+  background: rgba(15, 118, 110, 0.08);
+  border-color: rgba(15, 118, 110, 0.2);
+}
+
+.notice-banner__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.notice-banner__title {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stats-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
-  margin-top: 44px;
+  margin-top: 34px;
   padding-top: 22px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
 }
 
-.signal-item {
+.stats-strip__item {
   padding-right: 18px;
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid rgba(17, 24, 39, 0.08);
 }
 
-.signal-item:last-child {
-  border-right: none;
+.stats-strip__item:last-child {
   padding-right: 0;
+  border-right: none;
 }
 
-.signal-label,
-.rail-row span,
-.workflow-fact span,
-.utility-row-badge {
+.stats-strip__label,
+.progress-item__meta span,
+.focus-card__tag,
+.entry-card__tag,
+.footer-link__tag {
   color: var(--color-text-muted);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
-.signal-value,
-.rail-row strong,
-.workflow-fact strong {
+.stats-strip__value {
   display: block;
   margin: 10px 0 8px;
   color: var(--color-text);
   font-family: var(--font-display);
-  font-size: 26px;
-  line-height: 1.05;
+  font-size: 27px;
+  line-height: 1.04;
 }
 
-.signal-note,
-.rail-row p,
-.rail-note p,
-.priority-copy p,
-.insight-block p,
-.workflow-primary p,
-.workflow-item p,
-.utility-row p,
-.section-copy {
+.stats-strip__note,
+.focus-card__desc,
+.focus-note p,
+.profile-card__main p,
+.entry-card__desc,
+.community-spotlight__desc,
+.community-spotlight__item p,
+.content-panel__desc,
+.footer-link p {
   color: var(--color-text-secondary);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 
-.lead-rail {
-  align-self: start;
-  padding: 18px 0 0 24px;
-  border-left: 1px solid var(--color-border);
-}
-
-.rail-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.rail-date {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: right;
-}
-
-.rail-date strong {
-  color: var(--color-text);
-  font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 1.1;
-}
-
-.rail-date span {
-  color: var(--color-text-muted);
-  font-size: 13px;
-}
-
-.rail-body {
+.hero-side {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
-.rail-row {
-  padding: 14px 0;
-  border-top: 1px solid var(--color-border);
+.profile-card,
+.focus-card,
+.entry-card,
+.community-spotlight,
+.content-panel,
+.footer-card,
+.footer-link {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(12px);
 }
 
-.rail-row:first-child {
-  border-top: none;
-  padding-top: 0;
+.profile-card,
+.focus-card,
+.community-spotlight,
+.content-panel,
+.footer-card {
+  border-radius: 10px;
 }
 
-.rail-note {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-border);
-}
-
-.rail-note span {
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.section-heading {
+.profile-card {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 20px;
-}
-
-.section-heading-compact {
   align-items: center;
+  gap: 14px;
+  padding: 18px;
 }
 
-.section-title {
-  margin-top: 12px;
+.profile-card__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e 0%, #38bdf8 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-card__avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-card__main {
+  min-width: 0;
+}
+
+.profile-card__main strong,
+.focus-card h2,
+.entry-card__title,
+.community-spotlight__title,
+.content-panel__title,
+.footer-link strong {
   color: var(--color-text);
-  font-family: var(--font-display);
-  font-size: 28px;
-  line-height: 1.05;
+}
+
+.profile-card__main strong {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.focus-card {
+  padding: 22px 22px 20px;
+}
+
+.focus-card h2 {
+  margin-top: 10px;
+  font-size: 24px;
+  line-height: 1.4;
   letter-spacing: -0.03em;
 }
 
-.section-tag {
+.focus-card__tag {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
   padding: 0 10px;
-  background: var(--color-bg-subtle);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 700;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+  white-space: nowrap;
 }
 
-.priority-layout {
+.progress-list {
   display: grid;
-  grid-template-columns: minmax(0, 1.38fr) minmax(280px, 0.7fr);
-  gap: 0;
-  border: 1px solid var(--color-border);
-  background: var(--internal-panel-bg);
+  gap: 16px;
+  margin-top: 22px;
 }
 
-.priority-main {
-  padding: 26px 28px 30px;
-}
-
-.priority-side {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  border-left: 1px solid var(--color-border);
-}
-
-.priority-copy h3 {
-  margin: 12px 0 12px;
-  color: var(--color-text);
-  font-size: 26px;
-  line-height: 1.35;
-}
-
-.progress-board {
-  display: grid;
-  gap: 18px;
-  margin-top: 30px;
-}
-
-.progress-row {
-  padding: 18px 0 0;
-  border-top: 1px solid var(--color-border);
-}
-
-.progress-row:first-child {
-  border-top: none;
-  padding-top: 0;
-}
-
-.progress-meta {
+.progress-item__meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 10px;
-  color: var(--color-text-secondary);
-  font-size: 14px;
 }
 
-.progress-meta strong {
+.progress-item__meta strong {
   color: var(--color-text);
   font-size: 16px;
 }
@@ -1031,422 +1090,501 @@ watch(
 .progress-track {
   position: relative;
   height: 8px;
-  background: var(--color-accent-light);
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.12);
   overflow: hidden;
+}
+
+.progress-track--soft {
+  background: rgba(56, 189, 248, 0.12);
 }
 
 .progress-fill {
   position: absolute;
   inset: 0 auto 0 0;
-  background: var(--color-accent);
+  background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+  border-radius: inherit;
 }
 
-.progress-track-neutral {
-  background: var(--color-bg-muted);
+.progress-fill--soft {
+  background: linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%);
 }
 
-.progress-fill-neutral {
-  background: #2e3e58;
-}
-
-.insight-block {
-  padding: 22px 20px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-}
-
-.insight-block:last-child {
-  border-bottom: none;
-}
-
-.insight-block strong {
-  display: block;
-  margin: 12px 0 10px;
-  color: var(--color-text);
-  font-size: 19px;
-  line-height: 1.4;
-}
-
-.workflow-layout {
+.focus-card__notes {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.92fr);
-  gap: 0;
-  border: 1px solid var(--color-border);
-  background: var(--internal-panel-bg);
+  gap: 12px;
+  margin-top: 22px;
 }
 
-.workflow-primary {
-  padding: 26px 28px 28px;
-  border-right: 1px solid var(--color-border);
+.focus-note {
+  padding-top: 12px;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
 }
 
-.workflow-primary h3 {
-  margin: 16px 0 12px;
-  color: var(--color-text);
-  font-size: 30px;
-  line-height: 1.05;
-}
-
-.workflow-facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin: 28px 0;
-}
-
-.workflow-fact {
-  padding-top: 14px;
-  border-top: 1px solid var(--color-border);
-}
-
-.workflow-secondary {
-  display: grid;
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-}
-
-.workflow-item {
-  display: block;
-  padding: 20px 22px;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-  transition: background-color var(--transition-fast);
-}
-
-.workflow-item:last-child {
-  border-bottom: none;
-}
-
-.workflow-item:hover {
-  background: var(--internal-panel-bg-hover);
-}
-
-.workflow-item-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.workflow-item-arrow {
-  color: var(--color-text-muted);
-  font-size: 16px;
-}
-
-.workflow-item strong {
-  display: block;
+.focus-note span {
+  display: inline-block;
   margin-bottom: 8px;
   color: var(--color-text);
-  font-size: 18px;
-}
-
-.utility-zone {
-  margin-top: 52px;
-}
-
-.utility-layout {
-  display: grid;
-  grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1fr);
-  gap: 20px;
-}
-
-.utility-featured {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-  padding: 20px 22px;
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.03), transparent 72%);
-  text-align: left;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.utility-featured:hover {
-  transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.16);
-}
-
-.utility-featured__head {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  align-items: start;
-}
-
-.utility-featured__icon,
-.utility-row-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-}
-
-.utility-featured__icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  font-size: 16px;
-}
-
-.utility-featured__icon.is-chat,
-.utility-row-mark.is-chat {
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
-}
-
-.utility-featured__icon.is-role,
-.utility-row-mark.is-role {
-  background: rgba(217, 119, 6, 0.1);
-  color: #b45309;
-}
-
-.utility-featured__icon.is-service,
-.utility-row-mark.is-service {
-  background: rgba(13, 148, 136, 0.1);
-  color: #0f766e;
-}
-
-.utility-featured__icon.is-multimodal,
-.utility-row-mark.is-multimodal {
-  background: rgba(79, 70, 229, 0.1);
-  color: #4338ca;
-}
-
-.utility-featured__meta {
-  display: grid;
-  gap: 10px;
-  justify-items: end;
-}
-
-.utility-featured__arrow {
-  color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.06em;
 }
 
-.utility-featured__title {
+.section-heading {
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  margin-top: 12px;
   color: var(--color-text);
-  font-size: 24px;
-  line-height: 1.1;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1.08;
   letter-spacing: -0.04em;
 }
 
-.utility-featured p {
-  margin: 0;
+.section-title--small {
+  font-size: 24px;
 }
 
-.utility-list {
-  border-top: 1px solid var(--color-border);
+.entry-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(0, 0.85fr));
+  gap: 14px;
 }
 
-.utility-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  width: 100%;
-  padding: 18px 16px;
-  border-bottom: 1px solid var(--color-border);
+.entry-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px 20px 18px;
   text-align: left;
-  border-radius: 14px;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  border-radius: 10px;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.utility-row:hover {
-  background: rgba(23, 78, 166, 0.03);
-  transform: translateX(2px);
+.entry-card:hover,
+.footer-link:hover,
+.content-panel:hover {
+  transform: translateY(-2px);
 }
 
-.utility-row-mark {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  font-size: 14px;
+.entry-card--wide {
+  min-height: 220px;
 }
 
-.utility-row-main {
-  min-width: 0;
-  flex: 1;
+.entry-card__arrow {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.utility-row-name {
+.entry-card__title {
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.entry-card__meta {
+  margin-top: auto;
+}
+
+.entry-card--question {
+  background:
+    radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 32%),
+    rgba(255, 255, 255, 0.88);
+}
+
+.entry-card--role {
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.14), transparent 34%),
+    rgba(255, 255, 255, 0.86);
+}
+
+.entry-card--community {
+  background:
+    radial-gradient(circle at top right, rgba(244, 114, 182, 0.12), transparent 34%),
+    rgba(255, 255, 255, 0.86);
+}
+
+.entry-card--blog {
+  background:
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 34%),
+    rgba(255, 255, 255, 0.86);
+}
+
+.discovery-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.82fr);
+  gap: 18px;
+}
+
+.community-spotlight {
+  padding: 24px;
+}
+
+.community-spotlight__title {
+  max-width: 680px;
+  margin: 18px 0 14px;
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.community-spotlight__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 24px;
+}
+
+.community-spotlight__chips span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.community-spotlight__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.community-spotlight__item {
+  padding-top: 14px;
+  border-top: 1px solid rgba(17, 24, 39, 0.08);
+}
+
+.community-spotlight__item strong {
   display: block;
   margin-bottom: 8px;
   color: var(--color-text);
   font-size: 17px;
+}
+
+.side-panels {
+  display: grid;
+  gap: 18px;
+}
+
+.content-panel {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.content-panel__title {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.03em;
+}
+
+.content-panel--blog {
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 32%),
+    rgba(255, 255, 255, 0.8);
+}
+
+.content-panel--ai {
+  background:
+    radial-gradient(circle at top left, rgba(15, 118, 110, 0.1), transparent 30%),
+    rgba(255, 255, 255, 0.8);
+}
+
+.mini-link-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.mini-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.mini-link:hover,
+.text-link:hover {
+  background: var(--color-bg-subtle);
+  border-color: rgba(15, 118, 110, 0.12);
+}
+
+.mini-link span:last-child {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.text-link {
+  border: none;
+  background: transparent;
   font-weight: 700;
 }
 
-.utility-row-badge {
-  flex-shrink: 0;
-  padding-top: 2px;
+.footer-zone {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
 }
 
-.home.is-dark .lead-title,
+.footer-card {
+  padding: 20px;
+}
+
+.footer-card--muted {
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.05), transparent 72%),
+    rgba(255, 255, 255, 0.72);
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.footer-link {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 10px;
+  text-align: left;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.footer-link strong {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.home.is-dark {
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.1), transparent 26%),
+    radial-gradient(circle at 85% 18%, rgba(96, 165, 250, 0.1), transparent 24%),
+    linear-gradient(180deg, rgba(17, 27, 45, 0.5), transparent 20%),
+    var(--app-bg);
+}
+
+.home.is-dark .hero-kicker,
+.home.is-dark .section-kicker,
+.home.is-dark .focus-card__eyebrow,
+.home.is-dark .profile-card__eyebrow,
+.home.is-dark .focus-card__tag,
+.home.is-dark .community-spotlight__chips span,
+.home.is-dark .notice-banner__badge {
+  color: #7dd3c8;
+  background: rgba(45, 212, 191, 0.12);
+}
+
+.home.is-dark .hero-title,
+.home.is-dark .profile-card__main strong,
+.home.is-dark .focus-card h2,
+.home.is-dark .stats-strip__value,
 .home.is-dark .section-title,
-.home.is-dark .priority-copy h3,
-.home.is-dark .workflow-primary h3,
-.home.is-dark .workflow-item strong,
-.home.is-dark .signal-value,
-.home.is-dark .rail-row strong,
-.home.is-dark .workflow-fact strong,
-.home.is-dark .insight-block strong,
-.home.is-dark .rail-date strong,
-.home.is-dark .progress-meta strong,
-.home.is-dark .utility-row-name {
+.home.is-dark .entry-card__title,
+.home.is-dark .community-spotlight__title,
+.home.is-dark .community-spotlight__item strong,
+.home.is-dark .content-panel__title,
+.home.is-dark .footer-link strong,
+.home.is-dark .progress-item__meta strong,
+.home.is-dark .notice-banner__title {
   color: var(--text-1);
 }
 
-.home.is-dark .lead-prefix,
-.home.is-dark .lead-copy,
-.home.is-dark .signal-note,
-.home.is-dark .rail-row p,
-.home.is-dark .rail-note p,
-.home.is-dark .priority-copy p,
-.home.is-dark .insight-block p,
-.home.is-dark .workflow-primary p,
-.home.is-dark .workflow-item p,
-.home.is-dark .utility-row p,
+.home.is-dark .hero-title span {
+  color: #7dd3c8;
+}
+
+.home.is-dark .hero-prefix,
+.home.is-dark .hero-copy,
+.home.is-dark .stats-strip__note,
+.home.is-dark .focus-card__desc,
+.home.is-dark .focus-note p,
+.home.is-dark .profile-card__main p,
+.home.is-dark .entry-card__desc,
 .home.is-dark .section-copy,
-.home.is-dark .progress-meta {
+.home.is-dark .community-spotlight__desc,
+.home.is-dark .community-spotlight__item p,
+.home.is-dark .content-panel__desc,
+.home.is-dark .content-panel__foot,
+.home.is-dark .footer-link p,
+.home.is-dark .hero-date,
+.home.is-dark .text-link,
+.home.is-dark .notice-banner__action {
   color: var(--text-2);
 }
 
-.home.is-dark .lead-rail,
-.home.is-dark .signal-row,
-.home.is-dark .signal-item,
-.home.is-dark .rail-row,
-.home.is-dark .rail-note,
-.home.is-dark .priority-layout,
-.home.is-dark .priority-side,
-.home.is-dark .insight-block,
-.home.is-dark .workflow-layout,
-.home.is-dark .workflow-primary,
-.home.is-dark .workflow-fact,
-.home.is-dark .workflow-item,
-.home.is-dark .utility-list,
-.home.is-dark .utility-row {
-  border-color: var(--color-border);
+.home.is-dark .profile-card,
+.home.is-dark .focus-card,
+.home.is-dark .entry-card,
+.home.is-dark .community-spotlight,
+.home.is-dark .content-panel,
+.home.is-dark .footer-card,
+.home.is-dark .footer-link,
+.home.is-dark .mini-link {
+  background: rgba(17, 27, 45, 0.82);
+  border-color: rgba(148, 163, 184, 0.14);
 }
 
-.home.is-dark .priority-layout,
-.home.is-dark .workflow-layout {
-  background: var(--internal-panel-bg);
+.home.is-dark .entry-card--question {
+  background:
+    radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 34%),
+    rgba(17, 27, 45, 0.88);
 }
 
-.home.is-dark .utility-featured {
-  background: linear-gradient(180deg, rgba(108, 159, 255, 0.06), transparent 72%);
-  border-color: var(--color-border);
+.home.is-dark .entry-card--role {
+  background:
+    radial-gradient(circle at top right, rgba(245, 158, 11, 0.16), transparent 34%),
+    rgba(17, 27, 45, 0.88);
 }
 
-.home.is-dark .insight-block,
-.home.is-dark .workflow-item {
-  background: var(--color-bg-subtle);
+.home.is-dark .entry-card--community {
+  background:
+    radial-gradient(circle at top right, rgba(244, 114, 182, 0.16), transparent 34%),
+    rgba(17, 27, 45, 0.88);
 }
 
-.home.is-dark .utility-featured__icon.is-chat,
-.home.is-dark .utility-row-mark.is-chat {
-  color: #93c5fd;
+.home.is-dark .entry-card--blog {
+  background:
+    radial-gradient(circle at top right, rgba(96, 165, 250, 0.16), transparent 34%),
+    rgba(17, 27, 45, 0.88);
 }
 
-.home.is-dark .utility-featured__icon.is-role,
-.home.is-dark .utility-row-mark.is-role {
-  color: #fdba74;
+.home.is-dark .content-panel--blog,
+.home.is-dark .content-panel--ai,
+.home.is-dark .footer-card--muted {
+  background:
+    linear-gradient(180deg, rgba(108, 159, 255, 0.06), transparent 72%),
+    rgba(17, 27, 45, 0.84);
 }
 
-.home.is-dark .utility-featured__icon.is-service,
-.home.is-dark .utility-row-mark.is-service {
-  color: #5eead4;
+.home.is-dark .btn-primary {
+  background: #5eead4;
+  border-color: #5eead4;
+  color: #082f49;
 }
 
-.home.is-dark .utility-featured__icon.is-multimodal,
-.home.is-dark .utility-row-mark.is-multimodal {
-  color: #a5b4fc;
+.home.is-dark .btn-primary:hover {
+  background: #7dd3c8;
+  border-color: #7dd3c8;
 }
 
-.home.is-dark .workflow-item:hover,
-.home.is-dark .utility-row:hover {
-  background: rgba(108, 159, 255, 0.05);
+.home.is-dark .btn-secondary,
+.home.is-dark .btn-tertiary {
+  background: rgba(17, 27, 45, 0.7);
+  border-color: rgba(148, 163, 184, 0.16);
 }
 
-.home.is-dark .progress-fill-neutral {
-  background: #9fb3d4;
+.home.is-dark .notice-banner {
+  background: rgba(45, 212, 191, 0.08);
+  border-color: rgba(45, 212, 191, 0.16);
 }
 
-@media (max-width: 1120px) {
-  .page-lead,
-  .priority-layout,
-  .workflow-layout,
-  .utility-layout {
+.home.is-dark .stats-strip,
+.home.is-dark .stats-strip__item,
+.home.is-dark .focus-note,
+.home.is-dark .community-spotlight__item {
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+.home.is-dark .progress-track {
+  background: rgba(45, 212, 191, 0.14);
+}
+
+.home.is-dark .progress-track--soft {
+  background: rgba(96, 165, 250, 0.14);
+}
+
+@media (max-width: 1180px) {
+  .hero,
+  .discovery-grid,
+  .footer-zone {
     grid-template-columns: 1fr;
   }
 
-  .lead-rail {
-    padding: 20px 0 0;
-    border-left: none;
-    border-top: 1px solid var(--color-border);
+  .entry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .priority-side {
-    border-left: none;
-    border-top: 1px solid var(--color-border);
-  }
-
-  .workflow-primary {
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
+  .entry-card--wide {
+    grid-column: span 2;
   }
 }
 
 @media (max-width: 768px) {
   .main {
-    padding: 84px 0 36px;
+    padding: 84px 0 40px;
   }
 
   .container {
     padding: 0 16px;
   }
 
-  .lead-title {
+  .hero-title {
     font-size: 38px;
   }
 
-  .signal-row,
-  .workflow-facts {
-    grid-template-columns: 1fr;
-  }
-
-  .signal-item {
-    padding-right: 0;
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 16px;
-  }
-
-  .signal-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  .lead-actions,
-  .priority-actions,
+  .hero-actions,
   .section-heading,
-  .utility-row {
+  .hero-kicker-row,
+  .notice-banner,
+  .focus-card__head,
+  .community-spotlight__head,
+  .content-panel__head,
+  .footer-card__head {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .utility-row {
-    padding: 16px 0;
+  .stats-strip,
+  .entry-grid,
+  .community-spotlight__list,
+  .footer-links {
+    grid-template-columns: 1fr;
   }
 
-  .action-primary,
-  .action-secondary {
+  .stats-strip__item {
+    padding-right: 0;
+    padding-bottom: 14px;
+    border-right: none;
+    border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+  }
+
+  .stats-strip__item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .entry-card--wide {
+    grid-column: span 1;
+    min-height: 0;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-tertiary {
     width: 100%;
+  }
+
+  .notice-banner__title {
+    white-space: normal;
   }
 }
 </style>
