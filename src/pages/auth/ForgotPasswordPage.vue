@@ -2,7 +2,7 @@
   <AuthShell
     eyebrow="RECOVER ACCOUNT"
     title="找回密码"
-    subtitle="使用邮箱验证码重置你的账号密码。"
+    subtitle="用验证码把账号重新接回来。"
     :panel-width="520"
   >
     <form class="auth-form" @submit.prevent="handleResetPassword">

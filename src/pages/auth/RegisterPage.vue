@@ -2,7 +2,7 @@
   <AuthShell
     eyebrow="CREATE ACCOUNT"
     title="注册"
-    subtitle="创建你的 halo coding do 账号。"
+    subtitle="开一个新账号，马上进入状态。"
     :panel-width="520"
   >
     <form class="auth-form" @submit.prevent="handleRegister">
@@ -37,7 +37,7 @@
               v-model="registerForm.email"
               type="email"
               autocomplete="email"
-              placeholder="输入常用邮箱-仅支持QQ邮箱"
+              placeholder="输入常用邮箱"
               @focus="focusedField = 'email'"
               @blur="focusedField = ''; validateField('email')"
             />
@@ -73,7 +73,7 @@
             @blur="focusedField = ''; validateField('verificationCode')"
           />
         </div>
-        <span class="helper-text">验证码 5 分钟内有效，发送间隔为 60 秒。</span>
+        <span class="helper-text">验证码 5 分钟内有效。</span>
         <span v-if="errors.verificationCode" class="error-message">{{ errors.verificationCode }}</span>
       </div>
 

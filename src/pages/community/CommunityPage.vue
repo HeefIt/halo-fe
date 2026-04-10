@@ -8,7 +8,7 @@
           <span class="topbar-kicker">COMMUNITY HUB</span>
           <h1 class="topbar-title">圈子社区</h1>
           <p class="topbar-text">
-            吐槽刷题、聊面试、发梗图、晒心得，把站内用户的即时分享组织成一个更清晰的社区信息流。
+            看看最近有什么新梗、新观点，或者把今天的状态直接发出来。
           </p>
 
           <div class="summary-strip">
@@ -31,7 +31,7 @@
           <div class="cta-card">
             <span class="cta-eyebrow">当前浏览</span>
             <strong class="cta-title">{{ selectedCircle ? selectedCircle.circleName : '全部圈子' }}</strong>
-            <p class="cta-text">{{ selectedCircle ? '只查看该圈子的动态讨论' : '聚合所有圈子的最新动态' }}</p>
+            <p class="cta-text">{{ selectedCircle ? '当前只看这个圈子的内容' : '正在看全站最新动态' }}</p>
             <div class="cta-actions">
               <button type="button" class="secondary-btn" @click="switchCircle('all')">查看全部</button>
               <button type="button" class="primary-btn" @click="scrollToComposer">发动态</button>
@@ -44,7 +44,7 @@
         <div class="circle-nav-band__head">
           <div>
             <h2>圈子导航</h2>
-            <p>只保留一套主筛选入口，避免在页面里反复出现同样的圈子列表。</p>
+            <p>切到你想看的圈子，信息流会立刻收拢。</p>
           </div>
           <span class="circle-nav-band__meta">{{ visibleMomentText }}</span>
         </div>
@@ -94,7 +94,7 @@
 
               <div class="composer-intro">
                 <strong>{{ userStore.userName || '你' }}</strong>
-                <span>把今天想说的发出来，文字、截图、表情包都可以。</span>
+                <span>有想法就发出来，轻一点也没关系。</span>
               </div>
 
               <div class="composer-target">
@@ -132,7 +132,7 @@
               class="composer-input"
               rows="5"
               maxlength="1200"
-              :placeholder="`在 ${composerCircleName} 里发点什么？比如吐槽、心得、梗图上下文都可以写出来。`"
+              :placeholder="`在 ${composerCircleName} 里说点什么`"
             ></textarea>
 
             <div v-if="momentForm.pictures.length" class="upload-grid">
@@ -162,7 +162,7 @@
           <section class="feed-header">
             <div class="feed-header__copy">
               <h2>{{ selectedCircle ? `${selectedCircle.circleName} 动态` : '全部动态' }}</h2>
-              <p>{{ selectedCircle ? '当前只展示这个圈子的发帖内容。' : '正在查看社区的完整动态流。' }}</p>
+              <p>{{ selectedCircle ? '只看当前圈子' : '全站最新动态都在这里' }}</p>
             </div>
             <div class="feed-header__meta">
               <span class="feed-header__count">{{ visibleMomentText }}</span>
@@ -263,7 +263,7 @@
 
             <div v-else class="feed-empty">
               <strong>还没有动态</strong>
-              <span>社区刚开场，你发第一条会让这里马上热起来。</span>
+              <span>第一条发言，往往最容易带起气氛。</span>
             </div>
           </section>
         </div>
@@ -303,20 +303,20 @@
 
           <section class="side-panel">
             <div class="side-panel__head">
-              <h3>社区提示</h3>
+              <h3>社区手感</h3>
             </div>
             <div class="tips-list">
               <div class="tip-item">
-                <strong>主按钮只保留一个重点</strong>
-                <span>发帖区里“发布动态”是主操作，“添加图片”是辅助操作，视觉层级更清楚。</span>
+                <strong>先说重点</strong>
+                <span>一句短话、一张图，往往就够把讨论带起来。</span>
               </div>
               <div class="tip-item">
-                <strong>图片展示已限制范围</strong>
-                <span>单图会限高展示，多图自动宫格，避免原图把整张卡片撑得失控。</span>
+                <strong>图文一起发更轻松</strong>
+                <span>截图、表情包和碎片想法都能自然混在一起。</span>
               </div>
               <div class="tip-item">
-                <strong>头像和昵称都可点</strong>
-                <span>讨论时可以快速查看对方资料，形成更真实的社区互动感。</span>
+                <strong>关系会慢慢长出来</strong>
+                <span>从动态点进资料，再回到讨论，互动会更有温度。</span>
               </div>
             </div>
           </section>
@@ -340,7 +340,7 @@
               </button>
             </div>
 
-            <div v-else class="topic-empty">等有更多动态后，这里会自动出现热议内容。</div>
+            <div v-else class="topic-empty">再热一点，这里就会出现正在发酵的话题。</div>
           </section>
         </aside>
       </section>

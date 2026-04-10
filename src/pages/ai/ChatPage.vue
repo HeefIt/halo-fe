@@ -117,7 +117,7 @@
           <div class="messages-area" ref="messagesContainer" @scroll="handleMessagesScroll">
             <div v-if="currentMessages.length === 0 && !isLoading" class="empty-state">
               <div class="empty-orb"></div>
-              <h2 class="empty-title">开始一场新对话</h2>
+              <h2 class="empty-title">开始新对话</h2>
               <div class="quick-prompts">
                 <button class="prompt-chip" @click="setQuickPrompt('帮我设计一个带缓存的用户查询接口')">接口设计</button>
                 <button class="prompt-chip" @click="setQuickPrompt('怎么判断一个服务要不要拆分成微服务？')">架构判断</button>

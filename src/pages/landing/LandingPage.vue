@@ -32,8 +32,8 @@
             </button>
             <div class="dropdown-content">
               <div class="dropdown-card">
-                <h4>题库不是仓库</h4>
-                <p class="dropdown-stats">超过 <strong>1000+</strong> 道题，带着语境、脾气和一点点讨论欲</p>
+                <h4>题库，带点锋芒。</h4>
+                <p class="dropdown-stats">超过 <strong>1000+</strong> 道题，覆盖真实高频方向</p>
                 <ul class="dropdown-list">
                   <li>后端基础与工程规范</li>
                   <li>JVM 与性能调优</li>
@@ -43,7 +43,7 @@
                   <li>系统设计、接口设计与算法</li>
                   <li>AI 应用、调试与项目实战</li>
                 </ul>
-                <button class="dropdown-cta" @click="$router.push('/login')">登录去翻翻今天的题</button>
+                <button class="dropdown-cta" @click="$router.push('/login')">进去看看</button>
               </div>
             </div>
           </div>
@@ -116,45 +116,45 @@
         <div class="hero-content">
           <div class="hero-badge animate-fade-up">
             <span class="badge-dot"></span>
-            <span>给代码、表达与一点点锋芒，同时留位置</span>
+            <span>给代码、表达和好问题留个位置</span>
           </div>
           
           <h1 class="hero-title animate-fade-up" style="animation-delay: 100ms">
             <span class="title-line">把灵感、技术与观点</span>
-            <span class="title-line title-gradient">安放进一个理想的社区</span>
+            <span class="title-line title-gradient">放进同一个地方</span>
           </h1>
           
           <p class="hero-subtitle animate-fade-up" style="animation-delay: 200ms">
-            halo coding do 把题库、博客、AI 对话与社区节奏收进同一张桌面。你可以认真钻研，也可以轻松发光；<br>
-            既写代码，也写观点，顺手把灵感、答案和偏爱都留在这里
+            题库、博客、AI 和讨论，不用再分散着找。<br>
+            想练，想写，想聊，都能顺着往下走。
           </p>
           
           <div class="hero-actions animate-fade-up" style="animation-delay: 300ms">
             <button class="btn-primary btn-lg" @click="$router.push('/register')">
-              逛逛今天的新东西
+              立即进入
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </button>
             <button class="btn-secondary btn-lg" @click="$router.push('/home')">
-              先看热门内容
+              先看内容
             </button>
           </div>
           
           <div class="hero-stats animate-fade-up" style="animation-delay: 400ms">
             <div class="stat">
               <span class="stat-value">1000+</span>
-              <span class="stat-label">正在生长的话题</span>
+              <span class="stat-label">题目与主题</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat">
               <span class="stat-value">5000+</span>
-              <span class="stat-label">留下痕迹的读者</span>
+              <span class="stat-label">活跃用户</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat">
               <span class="stat-value">92%</span>
-              <span class="stat-label">可被 AI 共创的场景</span>
+              <span class="stat-label">AI 参与场景</span>
             </div>
           </div>
         </div>
@@ -164,8 +164,8 @@
         <div class="container">
           <div class="section-header animate-on-scroll">
             <span class="section-tag">平台能力</span>
-            <h2 class="section-title">像社区，也像工作台；最重要的是，它不无聊</h2>
-            <p class="section-desc">练习会长出表达，表达会引来讨论，讨论又会把你送回更聪明的下一次练习</p>
+            <h2 class="section-title">一个能练，也能写的地方</h2>
+            <p class="section-desc">题目、内容和讨论会互相接上。</p>
           </div>
           
           <div class="features-grid" ref="featuresGridRef" @mousemove="handleFeaturesMouseMove" @mouseleave="handleFeaturesMouseLeave">
@@ -178,8 +178,8 @@
                   <path d="M8 7h8M8 11h8M8 15h4"/>
                 </svg>
               </div>
-              <h3 class="feature-title">题库有锋芒</h3>
-              <p class="feature-desc">不是整齐堆放的题单，而是带着主题、语境和讨论欲的练习入口，做题也能做出一点品味</p>
+              <h3 class="feature-title">题库够真</h3>
+              <p class="feature-desc">题目按真实方向组织，练起来更有上下文。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 200ms">
@@ -191,8 +191,8 @@
                   <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </div>
-              <h3 class="feature-title">AI 很会接话</h3>
-              <p class="feature-desc">它不只解释答案，也陪你拆思路、润表达、补细节，偶尔还挺会救场</p>
+              <h3 class="feature-title">AI 接得住</h3>
+              <p class="feature-desc">能拆思路，也能接住追问。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 300ms">
@@ -203,8 +203,8 @@
                   <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
                 </svg>
               </div>
-              <h3 class="feature-title">排行有温度</h3>
-              <p class="feature-desc">不是为了制造焦虑，而是让节奏、手感和参与感都有一点被看见的快乐</p>
+              <h3 class="feature-title">排行不吵</h3>
+              <p class="feature-desc">让节奏和变化被看见，不只剩名次。</p>
             </div>
             
             <div class="feature-card feature-card-wide animate-on-scroll" style="animation-delay: 400ms">
@@ -214,8 +214,8 @@
                   <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
                 </svg>
               </div>
-              <h3 class="feature-title">内容会串门</h3>
-              <p class="feature-desc">一条问题可以接到博客、AI、排行榜和计划，知识终于不再各住各的</p>
+              <h3 class="feature-title">内容互相通气</h3>
+              <p class="feature-desc">内容、题库、AI 和排行能互相接上。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 500ms">
@@ -228,8 +228,8 @@
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
               </div>
-              <h3 class="feature-title">博客要体面</h3>
-              <p class="feature-desc">把题解、经验、偏见和漂亮的结论写下来，慢慢形成只属于你的版本</p>
+              <h3 class="feature-title">博客值得认真写</h3>
+              <p class="feature-desc">把题解、经验和判断认真写下来。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 600ms">
@@ -240,8 +240,8 @@
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
-              <h3 class="feature-title">反馈不靠脑补</h3>
-              <p class="feature-desc">阅读、练习、创作和互动会被诚实记录，下一步不再全凭感觉</p>
+              <h3 class="feature-title">反馈看得见</h3>
+              <p class="feature-desc">阅读、练习和互动都会留下痕迹。</p>
             </div>
           </div>
         </div>
@@ -252,25 +252,25 @@
           <div class="showcase-grid animate-on-scroll">
             <div class="showcase-content">
               <span class="section-tag">使用体验</span>
-              <h2 class="showcase-title">刷题、写作、对话、围观，在这里都顺手</h2>
-              <p class="showcase-desc">halo coding do 不急着把你推向下一页，它更像一张会发光的工作台：先看一篇文章，再刷一道题，顺手追问 AI，最后把自己的答案写得漂漂亮亮。</p>
+              <h2 class="showcase-title">做题、写作、对话，不用来回切页</h2>
+              <p class="showcase-desc">从内容到练习，再到追问，路径是连着的。</p>
               
               <ul class="showcase-list">
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>内容、题库、AI 和排行彼此通气，不会各玩各的</span>
+                  <span>题库、内容和 AI 不是三套系统</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>灵感来时能写，卡住时能问，沉淀后还能被看见</span>
+                  <span>灵感来了能写，卡住了能问</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>博客不是附件，而是社区里最体面的表达方式</span>
+                  <span>博客不是附件，是正式表达的一部分</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>活跃反馈会轻轻推你一把，但不会把人推急</span>
+                  <span>反馈会给你节奏，但不会逼着你跑</span>
                 </li>
               </ul>
             </div>
@@ -311,8 +311,8 @@
           <div class="blog-preview-grid animate-on-scroll">
             <div class="blog-preview-content">
               <span class="section-tag">博客样例</span>
-              <h2 class="blog-preview-title">如果今天不想先做题，也可以先读一篇漂亮的文章</h2>
-              <p class="blog-preview-desc">社区不该只提供答案，也该提供语气、结构和观点。你可以先被一篇文章打动，再顺手去刷题、追问 AI，最后把自己的理解留下来。</p>
+              <h2 class="blog-preview-title">今天不想先做题，就先读点好内容</h2>
+              <p class="blog-preview-desc">这里不只放答案，也放观点和判断。</p>
 
               <div class="blog-preview-points">
                 <div class="blog-point">
@@ -362,10 +362,9 @@
                   <span class="blog-sample-badge blog-sample-badge-fun">Fun &amp; Life</span>
                   <span class="blog-sample-time">5 min read</span>
                 </div>
-                <h3 class="blog-sample-title">如果今天不想聊系统设计，也可以写写周末、咖啡和让人心动的小界面</h3>
+                <h3 class="blog-sample-title">如果今天不想聊系统设计，也可以写写周末、咖啡和喜欢的小界面</h3>
                 <p class="blog-sample-summary">
-                  一个理想的社区，不该只容纳标准答案。你也可以记录最近喜欢的歌单、下班后去过的小店，
-                  或者某个让你反复调整到满意的按钮细节，让技术和生活一起变得有趣。
+                  社区不只放标准答案。最近喜欢的歌单、小店，或者一个反复改到满意的按钮，也值得记下来。
                 </p>
                 <div class="blog-sample-tags">
                   <span>生活穿插</span>
@@ -392,12 +391,12 @@
         <div class="container">
           <div class="cta-card">
             <div class="cta-content">
-              <h2 class="cta-title">把练习、写作和 AI 协作接到一起</h2>
-              <p class="cta-desc">把技术、表达和一点点锋芒，放进 halo coding do</p>
+              <h2 class="cta-title">准备好了，就进来看看</h2>
+              <p class="cta-desc">也许第一篇文章，或者第一道题，就从这里开始。</p>
             </div>
             <div class="cta-action">
               <button class="btn-primary btn-lg btn-white" @click="$router.push('/register')">
-                来都来了，先进来看看
+                创建账号
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
@@ -415,7 +414,7 @@
             <img class="logo-mark-small" :src="brandMark" alt="halo coding do" />
             <span class="footer-name">halo coding do</span>
           </div>
-          <p class="footer-copy">© 2025 halo coding do · 给会写代码、也愿意好好表达的人</p>
+          <p class="footer-copy">© 2025 halo coding do</p>
         </div>
       </div>
     </footer>
@@ -424,10 +423,10 @@
       <div class="modal" @click.stop>
         <button class="modal-close" @click="showAbout = false">×</button>
         <h3 class="modal-title">关于 halo coding do</h3>
-        <p class="modal-text">halo coding do 是一个面向广大技术开发者的内容社区。这里接得住问题、文章、灵感与一点点偏执；题库不是终点，表达也不是附属品。</p>
+        <p class="modal-text">halo coding do 是一个面向开发者的内容社区，题库、文章、AI 和讨论都在这里。</p>
         
         <h4 class="modal-subtitle">我们的理念</h4>
-        <p class="modal-text">我们偏爱有观点的技术内容，也尊重认真练习的人。最好的一次学习，不只是得到答案，而是顺手长出自己的表达。</p>
+        <p class="modal-text">我们希望认真练习的人，也能顺手留下自己的表达。</p>
         
         <h4 class="modal-subtitle">为什么选择我们</h4>
         <ul class="modal-list">
@@ -443,7 +442,7 @@
       <div class="modal" @click.stop>
         <button class="modal-close" @click="showContact = false">×</button>
         <h3 class="modal-title">联系我们</h3>
-        <p class="modal-text">有任何问题或建议？我们期待听到你的声音。</p>
+        <p class="modal-text">有问题或建议，欢迎联系我们。</p>
         
         <div class="contact-list">
           <div class="contact-item">

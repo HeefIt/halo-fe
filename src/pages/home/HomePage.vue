@@ -14,24 +14,22 @@
               <span class="hero-date">{{ currentMonth }} {{ currentDay }} 日 · {{ currentWeekday }}</span>
             </div>
 
-            <p class="hero-prefix">{{ greetingPrefixText }}</p>
             <h1 class="hero-title">
               {{ greetingText }}<span>{{ displayName }}</span>
             </h1>
             <p class="hero-copy">
-              今天不用把所有事情都塞进同一个页面。先从最顺手的入口开始，题库、圈子、AI 和博客都在这里，
-              你可以认真推进，也可以先轻松热一下状态。
+              练习、内容、讨论和 AI，都在这一屏里。
             </p>
 
             <div class="hero-actions">
               <button class="btn-primary" @click="goTo('/home/questions')">
-                开始今天的练习
+                去做题
               </button>
               <button class="btn-secondary" @click="goTo('/community')">
-                去圈子逛逛
+                看讨论
               </button>
               <button class="btn-tertiary" @click="goTo('/ai/role-chat')">
-                打开角色对话
+                进 AI
               </button>
             </div>
 
@@ -43,7 +41,7 @@
             >
               <span class="notice-banner__badge">1 条公告</span>
               <span class="notice-banner__title">{{ activeNotice.title }}</span>
-              <span class="notice-banner__action">查看详情</span>
+              <span class="notice-banner__action">展开</span>
             </button>
 
             <div class="stats-strip">
@@ -54,7 +52,6 @@
               >
                 <span class="stats-strip__label">{{ signal.label }}</span>
                 <strong class="stats-strip__value">{{ signal.value }}</strong>
-                <p class="stats-strip__note">{{ signal.note }}</p>
               </div>
             </div>
           </div>
@@ -71,7 +68,7 @@
                 <span v-else>{{ displayInitial }}</span>
               </div>
               <div class="profile-card__main">
-                <span class="profile-card__eyebrow">今日状态</span>
+                <span class="profile-card__eyebrow">Today</span>
                 <strong>{{ displayName }}</strong>
                 <p>{{ profileSummary }}</p>
               </div>
@@ -80,18 +77,16 @@
             <section class="focus-card">
               <div class="focus-card__head">
                 <div>
-                  <span class="focus-card__eyebrow">Today Focus</span>
+                  <span class="focus-card__eyebrow">Now</span>
                   <h2>{{ nextActionTitle }}</h2>
                 </div>
                 <span class="focus-card__tag">{{ nextActionTag }}</span>
               </div>
 
-              <p class="focus-card__desc">{{ nextActionDesc }}</p>
-
               <div class="progress-list">
                 <div class="progress-item">
                   <div class="progress-item__meta">
-                    <span>练习进度</span>
+                    <span>题量</span>
                     <strong>{{ problemProgress }}%</strong>
                   </div>
                   <div class="progress-track">
@@ -101,7 +96,7 @@
 
                 <div class="progress-item">
                   <div class="progress-item__meta">
-                    <span>专注时长</span>
+                    <span>时长</span>
                     <strong>{{ studyProgress }}%</strong>
                   </div>
                   <div class="progress-track progress-track--soft">
@@ -113,11 +108,9 @@
               <div class="focus-card__notes">
                 <div class="focus-note">
                   <span>{{ focusInsight.title }}</span>
-                  <p>{{ focusInsight.desc }}</p>
                 </div>
                 <div class="focus-note">
                   <span>{{ rhythmInsight.title }}</span>
-                  <p>{{ rhythmInsight.desc }}</p>
                 </div>
               </div>
             </section>
@@ -128,9 +121,8 @@
           <div class="section-heading">
             <div>
               <span class="section-kicker">Main Entry</span>
-              <h2 class="section-title">今天可以从这里开始</h2>
+              <h2 class="section-title">从这里进入</h2>
             </div>
-            <p class="section-copy">把最常用的路径收成更清楚的四个入口，减少来回切页的成本。</p>
           </div>
 
           <div class="entry-grid">
@@ -146,7 +138,6 @@
                 <span class="entry-card__arrow">进入</span>
               </div>
               <strong class="entry-card__title">{{ entry.title }}</strong>
-              <p class="entry-card__desc">{{ entry.desc }}</p>
               <div class="entry-card__meta">
                 <span>{{ entry.meta }}</span>
               </div>
@@ -160,29 +151,30 @@
               <div class="community-spotlight__head">
                 <span class="section-kicker">Community</span>
                 <button class="text-link" @click="goTo('/community')">
-                  查看圈子
+                  进入
                 </button>
               </div>
 
-              <h2 class="community-spotlight__title">不是只有刷题，今天也可以去看看大家在聊什么</h2>
+              <h2 class="community-spotlight__title">不想立刻做题，就先看看现在的讨论。</h2>
               <p class="community-spotlight__desc">
-                圈子更适合放轻一点的表达和讨论。你可以发动态、吐槽、丢表情包，也可以顺手点进别人主页，
-                看看最近谁在分享心得、谁又在为一道题吵起来。
+                轻一点说，也轻一点聊。
               </p>
+
+              <div class="community-spotlight__visual" aria-hidden="true">
+                <div class="community-bubble community-bubble--main">
+                  <span class="community-bubble__avatar"></span>
+                  <span class="community-bubble__line"></span>
+                </div>
+                <div class="community-bubble community-bubble--secondary">
+                  <span class="community-bubble__avatar"></span>
+                  <span class="community-bubble__line community-bubble__line--short"></span>
+                </div>
+                <div class="community-bubble community-bubble--chip"># 面试</div>
+                <div class="community-bubble community-bubble--chip community-bubble--chip-alt"># 刚刷完</div>
+              </div>
 
               <div class="community-spotlight__chips">
                 <span v-for="chip in communityChips" :key="chip">{{ chip }}</span>
-              </div>
-
-              <div class="community-spotlight__list">
-                <div
-                  v-for="item in communityHighlights"
-                  :key="item.title"
-                  class="community-spotlight__item"
-                >
-                  <strong>{{ item.title }}</strong>
-                  <p>{{ item.desc }}</p>
-                </div>
               </div>
             </article>
 
@@ -191,15 +183,13 @@
                 <div class="content-panel__head">
                   <span class="section-kicker">Blog</span>
                   <button class="text-link" @click="goTo('/blog')">
-                    看文章
+                    进入
                   </button>
                 </div>
-                <strong class="content-panel__title">先读一篇文章，也是一种很好的开场</strong>
-                <p class="content-panel__desc">
-                  把题解、经验和一点自己的判断沉淀下来，首页不再只强调效率，也给内容留了更舒服的位置。
-                </p>
+                <strong class="content-panel__title">有时一篇文章，比立刻开练更对味。</strong>
+                <p class="content-panel__desc">这里放得下题解，也放得下判断。</p>
                 <div class="content-panel__foot">
-                  <span>适合阅读、整理思路、顺手写点什么</span>
+                  <span>Read</span>
                 </div>
               </article>
 
@@ -207,13 +197,22 @@
                 <div class="content-panel__head">
                   <span class="section-kicker">AI Zone</span>
                   <button class="text-link" @click="goTo('/ai/customer-service')">
-                    打开客服
+                    进入
                   </button>
                 </div>
-                <strong class="content-panel__title">需要陪聊、模拟、问路或者拆解问题时，AI 都能接上</strong>
-                <p class="content-panel__desc">
-                  通用对话适合梳理概念，角色对话适合模拟场景，智能客服适合问站内功能，多模态则更适合资料解析。
-                </p>
+                <strong class="content-panel__title">需要拆问题、跑模拟，或者只是想问一句时。</strong>
+                <p class="content-panel__desc">AI 会把节奏接住。</p>
+                <div class="content-panel__visual" aria-hidden="true">
+                  <div class="ai-preview-card ai-preview-card--active">
+                    <span class="ai-preview-card__dot"></span>
+                    <span class="ai-preview-card__line"></span>
+                  </div>
+                  <div class="ai-preview-card">
+                    <span class="ai-preview-card__dot ai-preview-card__dot--soft"></span>
+                    <span class="ai-preview-card__line ai-preview-card__line--short"></span>
+                  </div>
+                  <div class="ai-preview-orb"></div>
+                </div>
                 <div class="mini-link-list">
                   <button
                     v-for="tool in aiTools"
@@ -234,11 +233,8 @@
           <article class="footer-card footer-card--muted">
             <div class="footer-card__head">
               <span class="section-kicker">Keep Moving</span>
-              <h2 class="section-title section-title--small">轻量辅助区</h2>
+              <h2 class="section-title section-title--small">备用入口</h2>
             </div>
-            <p class="section-copy">
-              不再额外堆很多功能块，只留下几个真的常用的去处，方便你回看、比较和继续推进。
-            </p>
           </article>
 
           <div class="footer-links">
@@ -246,11 +242,31 @@
               v-for="item in supportEntries"
               :key="item.title"
               class="footer-link"
+              :class="`footer-link--${item.tone}`"
               @click="goTo(item.path)"
             >
               <span class="footer-link__tag">{{ item.tag }}</span>
               <strong>{{ item.title }}</strong>
-              <p>{{ item.desc }}</p>
+              <div class="footer-link__visual" aria-hidden="true">
+                <div v-if="item.tone === 'ranking'" class="visual-bars">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div v-else-if="item.tone === 'history'" class="visual-lines">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div v-else class="visual-chat">
+                  <span class="visual-chat__dot"></span>
+                  <span class="visual-chat__dot"></span>
+                  <span class="visual-chat__line"></span>
+                  <span class="visual-chat__line visual-chat__line--short"></span>
+                </div>
+              </div>
             </button>
           </div>
         </section>
@@ -364,18 +380,6 @@ const greetingPreset = computed(() => {
   return greetingPresets.find(item => hour >= item.start && hour < item.end) || greetingPresets[0]
 })
 
-const greetingSeed = computed(() => {
-  return currentTime.value.getDate() + currentTime.value.getMonth() + currentTime.value.getFullYear() + currentTime.value.getHours()
-})
-
-const greetingPrefixText = computed(() => {
-  const prefixes = greetingPreset.value.prefixes || []
-  if (!prefixes.length) {
-    return ''
-  }
-  return prefixes[greetingSeed.value % prefixes.length]
-})
-
 const greetingText = computed(() => greetingPreset.value.greeting)
 const currentDay = computed(() => currentTime.value.getDate())
 
@@ -399,9 +403,9 @@ const studyProgress = computed(() => {
 
 const accuracyStatus = computed(() => {
   const accuracy = Number(dailyStats.value.accuracy || 0)
-  if (accuracy >= 85) return '状态稳定，可以适当提高练习难度。'
-  if (accuracy >= 60) return '继续稳住中段题，先保证连续答题手感。'
-  return '建议先做一轮热身题，把状态拉起来。'
+  if (accuracy >= 85) return '手感不错，可以加一点强度。'
+  if (accuracy >= 60) return '先把节奏稳住，再往上提。'
+  return '先热身，状态会慢慢回来。'
 })
 
 const nextActionTag = computed(() => {
@@ -410,40 +414,30 @@ const nextActionTag = computed(() => {
 
 const nextActionTitle = computed(() => {
   if (dailyStats.value.problemCount >= defaultProblemGoal) {
-    return '今天的基础练习已经够了，接下来更适合做复盘。'
+    return '今天这轮已经够了，接下来该回头看看。'
   }
   if (dailyStats.value.problemCount > 0) {
-    return '保持当前节奏，把这一轮练习完整做完。'
+    return '别换轨，先把这一轮收完。'
   }
-  return '先从一轮短练开始，把注意力快速收回来。'
-})
-
-const nextActionDesc = computed(() => {
-  if (dailyStats.value.problemCount >= defaultProblemGoal) {
-    return '题量达到基础目标后，继续堆数量的收益会下降，先看错题和答题路径更有价值。'
-  }
-  if (dailyStats.value.problemCount > 0) {
-    return '不要频繁切换入口，保持当前分类和手感，把这一轮完整结束再转到其它模块。'
-  }
-  return '题库是今天最合适的切入点。先完成第一轮输入，后面再回到记录和社区整理自己的节奏。'
+  return '先做几题，把状态叫醒。'
 })
 
 const focusInsight = computed(() => {
   if (dailyStats.value.problemCount === 0) {
     return {
       title: '先开一轮短练',
-      desc: '今天还没进入题目状态，建议先做 5 到 10 题，把注意力收拢起来。'
+      desc: '先热一下手。'
     }
   }
   if (dailyStats.value.accuracy >= 80) {
     return {
       title: '可以抬高一点强度',
-      desc: '正确率已经比较稳，下一轮可以适当增加中等或困难题的占比。'
+      desc: '可以往上提一点。'
     }
   }
   return {
     title: '先把正确率稳住',
-    desc: '当前更适合沿着已有分类继续做，而不是频繁切换模块。'
+    desc: '先别频繁切换。'
   }
 })
 
@@ -451,32 +445,32 @@ const rhythmInsight = computed(() => {
   if (dailyStats.value.totalTime >= defaultTimeGoal) {
     return {
       title: '适合进入复盘段',
-      desc: '学习时长已经基本够用，后半段可以留给总结和查漏。'
+      desc: '该复盘了。'
     }
   }
   return {
     title: '还在可推进区间',
-    desc: '当前总时长不重，继续一轮集中练习会更顺手。'
+    desc: '还能继续推。'
   }
 })
 
 const profileSummary = computed(() => {
   if (dailyStats.value.problemCount > 0) {
-    return `今天已经开始了 ${dailyStats.value.problemCount} 题，节奏不错，继续往前推就好。`
+    return `今天已经做了 ${dailyStats.value.problemCount} 题。`
   }
-  return '今天还没开始正式练习，可以先找一道熟悉的题，把手感热起来。'
+  return '还没开始，先找一道熟悉的题。'
 })
 
 const leadSignals = computed(() => [
   {
     label: '今日题量',
     value: `${dailyStats.value.problemCount} / ${defaultProblemGoal}`,
-    note: dailyStats.value.problemCount > 0 ? '已经进入状态，优先保持连续性。' : '还没开始，建议先做一轮短练。'
+    note: dailyStats.value.problemCount > 0 ? '继续保持。' : '先开一轮。'
   },
   {
     label: '学习时长',
     value: formatTime(dailyStats.value.totalTime),
-    note: '默认按 60 分钟作为一轮完整训练。'
+    note: '保持节奏。'
   },
   {
     label: '当前正确率',
@@ -488,92 +482,81 @@ const leadSignals = computed(() => [
 const primaryEntries = computed(() => [
   {
     title: '题库练习',
-    desc: '今天最适合先推进的主路径，适合热身、刷题和稳定节奏。',
+    desc: '今天的主线入口，适合直接开练。',
     path: '/home/questions',
     tag: '主线',
     tone: 'question',
-    meta: `${dailyStats.value.problemCount > 0 ? '继续今日进度' : '开启今日首题'}`,
+    meta: `${dailyStats.value.problemCount > 0 ? '继续' : '开始'}`,
     featured: true
   },
   {
     title: '角色对话',
-    desc: '切到女朋友、面试官或其它系统角色，做更有场景感的模拟对话。',
+    desc: '换个角色进入对练，表达会更贴近真实场景。',
     path: '/ai/role-chat',
     tag: 'AI',
     tone: 'role',
-    meta: '适合陪练、模拟和对练'
+    meta: '模拟'
   },
   {
     title: '圈子社区',
-    desc: '看看大家在分享什么，也可以自己发动态、评论、接话和围观。',
+    desc: '看看最近的讨论，也可以顺手发一条。',
     path: '/community',
     tag: '交流',
     tone: 'community',
-    meta: '适合表达、吐槽和讨论'
+    meta: '讨论'
   },
   {
     title: '博客内容',
-    desc: '把题解、心得和判断写下来，也可以先读点别人整理好的内容。',
+    desc: '读文章，或者把自己的判断写下来。',
     path: '/blog',
     tag: '内容',
     tone: 'blog',
-    meta: '适合阅读、沉淀和输出'
+    meta: '阅读'
   }
 ])
 
 const supportEntries = [
   {
     title: '排行榜',
-    desc: '看看阶段位置，但不要让排名替代自己的学习节奏。',
     path: '/ranking',
-    tag: '参考'
+    tag: '参考',
+    tone: 'ranking'
   },
   {
     title: '练习记录',
-    desc: '回看答题轨迹和错题分布，比只看分数更有价值。',
     path: '/practice-history',
-    tag: '复盘'
+    tag: '复盘',
+    tone: 'history'
   },
   {
     title: '智能客服',
-    desc: '快速查询站内功能、常见页面和一些使用上的问题。',
     path: '/ai/customer-service',
-    tag: '支持'
+    tag: '支持',
+    tone: 'service'
   }
 ]
 
 const communityChips = ['说说动态', '评论互动', '表情包', '用户主页', '轻松讨论']
 
-const communityHighlights = [
-  {
-    title: '轻量表达更容易留下来',
-    desc: '比起正式文章，动态更适合记录一瞬间的想法、吐槽和今天遇到的小问题。'
-  },
-  {
-    title: '讨论关系会自然长出来',
-    desc: '头像、昵称和用户主页让互动更有人味，社区不会像匿名留言板一样飘。'
-  }
-]
-
 const aiTools = [
   {
     title: '通用对话',
-    badge: '基础',
+    badge: 'Chat',
     path: '/ai/chatbot'
   },
   {
     title: '角色对话',
-    badge: '推荐',
+    badge: 'Role',
     path: '/ai/role-chat'
   },
   {
     title: '智能客服',
-    badge: '导航',
+    badge: 'Guide',
     path: '/ai/customer-service'
   },
   {
     title: '多模态解析',
-    badge: '扩展',
+    badge: 'Vision',
     path: '/ai/multimodal'
   }
 ]
@@ -1238,6 +1221,81 @@ watch(
   margin: 22px 0 24px;
 }
 
+.community-spotlight__visual {
+  position: relative;
+  min-height: 148px;
+  margin-top: 22px;
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 26%, rgba(16, 185, 129, 0.16), transparent 22%),
+    radial-gradient(circle at 84% 74%, rgba(56, 189, 248, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(236, 253, 245, 0.86));
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.community-bubble {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.community-bubble--main {
+  top: 26px;
+  left: 24px;
+  min-width: 196px;
+}
+
+.community-bubble--secondary {
+  top: 74px;
+  right: 26px;
+  min-width: 162px;
+}
+
+.community-bubble__avatar {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  flex-shrink: 0;
+}
+
+.community-bubble__line {
+  display: block;
+  width: 108px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.36);
+}
+
+.community-bubble__line--short {
+  width: 74px;
+}
+
+.community-bubble--chip {
+  left: 34px;
+  bottom: 24px;
+  min-height: 34px;
+  padding: 0 12px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(236, 253, 245, 0.96);
+}
+
+.community-bubble--chip-alt {
+  left: 126px;
+  bottom: 24px;
+  color: #0369a1;
+  background: rgba(239, 246, 255, 0.96);
+}
+
 .community-spotlight__chips span {
   display: inline-flex;
   align-items: center;
@@ -1283,6 +1341,74 @@ watch(
   font-size: 22px;
   line-height: 1.4;
   letter-spacing: -0.03em;
+}
+
+.content-panel__visual {
+  position: relative;
+  min-height: 108px;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 82% 20%, rgba(45, 212, 191, 0.2), transparent 24%),
+    linear-gradient(180deg, rgba(240, 253, 250, 0.96), rgba(236, 253, 245, 0.8));
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.ai-preview-card {
+  position: absolute;
+  left: 18px;
+  right: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+}
+
+.ai-preview-card--active {
+  top: 18px;
+}
+
+.ai-preview-card:not(.ai-preview-card--active) {
+  top: 58px;
+}
+
+.ai-preview-card__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #14b8a6;
+  flex-shrink: 0;
+}
+
+.ai-preview-card__dot--soft {
+  background: #60a5fa;
+}
+
+.ai-preview-card__line {
+  display: block;
+  width: 72%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.34);
+}
+
+.ai-preview-card__line--short {
+  width: 54%;
+}
+
+.ai-preview-orb {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.9), rgba(59, 130, 246, 0.88));
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.2);
 }
 
 .content-panel--blog {
@@ -1362,7 +1488,7 @@ watch(
 
 .footer-link {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   padding: 18px;
   border-radius: 10px;
   text-align: left;
@@ -1372,6 +1498,108 @@ watch(
 .footer-link strong {
   font-size: 18px;
   line-height: 1.3;
+}
+
+.footer-link__visual {
+  position: relative;
+  min-height: 62px;
+  margin-top: 6px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(241, 245, 249, 0.92));
+}
+
+.footer-link--ranking .footer-link__visual {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(251, 146, 60, 0.16), transparent 26%),
+    linear-gradient(180deg, rgba(255, 247, 237, 0.95), rgba(255, 237, 213, 0.82));
+}
+
+.footer-link--history .footer-link__visual {
+  background:
+    radial-gradient(circle at 84% 20%, rgba(59, 130, 246, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.82));
+}
+
+.footer-link--service .footer-link__visual {
+  background:
+    radial-gradient(circle at 18% 78%, rgba(168, 85, 247, 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(250, 245, 255, 0.95), rgba(243, 232, 255, 0.82));
+}
+
+.visual-bars,
+.visual-lines,
+.visual-chat {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: end;
+  padding: 14px;
+}
+
+.visual-bars {
+  gap: 8px;
+}
+
+.visual-bars span {
+  flex: 1;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(180deg, #fdba74, #fb923c);
+  opacity: 0.88;
+}
+
+.visual-bars span:nth-child(1) { height: 18px; }
+.visual-bars span:nth-child(2) { height: 28px; }
+.visual-bars span:nth-child(3) { height: 42px; }
+.visual-bars span:nth-child(4) { height: 24px; }
+.visual-bars span:nth-child(5) { height: 20px; }
+
+.visual-lines {
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.visual-lines span {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
+}
+
+.visual-lines span:nth-child(1) { width: 72%; }
+.visual-lines span:nth-child(2) { width: 90%; }
+.visual-lines span:nth-child(3) { width: 64%; }
+
+.visual-chat {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  grid-template-rows: repeat(2, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 8px;
+}
+
+.visual-chat__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c084fc;
+}
+
+.visual-chat__dot:last-of-type {
+  background: #4ade80;
+}
+
+.visual-chat__line {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.34);
+}
+
+.visual-chat__line--short {
+  width: 78%;
 }
 
 .home.is-dark {
@@ -1502,6 +1730,66 @@ watch(
 .home.is-dark .focus-note,
 .home.is-dark .community-spotlight__item {
   border-color: rgba(148, 163, 184, 0.14);
+}
+
+.home.is-dark .footer-link__visual {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.8));
+}
+
+.home.is-dark .community-spotlight__visual {
+  background:
+    radial-gradient(circle at 18% 26%, rgba(45, 212, 191, 0.16), transparent 22%),
+    radial-gradient(circle at 84% 74%, rgba(96, 165, 250, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 27, 45, 0.88));
+}
+
+.home.is-dark .community-bubble,
+.home.is-dark .ai-preview-card {
+  background: rgba(15, 23, 42, 0.84);
+  box-shadow: none;
+}
+
+.home.is-dark .community-bubble__line,
+.home.is-dark .ai-preview-card__line {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.home.is-dark .community-bubble--chip {
+  background: rgba(20, 184, 166, 0.14);
+  color: #7dd3c8;
+}
+
+.home.is-dark .community-bubble--chip-alt {
+  background: rgba(59, 130, 246, 0.14);
+  color: #93c5fd;
+}
+
+.home.is-dark .content-panel__visual {
+  background:
+    radial-gradient(circle at 82% 20%, rgba(45, 212, 191, 0.16), transparent 24%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(17, 27, 45, 0.88));
+}
+
+.home.is-dark .footer-link--ranking .footer-link__visual {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(251, 146, 60, 0.18), transparent 26%),
+    linear-gradient(180deg, rgba(69, 26, 3, 0.36), rgba(30, 41, 59, 0.92));
+}
+
+.home.is-dark .footer-link--history .footer-link__visual {
+  background:
+    radial-gradient(circle at 84% 20%, rgba(96, 165, 250, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(30, 58, 138, 0.24), rgba(30, 41, 59, 0.92));
+}
+
+.home.is-dark .footer-link--service .footer-link__visual {
+  background:
+    radial-gradient(circle at 18% 78%, rgba(192, 132, 252, 0.2), transparent 24%),
+    linear-gradient(180deg, rgba(88, 28, 135, 0.2), rgba(30, 41, 59, 0.92));
+}
+
+.home.is-dark .visual-chat__line {
+  background: rgba(148, 163, 184, 0.2);
 }
 
 .home.is-dark .progress-track {

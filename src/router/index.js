@@ -127,6 +127,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/ai/learning-coach',
+    name: 'LearningCoach',
+    component: () => import('@/pages/ai/LearningCoachPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/ai/multimodal',
     name: 'MultimodalParser',
     component: () => import('@/pages/ai/MultimodalParserPage.vue'),

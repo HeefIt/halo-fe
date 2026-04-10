@@ -3,7 +3,7 @@
     <main class="service-main">
       <AIToolHeader
         title="智能客服"
-        badge="实时协助"
+        badge="Guide"
       />
 
       <div class="workspace-shell">
@@ -11,10 +11,8 @@
           <section class="sidebar-card prompt-card">
             <div class="sidebar-header">
               <p class="card-eyebrow">快捷提问</p>
-              <h1>常见问题可以直接点，左侧滚动找，右侧立即对话。</h1>
-              <p class="card-description">
-                适合问账号资料、刷题情况、博客推荐、社区入口、排行榜和简单实时信息。
-              </p>
+              <h1>站内问题，直接问。</h1>
+              <p class="card-description">入口、数据、内容推荐都能接住。</p>
 
               <div class="capability-inline-list">
                 <span
@@ -28,8 +26,8 @@
               </div>
 
               <div class="sidebar-meta">
-                <span class="memory-tag">切页不丢会话</span>
-                <span class="sidebar-tip">快捷问题区可独立滚动</span>
+                <span class="memory-tag">会话暂存</span>
+                <span class="sidebar-tip">左侧可快速切题</span>
               </div>
             </div>
 
@@ -58,16 +56,16 @@
         <section class="conversation-panel">
           <div class="conversation-topbar">
             <div class="topbar-copy">
-              <strong>站内问题优先查真实数据</strong>
-              <span>账号、刷题、榜单、博客、社区与页面入口都可以直接问。</span>
+              <strong>优先读取站内信息</strong>
+              <span>问路径、问数据、问内容都可以。</span>
             </div>
             <div class="topbar-meta">
               <span class="meta-pill is-active">
                 <span class="meta-dot"></span>
-                默认流式回复
+                流式回复
               </span>
               <span class="meta-pill">
-                当前会话仅保存在前端内存
+                当前页暂存
               </span>
             </div>
           </div>
@@ -123,7 +121,7 @@
             <div class="input-box">
               <textarea
                 v-model="inputMessage"
-                placeholder="例如：帮我看下我最近的刷题情况，或者推荐几篇适合前端面试复习的博客文章"
+                placeholder="例如：帮我看看最近的刷题情况"
                 @keydown.enter.exact.prevent="sendMessage"
                 :disabled="isLoading"
                 rows="1"
@@ -134,9 +132,9 @@
                   <label class="toggle-label">
                     <input type="checkbox" v-model="streamingEnabled" />
                     <span class="toggle-slider"></span>
-                    <span class="toggle-text">流式输出</span>
+                    <span class="toggle-text">流式</span>
                   </label>
-                  <span class="helper-text">切换组件后当前会话仍保留，刷新页面后会重置。</span>
+                  <span class="helper-text">刷新后会重置。</span>
                 </div>
 
                 <div class="toolbar-actions">
@@ -171,10 +169,10 @@ const themeStore = useThemeStore()
 const store = useCustomerServiceStore()
 
 const capabilityCards = [
-  { icon: '◎', title: '站内数据答疑', desc: '账号、刷题、榜单、社区和博客都能串起来问。' },
-  { icon: '◇', title: '功能入口导航', desc: '告诉你应该去哪个页面、下一步怎么做。' },
-  { icon: '△', title: '步骤说明', desc: '找回密码、发动态、写博客这类操作都能分步讲清。' },
-  { icon: '○', title: '轻量实时信息', desc: '支持简单天气和城市距离查询，为后续扩展留好接口。' }
+  { icon: '◎', title: '站内数据', desc: '账号、刷题、榜单和博客都能问。' },
+  { icon: '◇', title: '页面入口', desc: '快速告诉你该去哪里。' },
+  { icon: '△', title: '操作说明', desc: '常见操作可以直接问。' },
+  { icon: '○', title: '实时信息', desc: '也支持简单实时查询。' }
 ]
 
 const quickPromptGroups = [

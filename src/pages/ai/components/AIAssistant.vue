@@ -1,127 +1,159 @@
-<!--
-  AI助手页面
-  功能描述：AI应用入口页面，提供四个AI功能模块导航
-  主要功能：
-    - 显示AI应用导航栏（机器人对话、角色对话、智能客服、多模态解析）
-    - 选择AI功能模块进入对应页面
-  使用位置：路由 /ai
--->
 <template>
   <div class="ai-page">
-    <!-- AI导航栏 -->
-    <div class="ai-nav">
+    <header class="ai-nav">
       <div class="ai-nav-container">
         <div class="ai-nav-content">
-          <!-- Logo和标题 -->
-          <div class="ai-logo" @click="goHome">
-            <div class="logo-icon">
-              <el-icon :size="24"><ChatDotRound /></el-icon>
-            </div>
-            <span class="logo-title">AI 协作中心</span>
-          </div>
-          
-          <!-- AI功能导航菜单 -->
+          <button class="ai-logo" type="button" @click="goHome">
+            <span class="logo-icon">
+              <el-icon :size="18"><ChatDotRound /></el-icon>
+            </span>
+            <span class="logo-copy">
+              <strong>AI 协作中心</strong>
+              <span>Halo</span>
+            </span>
+          </button>
+
           <nav class="ai-nav-menu">
-            <span 
-              class="ai-nav-item" 
+            <button
+              type="button"
+              class="ai-nav-item"
               :class="{ active: isActive('chatbot') }"
               @click="navigateTo('chatbot')"
             >
               <el-icon><ChatLineRound /></el-icon>
-              <span>AI 对话</span>
-            </span>
-            <span 
-              class="ai-nav-item" 
+              <span>对话</span>
+            </button>
+            <button
+              type="button"
+              class="ai-nav-item"
               :class="{ active: isActive('role-chat') }"
               @click="navigateTo('role-chat')"
             >
               <el-icon><Edit /></el-icon>
-              <span>角色对话</span>
-            </span>
-            <span 
-              class="ai-nav-item" 
+              <span>角色</span>
+            </button>
+            <button
+              type="button"
+              class="ai-nav-item"
               :class="{ active: isActive('customer-service') }"
               @click="navigateTo('customer-service')"
             >
               <el-icon><Service /></el-icon>
-              <span>平台服务</span>
-            </span>
-            <span 
-              class="ai-nav-item" 
+              <span>服务</span>
+            </button>
+            <button
+              type="button"
+              class="ai-nav-item"
               :class="{ active: isActive('multimodal') }"
               @click="navigateTo('multimodal')"
             >
               <el-icon><Picture /></el-icon>
-              <span>多模态解析</span>
-            </span>
+              <span>解析</span>
+            </button>
           </nav>
-          
-          <!-- 返回首页按钮 -->
-          <div class="back-home" @click="goHome">
+
+          <button class="back-home" type="button" @click="goHome">
             <el-icon><HomeFilled /></el-icon>
             <span>返回首页</span>
-          </div>
+          </button>
         </div>
       </div>
-    </div>
-    
-    <!-- 主内容区 -->
+    </header>
+
     <main class="main-content">
       <div class="container">
-        <!-- 欢迎区 -->
-        <div class="welcome-section">
-          <div class="welcome-content">
-            <h1 class="welcome-title">把提问、拆解和理解交给 AI 协作</h1>
-            <p class="welcome-subtitle">无论是刷题、读文档、做知识整理还是排查问题，都可以从这里开始</p>
-          </div>
-        </div>
-        
-        <!-- 功能卡片网格 -->
-        <div class="features-grid">
-          <div class="feature-card chatbot-card" @click="navigateTo('chatbot')">
-            <div class="feature-icon">
-              <el-icon :size="48"><ChatLineRound /></el-icon>
-            </div>
-            <h3 class="feature-title">智能对话</h3>
-            <p class="feature-description">围绕概念、需求、代码和方案持续交流，保留上下文更适合深聊</p>
-            <div class="feature-status active">
-              <span>推荐</span>
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="hero-kicker">AI Workspace</span>
+            <h1 class="welcome-title">把问题交给更对路的入口。</h1>
+            <p class="welcome-subtitle">
+              想聊、想试、想查，或者直接丢一张图进来，都行。
+            </p>
+
+            <div class="hero-actions">
+              <button class="hero-primary" type="button" @click="navigateTo('chatbot')">开始对话</button>
+              <button class="hero-secondary" type="button" @click="navigateTo('role-chat')">进入角色模式</button>
             </div>
           </div>
-          
-          <div class="feature-card practice-card" @click="navigateTo('role-chat')">
-            <div class="feature-icon">
-              <el-icon :size="48"><Edit /></el-icon>
+
+          <div class="hero-side">
+            <div class="hero-metric">
+              <span>推荐起点</span>
+              <strong>AI 对话</strong>
+              <p>先把问题说开。</p>
+            </div>
+            <div class="hero-metric">
+              <span>最快出结果</span>
+              <strong>多模态解析</strong>
+              <p>截图和资料都能接。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="features-grid">
+          <button class="feature-card feature-card--primary" type="button" @click="navigateTo('chatbot')">
+            <div class="feature-head">
+              <span class="feature-icon">
+                <el-icon :size="24"><ChatLineRound /></el-icon>
+              </span>
+              <span class="feature-status feature-status--solid">推荐</span>
+            </div>
+            <h3 class="feature-title">AI 对话</h3>
+            <p class="feature-description">适合梳理需求、代码和连续追问。</p>
+            <span class="feature-meta">适合深聊</span>
+          </button>
+
+          <button class="feature-card" type="button" @click="navigateTo('role-chat')">
+            <div class="feature-head">
+              <span class="feature-icon">
+                <el-icon :size="24"><Edit /></el-icon>
+              </span>
+              <span class="feature-status">场景化</span>
             </div>
             <h3 class="feature-title">角色对话</h3>
-            <p class="feature-description">进入预设角色场景，用更稳定的人设完成模拟对话</p>
-            <div class="feature-status">
-              <span>进阶</span>
-            </div>
-          </div>
-          
-          <div class="feature-card service-card" @click="navigateTo('customer-service')">
-            <div class="feature-icon">
-              <el-icon :size="48"><Service /></el-icon>
+            <p class="feature-description">更适合模拟面试和场景对话。</p>
+            <span class="feature-meta">更贴近真实场景</span>
+          </button>
+
+          <button class="feature-card" type="button" @click="navigateTo('customer-service')">
+            <div class="feature-head">
+              <span class="feature-icon">
+                <el-icon :size="24"><Service /></el-icon>
+              </span>
+              <span class="feature-status">在线</span>
             </div>
             <h3 class="feature-title">平台服务</h3>
-            <p class="feature-description">快速了解功能入口、使用流程、练习路径和常见问题</p>
-            <div class="feature-status">
-              <span>在线</span>
-            </div>
-          </div>
-          
-          <div class="feature-card multimodal-card" @click="navigateTo('multimodal')">
-            <div class="feature-icon">
-              <el-icon :size="48"><Picture /></el-icon>
+            <p class="feature-description">查入口、看信息、快速问路都很顺手。</p>
+            <span class="feature-meta">适合轻量问题</span>
+          </button>
+
+          <button class="feature-card" type="button" @click="navigateTo('multimodal')">
+            <div class="feature-head">
+              <span class="feature-icon">
+                <el-icon :size="24"><Picture /></el-icon>
+              </span>
+              <span class="feature-status">增强</span>
             </div>
             <h3 class="feature-title">多模态解析</h3>
-            <p class="feature-description">读取图片、PDF 与资料内容，帮助你更快理解、整理和提炼重点</p>
-            <div class="feature-status">
-              <span>增强</span>
-            </div>
-          </div>
-        </div>
+            <p class="feature-description">截图、图片和资料都能转成清晰结果。</p>
+            <span class="feature-meta">适合识图和摘取</span>
+          </button>
+        </section>
+
+        <section class="quick-strip">
+          <article class="quick-note">
+            <span>深度协作</span>
+            <p>问题复杂时，从 AI 对话开始。</p>
+          </article>
+          <article class="quick-note">
+            <span>场景模拟</span>
+            <p>需要代入感时，角色模式会更自然。</p>
+          </article>
+          <article class="quick-note">
+            <span>快速处理</span>
+            <p>手里已经有图或资料时，直接走解析。</p>
+          </article>
+        </section>
       </div>
     </main>
   </div>
@@ -134,12 +166,10 @@ import { ChatDotRound, ChatLineRound, Edit, Service, Picture, HomeFilled } from 
 const router = useRouter()
 const route = useRoute()
 
-// 判断当前AI功能是否激活
 const isActive = (feature) => {
   return route.path === `/ai/${feature}`
 }
 
-// 跳转到指定AI功能
 const navigateTo = (feature) => {
   try {
     router.push(`/ai/${feature}`)
@@ -148,7 +178,6 @@ const navigateTo = (feature) => {
   }
 }
 
-// 返回首页
 const goHome = () => {
   router.push('/home')
 }
@@ -157,352 +186,397 @@ const goHome = () => {
 <style scoped>
 .ai-page {
   min-height: 100vh;
-  background: #ffffff;
-  background-image: 
-    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
-    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-  background-size: 4px 4px;
-  background-position: 0 0, 0 2px, 2px -2px, -2px 0px;
+  background:
+    radial-gradient(circle at top left, rgba(33, 87, 255, 0.08), transparent 28%),
+    radial-gradient(circle at right center, rgba(13, 17, 28, 0.08), transparent 24%),
+    #f5f7fb;
+  color: #111827;
 }
 
-/* AI导航栏 */
 .ai-nav {
-  background: #ffffff;
-  position: fixed;
-  width: 100%;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  border-bottom: 4px solid #000000;
-  box-shadow: 4px 4px 0px #000000;
+  z-index: 20;
+  backdrop-filter: blur(18px);
+  background: rgba(245, 247, 251, 0.86);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
 }
 
-.ai-nav-container {
-  max-width: 1400px;
+.ai-nav-container,
+.container {
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 0 24px;
 }
 
 .ai-nav-content {
+  min-height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
-  gap: 24px;
+  gap: 20px;
 }
 
-/* Logo和标题 */
+.ai-logo,
+.back-home,
+.ai-nav-item,
+.feature-card,
+.hero-primary,
+.hero-secondary {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
 .ai-logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 8px 16px;
-  border: 2px solid transparent;
-}
-
-.ai-logo:hover {
-  background-color: #f0f0f0;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
-  border: 2px solid #000000;
+  padding: 0;
+  color: inherit;
 }
 
 .logo-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   width: 40px;
   height: 40px;
-  background: #000000;
-  color: #ffffff;
-  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #111827, #2b4eff);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(43, 78, 255, 0.22);
 }
 
-.logo-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #000000;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
-}
-
-/* AI功能导航菜单 */
-.ai-nav-menu {
+.logo-copy {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.logo-copy strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.logo-copy span {
+  font-size: 12px;
+  color: #667085;
+  line-height: 1;
+}
+
+.ai-nav-menu {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
-  justify-content: center;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .ai-nav-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #000000;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  padding: 10px 20px;
-  border: 2px solid #000000;
-  border-radius: 0;
-  cursor: pointer;
-  white-space: nowrap;
-  background: #ffffff;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
-}
-
-.ai-nav-item .el-icon {
-  font-size: 18px;
-}
-
-.ai-nav-item:hover {
-  background-color: #000000;
-  color: #ffffff;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
-}
-
-.ai-nav-item.active {
-  background-color: #000000;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 4px 4px 0px #000000;
-  transform: translate(-2px, -2px);
-}
-
-/* 返回首页按钮 */
-.back-home {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #000000;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #475467;
   transition: all 0.2s ease;
-  padding: 10px 20px;
-  border: 2px solid #000000;
-  border-radius: 0;
-  cursor: pointer;
-  white-space: nowrap;
+}
+
+.ai-nav-item:hover,
+.ai-nav-item.active {
   background: #ffffff;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
+  color: #111827;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
-.back-home:hover {
-  background-color: #000000;
-  color: #ffffff;
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0px #000000;
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #344054;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
-/* 主内容区 */
 .main-content {
-  padding: 108px 24px 24px 24px;
+  padding: 36px 0 56px;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
+  display: grid;
+  gap: 22px;
 }
 
-/* 欢迎区 */
-.welcome-section {
-  text-align: center;
-  margin-bottom: 60px;
-  animation: fadeIn 0.6s ease;
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.9fr);
+  gap: 18px;
+  align-items: stretch;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.hero-copy,
+.hero-side,
+.feature-card,
+.quick-note {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.88);
 }
 
-.welcome-content {
-  background: #ffffff;
-  padding: 40px;
-  border: 4px solid #000000;
-  box-shadow: 8px 8px 0px #000000;
-  margin-bottom: 20px;
+.hero-copy {
+  padding: 36px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(239, 244, 255, 0.92)),
+    #ffffff;
+  box-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+}
+
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  margin-bottom: 18px;
+  border-radius: 999px;
+  background: rgba(43, 78, 255, 0.08);
+  color: #2b4eff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .welcome-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #000000;
-  margin-bottom: 16px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
+  margin: 0;
+  font-size: clamp(34px, 4vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
 }
 
 .welcome-subtitle {
-  font-size: 18px;
-  color: #666666;
-  margin: 0;
-  font-weight: 400;
-  font-family: 'Courier New', monospace;
+  max-width: 720px;
+  margin: 16px 0 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #475467;
 }
 
-/* 功能卡片网格 */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.hero-primary,
+.hero-secondary {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hero-primary {
+  color: #fff;
+  background: linear-gradient(135deg, #111827, #2b4eff);
+  box-shadow: 0 18px 36px rgba(43, 78, 255, 0.22);
+}
+
+.hero-secondary {
+  color: #111827;
+  background: rgba(17, 24, 39, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.hero-primary:hover,
+.hero-secondary:hover,
+.feature-card:hover {
+  transform: translateY(-2px);
+}
+
+.hero-side {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.hero-metric {
+  padding: 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(245, 247, 255, 0.95), rgba(255, 255, 255, 0.95));
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.hero-metric span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #667085;
+}
+
+.hero-metric strong {
+  display: block;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+
+.hero-metric p {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475467;
+}
+
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .feature-card {
-  background: #ffffff;
-  padding: 32px 24px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 4px solid #000000;
-  box-shadow: 6px 6px 0px #000000;
-  animation: slideUp 0.6s ease;
-  animation-fill-mode: both;
-}
-
-.feature-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.feature-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.feature-card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.feature-card:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  padding: 22px;
+  text-align: left;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .feature-card:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: 10px 10px 0px #000000;
+  border-color: rgba(43, 78, 255, 0.18);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
-/* 功能图标 */
-.feature-icon {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
-  border-radius: 0;
+.feature-card--primary {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(30, 41, 59, 0.94));
+  color: #f8fafc;
+}
+
+.feature-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.feature-icon {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  border: 4px solid #000000;
-  background: #ffffff;
-  color: #000000;
+  border-radius: 12px;
+  background: rgba(43, 78, 255, 0.1);
+  color: #2b4eff;
 }
 
-.feature-card:hover .feature-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.feature-card.chatbot-card .feature-icon {
-  background: #000000;
+.feature-card--primary .feature-icon {
+  background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
-}
-
-.feature-card.practice-card .feature-icon {
-  background: #000000;
-  color: #ffffff;
-}
-
-.feature-card.service-card .feature-icon {
-  background: #000000;
-  color: #ffffff;
-}
-
-.feature-card.multimodal-card .feature-icon {
-  background: #000000;
-  color: #ffffff;
-}
-
-.feature-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #000000;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  font-family: 'Courier New', monospace;
-  letter-spacing: 1px;
-}
-
-.feature-description {
-  font-size: 14px;
-  color: #666666;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  font-family: 'Courier New', monospace;
 }
 
 .feature-status {
   display: inline-flex;
   align-items: center;
-  padding: 8px 20px;
-  border-radius: 0;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.05);
+  color: #475467;
   font-size: 12px;
-  font-weight: 500;
-  border: 2px solid #000000;
-  font-family: 'Courier New', monospace;
-  text-transform: uppercase;
+  font-weight: 700;
 }
 
-.feature-status.active {
-  background-color: #000000;
+.feature-status--solid {
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
 }
 
-.feature-status:not(.active) {
-  background-color: #f0f0f0;
-  color: #666666;
+.feature-title {
+  margin: 18px 0 0;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
 }
 
-/* 响应式设计 */
+.feature-description {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: inherit;
+  opacity: 0.82;
+}
+
+.feature-meta {
+  display: block;
+  margin-top: 18px;
+  font-size: 12px;
+  color: #667085;
+}
+
+.feature-card--primary .feature-meta {
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.quick-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quick-note {
+  padding: 18px 20px;
+}
+
+.quick-note span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2b4eff;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.quick-note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #475467;
+}
+
 @media (max-width: 1024px) {
+  .hero-panel,
+  .features-grid,
+  .quick-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-copy {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-nav-container,
+  .container {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .ai-nav-content {
+    min-height: 64px;
+  }
+
   .ai-nav-menu {
-    gap: 4px;
-  }
-
-  .ai-nav-item {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  .ai-nav-item span:not(.el-icon) {
     display: none;
   }
 
@@ -510,89 +584,22 @@ const goHome = () => {
     display: none;
   }
 
-  .logo-title {
-    font-size: 18px;
-  }
-
-  .welcome-title {
-    font-size: 28px;
-  }
-
-  .welcome-subtitle {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 768px) {
-  .ai-nav-content {
-    padding: 0 12px;
-  }
-
-  .ai-nav-menu {
-    display: none;
-  }
-
-  .ai-nav-content {
-    justify-content: space-between;
-  }
-
-  .logo-title {
-    font-size: 16px;
-  }
-
-  .logo-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .back-home {
-    padding: 8px 12px;
-  }
-
   .main-content {
-    padding: 88px 12px 12px 12px;
+    padding: 22px 0 40px;
   }
 
-  .container {
-    padding: 0 12px;
+  .hero-panel,
+  .features-grid,
+  .quick-strip {
+    grid-template-columns: 1fr;
   }
 
-  .welcome-content {
-    padding: 24px 16px;
+  .hero-copy {
+    padding: 26px 22px;
   }
 
   .welcome-title {
-    font-size: 24px;
-  }
-
-  .welcome-subtitle {
-    font-size: 14px;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .feature-card {
-    padding: 24px 16px;
-  }
-
-  .feature-icon {
-    width: 60px;
-    height: 60px;
-  }
-
-  .feature-icon .el-icon {
-    font-size: 32px !important;
-  }
-
-  .feature-title {
-    font-size: 18px;
-  }
-
-  .feature-description {
-    font-size: 13px;
+    font-size: 32px;
   }
 }
 </style>

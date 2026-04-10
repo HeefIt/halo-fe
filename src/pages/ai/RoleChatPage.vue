@@ -4,17 +4,14 @@
       <AIToolHeader
         title="角色对话"
         badge="新入口"
-        subtitle="系统提供预设角色模板，用户只需选择角色并补充场景参数，就能进入更稳定的模拟对话。"
+        subtitle="选一个角色，直接进入更有场景感的对话。"
       />
 
       <section class="role-stage">
         <div class="role-stage__lead">
           <span class="role-stage__kicker">Role Workspace</span>
-          <h2>让每一场 AI 对话都从明确的人设开始</h2>
-          <p>
-            这里不再是泛化的“练习助手”展示页，而是一个真正可进入业务场景的角色入口。
-            你可以选择面试官、导师、学习教练、女友陪伴等系统预设角色，再用少量参数把对话调成你想要的状态。
-          </p>
+          <h2>让每场对话都从明确人设开始</h2>
+          <p>选定角色，再补几项参数，就能把语气和场景调准。</p>
 
           <div class="role-stage__facts">
             <div class="fact-strip">
@@ -35,7 +32,7 @@
         <aside class="role-stage__rail">
           <span class="role-stage__rail-label">当前角色说明</span>
           <strong>{{ selectedTemplate?.roleCategory || 'role' }}</strong>
-          <p>{{ selectedTemplate?.roleDesc || '选择角色后，这里会显示模板定位和适用场景。' }}</p>
+          <p>{{ selectedTemplate?.roleDesc || '选择角色后，这里会显示角色简介。' }}</p>
           <button class="rail-link" type="button" @click="router.push('/ai/chatbot')">
             回到通用工作台
           </button>
@@ -49,7 +46,7 @@
               <span class="section-kicker">Templates</span>
               <h3 class="section-title">系统角色</h3>
             </div>
-            <span class="section-note">统一配置，方便持续扩展</span>
+            <span class="section-note">按角色切换</span>
           </div>
 
           <div v-if="templates.length" class="role-grid">
@@ -72,7 +69,7 @@
 
           <div v-else class="empty-card">
             <strong>暂无角色模板</strong>
-            <p>请先初始化角色模板数据，或者检查角色模板接口是否已联通。</p>
+            <p>请先初始化角色模板数据。</p>
           </div>
         </div>
 

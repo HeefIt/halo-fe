@@ -2,7 +2,7 @@
   <header class="ai-tool-header">
     <div class="ai-tool-header__main">
       <div class="ai-tool-header__copy">
-        <span class="ai-tool-header__kicker">AI WORKSPACE</span>
+        <span class="ai-tool-header__kicker">AI ZONE</span>
         <div class="ai-tool-header__title-row">
           <h1 class="ai-tool-header__title">{{ title }}</h1>
           <span v-if="badge" class="ai-tool-header__badge">{{ badge }}</span>
@@ -12,10 +12,10 @@
 
       <div class="ai-tool-header__actions">
         <button class="ai-tool-header__action" @click="router.push('/ai/chatbot')">
-          AI 工作台
+          AI 首页
         </button>
         <button class="ai-tool-header__action ai-tool-header__action--accent" @click="router.push('/home')">
-          返回首页
+          回首页
         </button>
       </div>
     </div>
@@ -60,6 +60,7 @@ const toolItems = [
   { label: '通用对话', path: '/ai/chatbot', icon: '◌' },
   { label: '角色对话', path: '/ai/role-chat', icon: '◈' },
   { label: '智能客服', path: '/ai/customer-service', icon: '◇' },
+  { label: '学习规划', path: '/ai/learning-coach', icon: '◍' },
   { label: '多模态解析', path: '/ai/multimodal', icon: '▣' }
 ]
 </script>
