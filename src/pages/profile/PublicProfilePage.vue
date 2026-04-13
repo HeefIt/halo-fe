@@ -107,7 +107,9 @@
                   <h3>{{ getDisplayTitle(blog.title) }}</h3>
                   <p>{{ getSummaryPreview(blog.summary) || '这篇文章还没有摘要。' }}</p>
                   <div class="blog-foot">
-                    <span>点赞 {{ formatNumber(blog.likeCount) }}</span>
+                    <span :class="{ 'blog-foot-liked': blog.isLiked === 1 }">
+                      {{ blog.isLiked === 1 ? `已赞 ${formatNumber(blog.likeCount)}` : `点赞 ${formatNumber(blog.likeCount)}` }}
+                    </span>
                     <span>评论 {{ formatNumber(blog.commentCount) }}</span>
                   </div>
                 </div>
@@ -307,6 +309,17 @@ const roleTags = computed(() => {
   })
 })
 
+const normalizeBlogItem = (item) => {
+  if (!item) return item
+
+  return {
+    ...item,
+    coverImage: item.coverImage || item.cover_image || '',
+    publishTime: item.publishTime || item.publish_time || item.createdTime || item.created_time || '',
+    isLiked: item.isLiked ?? item.is_liked ?? 0
+  }
+}
+
 const loadBlogs = async ({ reset = false } = {}) => {
   const targetPage = reset ? 1 : blogPageNum.value + 1
   if (!reset) {
@@ -324,7 +337,7 @@ const loadBlogs = async ({ reset = false } = {}) => {
       throw new Error(blogResponse?.message || '获取用户博客失败')
     }
 
-    const nextList = blogResponse.data?.result || []
+    const nextList = (blogResponse.data?.result || []).map(normalizeBlogItem)
     totalBlogRecords.value = blogResponse.data?.total || 0
     recentBlogs.value = reset ? nextList : [...recentBlogs.value, ...nextList]
     blogPageNum.value = targetPage
@@ -926,6 +939,11 @@ watch(() => route.params.id, (id, previousId) => {
 .blog-foot {
   gap: 10px 14px;
   flex-wrap: wrap;
+}
+
+.blog-foot-liked {
+  color: #dc2626;
+  font-weight: 600;
 }
 
 .blog-meta {

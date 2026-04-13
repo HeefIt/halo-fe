@@ -85,11 +85,11 @@
                     </svg>
                     {{ formatNumber(article.viewCount) }}
                   </span>
-                  <span class="stat">
+                  <span class="stat" :class="{ 'stat-liked': article.isLiked === 1 }">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
-                    {{ formatNumber(article.likeCount) }}
+                    {{ article.isLiked === 1 ? `已赞 ${formatNumber(article.likeCount)}` : formatNumber(article.likeCount) }}
                   </span>
                 </div>
               </div>
@@ -155,6 +155,17 @@ const userStore = useUserStore()
 
 const hotArticles = ref([])
 const latestArticles = ref([])
+
+const normalizeArticleItem = (item) => {
+  if (!item) return item
+
+  return {
+    ...item,
+    coverImage: item.coverImage || item.cover_image || '',
+    publishTime: item.publishTime || item.publish_time || item.createdTime || item.created_time || '',
+    isLiked: item.isLiked ?? item.is_liked ?? 0
+  }
+}
 
 const navigateTo = (path) => {
   router.push(path)
@@ -287,10 +298,10 @@ const loadData = async () => {
     ])
     
     if (hotRes.data) {
-      hotArticles.value = hotRes.data
+      hotArticles.value = hotRes.data.map(normalizeArticleItem)
     }
     if (latestRes.data) {
-      latestArticles.value = latestRes.data
+      latestArticles.value = latestRes.data.map(normalizeArticleItem)
     }
   } catch (error) {
     console.error('加载数据失败:', error)
@@ -639,6 +650,10 @@ onMounted(() => {
   gap: 4px;
   font-size: var(--text-xs);
   color: var(--color-text-muted);
+}
+
+.stat-liked {
+  color: #dc2626;
 }
 
 .articles-list {

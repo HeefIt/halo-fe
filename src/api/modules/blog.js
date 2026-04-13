@@ -92,11 +92,11 @@ export const blogApi = {
   },
 
   unlikeArticle(articleId) {
-    return request.post(`${API_PREFIX}/article/unlike/${articleId}`)
+    return request.post(`${API_PREFIX}/article/like/unlike/${articleId}`)
   },
 
   isLiked(articleId) {
-    return request.get(`${API_PREFIX}/article/isLiked/${articleId}`)
+    return request.get(`${API_PREFIX}/article/like/isLiked/${articleId}`)
   },
 
   getCommentPage(articleId, params) {

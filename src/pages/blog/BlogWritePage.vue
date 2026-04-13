@@ -327,7 +327,7 @@ const handleCoverFileChange = async (event) => {
   coverUploading.value = true
   try {
     const response = await fileApi.uploadImage(file, 'blog-cover')
-    const filePath = response?.data?.filePath
+    const filePath = response?.data?.filePath || response?.data?.url || response?.data?.fileUrl
     if (!filePath) {
       throw new Error(response?.message || '未获取到图片地址')
     }
@@ -457,7 +457,7 @@ const loadArticle = async () => {
       title: data.title,
       summary: data.summary,
       content: data.content,
-      coverImage: data.coverImage,
+      coverImage: data.coverImage || data.cover_image || '',
       categoryId: data.categoryId,
       tagIds: data.tagIds || [],
       relatedSubjectIds: data.relatedSubjectIds || [],

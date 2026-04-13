@@ -375,11 +375,45 @@ const extractTextFromHtml = (value) => {
   if (!value) return ''
   const parser = new DOMParser()
   const doc = parser.parseFromString(String(value), 'text/html')
-  return (doc.body?.textContent || '')
-    .replace(/\u00a0/g, ' ')
-    .replace(/\s+\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
+  const root = doc.body
+  if (!root) return normalizePlainText(String(value))
+
+  const blockBreakTags = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'BLOCKQUOTE', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'])
+  const lineBreakTags = new Set(['LI', 'TR'])
+  let output = ''
+
+  const walk = (node) => {
+    if (!node) return
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      output += node.textContent || ''
+      return
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return
+    }
+
+    const tagName = node.tagName
+    if (tagName === 'BR') {
+      output += '\n'
+      return
+    }
+
+    Array.from(node.childNodes || []).forEach(walk)
+
+    if (blockBreakTags.has(tagName)) {
+      output += '\n\n'
+      return
+    }
+
+    if (lineBreakTags.has(tagName)) {
+      output += '\n'
+    }
+  }
+
+  walk(root)
+  return normalizePlainText(output)
 }
 
 const containsStructuralHtml = (value) => /<(h[1-6]|ul|ol|li|blockquote|table|pre|code|img|video|iframe)\b/i.test(String(value || ''))
@@ -403,6 +437,15 @@ const markdownToHtml = (value) => marked.parse(value, {
   gfm: true,
   breaks: true
 })
+
+const normalizePlainText = (value) => {
+  return String(value || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 const resolveMarkdownSourceText = (value) => {
   const rawValue = String(value || '').trim()
@@ -835,15 +878,42 @@ const likeComment = async () => {
   ElMessage.info('评论点赞功能稍后补上')
 }
 
+const normalizeArticleDetail = (payload) => {
+  if (!payload) return null
+
+  return {
+    ...payload,
+    coverImage: payload.coverImage || payload.cover_image || '',
+    publishTime: payload.publishTime || payload.publish_time || payload.createdTime || payload.created_time || ''
+  }
+}
+
+const syncLikeState = async (articleId) => {
+  if (!articleId || !userStore.isLoggedIn) {
+    isLiked.value = false
+    return
+  }
+
+  try {
+    const res = await blogApi.isLiked(articleId)
+    isLiked.value = Boolean(res.data)
+  } catch (error) {
+    console.error('同步点赞状态失败:', error)
+    isLiked.value = article.value?.isLiked === 1
+  }
+}
+
 const loadArticle = async () => {
   try {
     const res = await blogApi.getArticleDetail(route.params.id)
-    article.value = res.data
-    isLiked.value = res.data?.isLiked === 1
+    const normalizedArticle = normalizeArticleDetail(res.data)
+    article.value = normalizedArticle
+    isLiked.value = normalizedArticle?.isLiked === 1
+    await syncLikeState(normalizedArticle?.id)
 
     await nextTick()
     handlePageScroll()
-    await loadArticleNavigation(res.data)
+    await loadArticleNavigation(normalizedArticle)
     blogApi.recordViewLog(route.params.id)
   } catch (error) {
     console.error('加载文章失败:', error)
@@ -1194,7 +1264,10 @@ onBeforeUnmount(() => {
 
 .article-content :deep(h1),
 .article-content :deep(h2),
-.article-content :deep(h3) {
+.article-content :deep(h3),
+.article-content :deep(h4),
+.article-content :deep(h5),
+.article-content :deep(h6) {
   position: relative;
   margin: 2.4em 0 0.85em;
   line-height: 1.35;
@@ -1226,12 +1299,22 @@ onBeforeUnmount(() => {
   font-size: 1.25rem;
 }
 
+.article-content :deep(h4) {
+  font-size: 1.08rem;
+}
+
+.article-content :deep(h5),
+.article-content :deep(h6) {
+  font-size: 1rem;
+}
+
 .article-content :deep(p),
 .article-content :deep(ul),
 .article-content :deep(ol),
 .article-content :deep(blockquote),
 .article-content :deep(pre),
-.article-content :deep(table) {
+.article-content :deep(table),
+.article-content :deep(hr) {
   margin: 0 0 1.15em;
 }
 
@@ -1294,6 +1377,11 @@ onBeforeUnmount(() => {
   margin: 1.5em auto;
   border-radius: 20px;
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+}
+
+.article-content :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .article-content :deep(.article-table-wrap) {
