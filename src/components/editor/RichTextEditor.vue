@@ -13,6 +13,7 @@
 <script setup>
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
 import Editor from '@tinymce/tinymce-vue'
+import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { ElMessage } from 'element-plus'
 import request from '@/api/http'
@@ -155,6 +156,16 @@ const editorConfig = computed(() => ({
   
   setup: (editor) => {
     ensureChineseLocale()
+    editor.on('paste', (event) => {
+      const clipboardData = event.clipboardData || event?.originalEvent?.clipboardData
+      const markdownHtml = resolveClipboardMarkdownContent(clipboardData)
+      if (!markdownHtml) {
+        return
+      }
+
+      event.preventDefault()
+      editor.insertContent(markdownHtml)
+    })
     editor.on('PastePreProcess', (event) => {
       event.content = normalizePastedContent(event.content)
     })
@@ -244,33 +255,92 @@ function normalizePastedContent(rawContent) {
   const normalizedText = hasHtmlTag ? extractTextFromHtml(value) : value
 
   if (looksLikeMarkdown(normalizedText)) {
-    return marked.parse(normalizedText, {
-      gfm: true,
-      breaks: true
-    })
+    return markdownToEditorHtml(normalizedText)
   }
 
   return plainTextToHtml(normalizedText)
 }
 
-function shouldTransformHtmlMarkdown(html) {
+function resolveClipboardMarkdownContent(clipboardData) {
+  if (!clipboardData?.getData) {
+    return ''
+  }
+
+  const plainText = normalizePlainText(clipboardData.getData('text/plain'))
+  const html = clipboardData.getData('text/html')
+
+  if (looksLikeMarkdown(plainText)) {
+    return markdownToEditorHtml(plainText)
+  }
+
+  if (shouldTransformHtmlMarkdown(html, plainText)) {
+    const extracted = extractTextFromHtml(html)
+    if (looksLikeMarkdown(extracted)) {
+      return markdownToEditorHtml(extracted)
+    }
+  }
+
+  return ''
+}
+
+function shouldTransformHtmlMarkdown(html, plainText = '') {
   if (!html) return false
   if (/<(h[1-6]|ul|ol|li|blockquote|table|pre|code|img|video|iframe)\b/i.test(html)) {
     return false
+  }
+  if (looksLikeMarkdown(plainText)) {
+    return true
   }
   return looksLikeMarkdown(extractTextFromHtml(html))
 }
 
 function extractTextFromHtml(html) {
   if (typeof DOMParser === 'undefined') {
-    return String(html || '')
+    return normalizePlainText(String(html || ''))
   }
 
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html')
-  return (doc.body?.textContent || '')
-    .replace(/\u00a0/g, ' ')
-    .replace(/\r\n/g, '\n')
-    .trim()
+  const root = doc.body
+  if (!root) {
+    return normalizePlainText(String(html || ''))
+  }
+
+  const blockBreakTags = new Set(['P', 'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'ASIDE', 'BLOCKQUOTE', 'PRE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'])
+  const lineBreakTags = new Set(['LI', 'TR'])
+  let output = ''
+
+  const walk = (node) => {
+    if (!node) return
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      output += node.textContent || ''
+      return
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return
+    }
+
+    const tagName = node.tagName
+    if (tagName === 'BR') {
+      output += '\n'
+      return
+    }
+
+    Array.from(node.childNodes || []).forEach(walk)
+
+    if (blockBreakTags.has(tagName)) {
+      output += '\n\n'
+      return
+    }
+
+    if (lineBreakTags.has(tagName)) {
+      output += '\n'
+    }
+  }
+
+  walk(root)
+  return normalizePlainText(output)
 }
 
 function looksLikeMarkdown(text) {
@@ -297,6 +367,24 @@ function ensureChineseLocale() {
   if (tinyMCE?.addI18n) {
     tinyMCE.addI18n('zh_CN', EDITOR_I18N_OVERRIDES)
   }
+}
+
+function markdownToEditorHtml(text) {
+  return DOMPurify.sanitize(marked.parse(String(text || ''), {
+    gfm: true,
+    breaks: true
+  }), {
+    USE_PROFILES: { html: true }
+  })
+}
+
+function normalizePlainText(value) {
+  return String(value || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 function getEditorPalette(theme) {
