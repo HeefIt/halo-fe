@@ -1,38 +1,40 @@
 <template>
-  <transition name="notice-dialog-fade">
-    <div v-if="modelValue" class="notice-dialog" @click.self="emitClose">
-      <div class="notice-card">
-        <div class="notice-card__head">
-          <div class="notice-card__meta">
-            <span class="notice-card__badge">{{ mode === 'popup' ? '系统公告' : '公告详情' }}</span>
-            <h3>{{ notice?.title || '公告' }}</h3>
-            <p v-if="timeText">{{ timeText }}</p>
+  <teleport to="body">
+    <transition name="notice-dialog-fade">
+      <div v-if="modelValue" class="notice-dialog" @click.self="emitClose">
+        <div class="notice-card">
+          <div class="notice-card__head">
+            <div class="notice-card__meta">
+              <span class="notice-card__badge">{{ mode === 'popup' ? '系统公告' : '公告详情' }}</span>
+              <h3>{{ notice?.title || '公告' }}</h3>
+              <p v-if="timeText">{{ timeText }}</p>
+            </div>
+            <button class="notice-card__close" type="button" @click="emitClose">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-          <button class="notice-card__close" type="button" @click="emitClose">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
 
-        <div class="notice-card__body">
-          <div class="notice-content" v-html="safeContent"></div>
-        </div>
+          <div class="notice-card__body">
+            <div class="notice-content" v-html="safeContent"></div>
+          </div>
 
-        <div class="notice-card__foot">
-          <template v-if="mode === 'popup'">
-            <button class="notice-btn notice-btn--ghost" type="button" @click="emitClose">稍后查看</button>
-            <button class="notice-btn notice-btn--secondary" type="button" @click="emitCloseToday">今日关闭</button>
-            <button class="notice-btn notice-btn--primary" type="button" @click="emitCloseForever">关闭公告</button>
-          </template>
-          <template v-else>
-            <button class="notice-btn notice-btn--primary" type="button" @click="emitClose">我知道了</button>
-          </template>
+          <div class="notice-card__foot">
+            <template v-if="mode === 'popup'">
+              <button class="notice-btn notice-btn--ghost" type="button" @click="emitClose">稍后查看</button>
+              <button class="notice-btn notice-btn--secondary" type="button" @click="emitCloseToday">今日关闭</button>
+              <button class="notice-btn notice-btn--primary" type="button" @click="emitCloseForever">关闭公告</button>
+            </template>
+            <template v-else>
+              <button class="notice-btn notice-btn--primary" type="button" @click="emitClose">我知道了</button>
+            </template>
+          </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </teleport>
 </template>
 
 <script setup>
