@@ -70,8 +70,8 @@ const toolItems = [
   display: grid;
   gap: 10px;
   padding: 12px 14px 10px;
-  border: 1px solid var(--ai-border, rgba(15, 23, 42, 0.1));
-  background: var(--ai-surface, #ffffff);
+  border: 1px solid var(--ai-border, var(--internal-panel-border));
+  background: var(--ai-surface, var(--internal-panel-bg));
   border-radius: 14px;
 }
 
@@ -83,7 +83,7 @@ const toolItems = [
 }
 
 .ai-tool-header__kicker {
-  color: var(--ai-text-faint, #64748b);
+  color: var(--ai-text-faint, var(--text-3));
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -99,7 +99,7 @@ const toolItems = [
 
 .ai-tool-header__title {
   margin: 0;
-  color: var(--ai-text, #0f172a);
+  color: var(--ai-text, var(--text-1));
   font-size: clamp(22px, 2.2vw, 28px);
   line-height: 1;
   letter-spacing: -0.04em;
@@ -111,8 +111,8 @@ const toolItems = [
   min-height: 22px;
   padding: 0 8px;
   border-radius: 999px;
-  background: var(--ai-accent-soft, rgba(37, 99, 235, 0.08));
-  color: var(--ai-accent, #2563eb);
+  background: var(--ai-accent-soft, var(--color-accent-light));
+  color: var(--ai-accent, var(--color-accent));
   font-size: 11px;
   font-weight: 700;
 }
@@ -120,7 +120,7 @@ const toolItems = [
 .ai-tool-header__subtitle {
   max-width: 720px;
   margin: 6px 0 0;
-  color: var(--ai-text-soft, #475569);
+  color: var(--ai-text-soft, var(--text-2));
   font-size: 13px;
   line-height: 1.55;
 }
@@ -135,18 +135,24 @@ const toolItems = [
 .ai-tool-header__action {
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--ai-border, rgba(15, 23, 42, 0.1));
-  background: transparent;
+  border: 1px solid var(--ai-border, var(--internal-panel-border));
+  background: var(--ai-surface-alt, var(--internal-panel-bg-alt));
   border-radius: 10px;
-  color: var(--ai-text, #0f172a);
+  color: var(--ai-text, var(--text-1));
   font-size: 12px;
   font-weight: 700;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ai-tool-header__action:hover {
+  border-color: var(--ai-border-strong, var(--internal-panel-border-strong));
+  background: var(--ai-surface-hover, var(--internal-panel-bg-hover));
 }
 
 .ai-tool-header__action--accent {
-  border-color: var(--ai-accent-line, rgba(37, 99, 235, 0.16));
-  background: var(--ai-accent-soft, rgba(37, 99, 235, 0.08));
-  color: var(--ai-accent, #2563eb);
+  border-color: var(--ai-accent-line, var(--color-accent-subtle));
+  background: var(--ai-accent-soft, var(--color-accent-light));
+  color: var(--ai-accent, var(--color-accent));
 }
 
 .ai-tool-nav {
@@ -162,17 +168,24 @@ const toolItems = [
   min-height: 30px;
   padding: 0 10px;
   border: 1px solid transparent;
-  background: var(--ai-surface-alt, #f8fafc);
+  background: var(--ai-surface-alt, var(--internal-panel-bg-alt));
   border-radius: 10px;
-  color: var(--ai-text-soft, #475569);
+  color: var(--ai-text-soft, var(--text-2));
   font-size: 12px;
   font-weight: 700;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.ai-tool-nav__item:hover {
+  border-color: var(--ai-border, var(--internal-panel-border));
+  background: var(--ai-surface-hover, var(--internal-panel-bg-hover));
+  color: var(--ai-text, var(--text-1));
 }
 
 .ai-tool-nav__item.active {
-  border-color: var(--ai-accent-line, rgba(37, 99, 235, 0.16));
-  background: var(--ai-accent-soft, rgba(37, 99, 235, 0.08));
-  color: var(--ai-accent, #2563eb);
+  border-color: var(--ai-accent-line, var(--color-accent-subtle));
+  background: var(--ai-accent-soft, var(--color-accent-light));
+  color: var(--ai-accent, var(--color-accent));
 }
 
 .ai-tool-nav__icon {
