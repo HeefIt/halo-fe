@@ -1,12 +1,13 @@
 <template>
   <div class="blog-list">
     <div class="list-header">
-      <h1 class="page-title">{{ currentCategoryName || '全部文章' }}</h1>
-      <p class="page-desc" v-if="!currentCategoryName">探索技术世界的无限可能</p>
+      <button type="button" class="header-back" @click="goBack()">{{ backLabel }}</button>
+      <h1 class="page-title">{{ pageTitle }}</h1>
+      <p class="page-desc">{{ pageDescription }}</p>
     </div>
 
-    <div class="list-content">
-      <aside class="sidebar">
+    <div class="list-content" :class="{ 'list-content--solo': hasAuthorFilter }">
+      <aside v-if="!hasAuthorFilter" class="sidebar">
         <div class="sidebar-section">
           <h3 class="sidebar-title">分类</h3>
           <ul class="category-list">
@@ -49,7 +50,7 @@
 
       <main class="main-content">
         <div class="content-header">
-          <div class="sort-tabs">
+          <div v-if="!hasAuthorFilter" class="sort-tabs">
             <button 
               class="sort-tab" 
               :class="{ active: sortBy === 'latest' }"
@@ -65,6 +66,7 @@
               热门
             </button>
           </div>
+          <div v-else class="author-archive-badge">作者文章归档</div>
           <div class="search-box">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"/>
@@ -73,7 +75,7 @@
             <input 
               v-model="keyword" 
               type="text" 
-              placeholder="搜索文章..."
+              :placeholder="searchPlaceholder"
               @input="handleSearch"
             />
           </div>
@@ -94,13 +96,14 @@
                 <span class="category-tag">{{ article.categoryName || '未分类' }}</span>
                 <span class="publish-time">{{ formatDate(article.publishTime) }}</span>
               </div>
-              <h2 class="item-title">{{ article.title }}</h2>
-              <p class="item-summary">{{ article.summary || '暂无摘要' }}</p>
+              <h2 class="item-title">{{ getDisplayTitle(article.title) }}</h2>
+              <p class="item-summary">{{ getSummaryPreview(article.summary) || '暂无摘要' }}</p>
               <div class="item-footer">
-                <div class="author-info">
-                  <div class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
+                <button class="author-info author-button" type="button" @click.stop="goToAuthorProfile(article)">
+                  <img v-if="article.authorAvatar" :src="article.authorAvatar" :alt="article.authorName || '作者头像'" class="author-avatar author-avatar-image" />
+                  <div v-else class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
                   <span class="author-name">{{ article.authorName || '匿名' }}</span>
-                </div>
+                </button>
                 <div class="article-stats">
                   <span class="stat">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,9 +166,11 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { blogApi } from '@/api/modules/blog'
+import { useSmartBack } from '@/composables/useSmartBack'
 
 const router = useRouter()
 const route = useRoute()
+const { backLabel, goBack } = useSmartBack(route, router, { fallback: '/blog' })
 
 const articles = ref([])
 const categories = ref([])
@@ -179,8 +184,27 @@ const sortBy = ref('latest')
 const keyword = ref('')
 const currentCategoryId = ref(null)
 const currentTagId = ref(null)
+const currentAuthorId = ref(null)
+const currentAuthorName = ref('')
 
 const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
+const hasAuthorFilter = computed(() => !!currentAuthorId.value)
+const pageTitle = computed(() => {
+  if (hasAuthorFilter.value) {
+    return currentAuthorName.value ? `${currentAuthorName.value} 的博客` : '作者博客'
+  }
+  return currentCategoryName.value || '全部文章'
+})
+const pageDescription = computed(() => {
+  if (hasAuthorFilter.value) {
+    return '按时间查看这位作者已经公开发布的文章。'
+  }
+  if (currentCategoryName.value) {
+    return '按分类查看相关文章。'
+  }
+  return '探索技术世界的无限可能'
+})
+const searchPlaceholder = computed(() => hasAuthorFilter.value ? '搜索这位作者的文章...' : '搜索文章...')
 
 const currentCategoryName = computed(() => {
   if (!currentCategoryId.value) return null
@@ -202,8 +226,65 @@ const formatDate = (dateStr) => {
 }
 
 const goToArticle = (id) => {
-  router.push(`/blog/article/${id}`)
+  router.push({
+    path: `/blog/article/${id}`,
+    query: {
+      back: route.fullPath
+    }
+  })
 }
+
+const goToAuthorProfile = (article) => {
+  if (!article?.authorId) return
+  router.push({
+    path: `/profile/${article.authorId}`,
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const decodeHtmlEntities = (value) => {
+  if (!value) return ''
+
+  if (typeof document === 'undefined') {
+    return String(value)
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&mdash;/g, '—')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = String(value)
+  return textarea.value
+}
+
+const extractTextFromHtml = (value) => {
+  if (!value) return ''
+  const doc = new DOMParser().parseFromString(String(value), 'text/html')
+  return (doc.body?.textContent || '').replace(/\u00a0/g, ' ').trim()
+}
+
+const getPlainText = (value) => {
+  const rawValue = String(value || '').trim()
+  if (!rawValue) return ''
+
+  const decoded = decodeHtmlEntities(rawValue)
+  const text = /<\/?[a-z][\s\S]*>/i.test(decoded) ? extractTextFromHtml(decoded) : decoded
+
+  return text
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const getDisplayTitle = (value) => getPlainText(value)
+
+const getSummaryPreview = (value) => getPlainText(value)
 
 const selectCategory = (category) => {
   currentCategoryId.value = category?.id || null
@@ -241,15 +322,17 @@ const loadArticles = async () => {
     const params = {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
-      title: keyword.value || undefined
+      title: keyword.value || undefined,
+      authorId: currentAuthorId.value || undefined,
+      categoryId: currentCategoryId.value || undefined
     }
 
     let res
-    if (currentTagId.value) {
+    if (currentTagId.value && !hasAuthorFilter.value) {
       res = await blogApi.getArticlesByTag(currentTagId.value, params)
       articles.value = res.data || []
       totalCount.value = res.data?.length || 0
-    } else if (currentCategoryId.value) {
+    } else if (currentCategoryId.value && !hasAuthorFilter.value) {
       res = await blogApi.getArticlesByCategory(currentCategoryId.value, params)
       articles.value = res.data || []
       totalCount.value = res.data?.length || 0
@@ -288,10 +371,12 @@ onMounted(async () => {
 })
 
 watch(() => route.query, (query) => {
-  if (query.categoryId) {
-    currentCategoryId.value = Number(query.categoryId)
-    loadArticles()
-  }
+  currentCategoryId.value = query.categoryId ? Number(query.categoryId) : null
+  currentAuthorId.value = query.authorId ? Number(query.authorId) : null
+  currentAuthorName.value = query.authorName ? String(query.authorName) : ''
+  currentTagId.value = null
+  pageNum.value = 1
+  loadArticles()
 }, { immediate: true })
 </script>
 
@@ -305,6 +390,20 @@ watch(() => route.query, (query) => {
   padding: 80px var(--spacing-xl) var(--spacing-2xl);
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   text-align: center;
+}
+
+.header-back {
+  margin-bottom: var(--spacing-lg);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.header-back:hover {
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .page-title {
@@ -326,6 +425,10 @@ watch(() => route.query, (query) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.list-content--solo {
+  max-width: 1040px;
 }
 
 .sidebar {
@@ -421,6 +524,18 @@ watch(() => route.query, (query) => {
 .sort-tabs {
   display: flex;
   gap: var(--spacing-xs);
+}
+
+.author-archive-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
 }
 
 .sort-tab {
@@ -573,6 +688,13 @@ watch(() => route.query, (query) => {
   gap: var(--spacing-sm);
 }
 
+.author-button {
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .author-avatar {
   width: 24px;
   height: 24px;
@@ -584,6 +706,11 @@ watch(() => route.query, (query) => {
   font-size: var(--text-xs);
   font-weight: 600;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.author-avatar-image {
+  object-fit: cover;
 }
 
 .author-name {

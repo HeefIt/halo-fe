@@ -8,12 +8,12 @@
       <main class="detail-main">
         <article class="article-card">
           <header class="article-hero">
-            <button class="back-link" type="button" @click="router.back()">
+            <button class="back-link" type="button" @click="goBack()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M19 12H5" />
                 <path d="m12 19-7-7 7-7" />
               </svg>
-              返回文章列表
+              {{ backLabel }}
             </button>
 
             <div class="hero-meta">
@@ -22,18 +22,19 @@
               <span>约 {{ readingTime }} 分钟阅读</span>
             </div>
 
-            <h1 class="article-title">{{ article.title }}</h1>
+            <h1 class="article-title" v-html="renderedArticleTitle"></h1>
 
-            <p v-if="article.summary" class="article-summary">{{ article.summary }}</p>
+            <div v-if="article.summary" class="article-summary" v-html="renderedArticleSummary"></div>
 
             <div class="hero-author-row">
-              <div class="article-author">
-                <div class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
+              <button class="article-author author-button" type="button" @click="goToAuthorProfile(article)">
+                <img v-if="article.authorAvatar" :src="article.authorAvatar" :alt="article.authorName || '作者头像'" class="author-avatar author-avatar-image" />
+                <div v-else class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
                 <div class="author-info">
                   <span class="author-name">{{ article.authorName || '匿名作者' }}</span>
-                  <span class="author-desc">持续输出工程实践与成长方法</span>
+                  <span class="author-desc">查看作者主页与已发布内容</span>
                 </div>
-              </div>
+              </button>
 
               <div class="article-stats">
                 <div class="stat-pill">
@@ -95,6 +96,13 @@
 
           <footer class="article-footer">
             <div class="article-actions">
+              <button v-if="canEditArticle" class="action-btn action-btn-edit" @click="goToEditArticle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                </svg>
+                <span>{{ article?.status === 1 ? '编辑文章' : '继续编辑' }}</span>
+              </button>
               <button class="action-btn" :class="{ liked: isLiked }" @click="handleLike">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -129,8 +137,8 @@
             @click="goToArticle(articleNavigation.previous.id)"
           >
             <span class="nav-label">上一篇</span>
-            <strong class="nav-title">{{ articleNavigation.previous.title }}</strong>
-            <span class="nav-summary">{{ articleNavigation.previous.summary || '继续查看上一篇相关内容' }}</span>
+            <strong class="nav-title">{{ normalizeDisplayTitle(articleNavigation.previous.title) }}</strong>
+            <span class="nav-summary">{{ getPlainTextFromMixedContent(articleNavigation.previous.summary) || '继续查看上一篇相关内容' }}</span>
           </button>
 
           <button
@@ -140,8 +148,8 @@
             @click="goToArticle(articleNavigation.next.id)"
           >
             <span class="nav-label">下一篇</span>
-            <strong class="nav-title">{{ articleNavigation.next.title }}</strong>
-            <span class="nav-summary">{{ articleNavigation.next.summary || '继续查看下一篇相关内容' }}</span>
+            <strong class="nav-title">{{ normalizeDisplayTitle(articleNavigation.next.title) }}</strong>
+            <span class="nav-summary">{{ getPlainTextFromMixedContent(articleNavigation.next.summary) || '继续查看下一篇相关内容' }}</span>
           </button>
         </section>
       </main>
@@ -270,11 +278,13 @@ import { ElMessage } from 'element-plus'
 import { blogApi } from '@/api/modules/blog'
 import { useThemeStore } from '@/stores/modules/theme'
 import { useUserStore } from '@/stores/modules/user'
+import { useSmartBack } from '@/composables/useSmartBack'
 
 const route = useRoute()
 const router = useRouter()
 const themeStore = useThemeStore()
 const userStore = useUserStore()
+const { backLabel, goBack } = useSmartBack(route, router, { fallback: '/blog/list' })
 
 const article = ref(null)
 const comments = ref([])
@@ -296,9 +306,12 @@ const articleTags = computed(() => {
   })
 })
 
+const renderedArticleTitle = computed(() => renderArticleTitle(article.value?.title || ''))
+const renderedArticleSummary = computed(() => renderArticleSummary(article.value?.summary || ''))
+
 const readingTime = computed(() => {
   if (!article.value?.content) return 1
-  const plainText = article.value.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  const plainText = getPlainTextFromMixedContent(article.value.content)
   const words = plainText.length
   return Math.max(1, Math.ceil(words / 500))
 })
@@ -307,6 +320,13 @@ const commentCount = computed(() => {
   const fromArticle = Number(article.value?.commentCount)
   if (Number.isFinite(fromArticle) && fromArticle > 0) return fromArticle
   return comments.value?.length || 0
+})
+
+const canEditArticle = computed(() => {
+  if (!article.value?.authorId || !userStore.isLoggedIn) {
+    return false
+  }
+  return userStore.isAdmin || Number(userStore.userId) === Number(article.value.authorId)
 })
 
 const processedArticle = computed(() => normalizeArticleContent(article.value?.content || ''))
@@ -332,14 +352,137 @@ const createHeadingId = (text, index) => {
   return normalized ? `section-${normalized}-${index}` : `section-${index}`
 }
 
+const decodeHtmlEntities = (value) => {
+  if (!value) return ''
+
+  if (typeof document === 'undefined') {
+    return String(value)
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&mdash;/g, '—')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#39;/g, '\'')
+      .replace(/&quot;/g, '"')
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = String(value)
+  return textarea.value
+}
+
+const extractTextFromHtml = (value) => {
+  if (!value) return ''
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(String(value), 'text/html')
+  return (doc.body?.textContent || '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+const containsStructuralHtml = (value) => /<(h[1-6]|ul|ol|li|blockquote|table|pre|code|img|video|iframe)\b/i.test(String(value || ''))
+
+const looksLikeMarkdown = (value) => {
+  const text = String(value || '').trim()
+  if (!text) return false
+
+  return /(^|\n)\s{0,3}#{1,6}\s+\S+/m.test(text) ||
+    /(^|\n)\s*[-*+]\s+\S+/m.test(text) ||
+    /(^|\n)\s*\d+\.\s+\S+/m.test(text) ||
+    /(^|\n)\s*>\s+\S+/m.test(text) ||
+    /(^|\n)\s*```[\s\S]*?```/m.test(text) ||
+    /\*\*[^*]+\*\*/.test(text) ||
+    /__[^_]+__/.test(text) ||
+    /`[^`]+`/.test(text) ||
+    /\[[^\]]+\]\([^)]+\)/.test(text)
+}
+
+const markdownToHtml = (value) => marked.parse(value, {
+  gfm: true,
+  breaks: true
+})
+
+const resolveMarkdownSourceText = (value) => {
+  const rawValue = String(value || '').trim()
+  if (!rawValue) return ''
+
+  const decodedValue = decodeHtmlEntities(rawValue)
+  const hasHtmlTag = /<\/?[a-z][\s\S]*>/i.test(rawValue)
+  if (!hasHtmlTag) {
+    return decodedValue
+  }
+
+  const plainText = extractTextFromHtml(rawValue)
+  if (!containsStructuralHtml(rawValue) && looksLikeMarkdown(plainText)) {
+    return decodeHtmlEntities(plainText)
+  }
+
+  return decodedValue
+}
+
+const getPlainTextFromMixedContent = (value) => {
+  const normalized = resolveMarkdownSourceText(value)
+  if (!normalized) return ''
+
+  const html = /<\/?[a-z][\s\S]*>/i.test(normalized)
+    ? normalized
+    : looksLikeMarkdown(normalized)
+      ? markdownToHtml(normalized)
+      : `<p>${normalized}</p>`
+
+  return extractTextFromHtml(html).replace(/\s+/g, ' ').trim()
+}
+
+const normalizeDisplayTitle = (value) => {
+  return getPlainTextFromMixedContent(value)
+    .replace(/^\s{0,3}#{1,6}\s+/, '')
+    .trim()
+}
+
+const renderArticleTitle = (value) => {
+  const normalized = normalizeDisplayTitle(value)
+  if (!normalized) return ''
+
+  return DOMPurify.sanitize(marked.parseInline(normalized), {
+    USE_PROFILES: { html: true }
+  })
+}
+
+const renderArticleSummary = (value) => {
+  const normalized = resolveMarkdownSourceText(value)
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .trim()
+
+  if (!normalized) {
+    return ''
+  }
+
+  const segments = normalized
+    .split(/\n{2,}/)
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+
+  const html = segments.map((segment) => {
+    const inlineContent = marked.parseInline(segment.replace(/\n+/g, ' '))
+    return `<p>${inlineContent}</p>`
+  }).join('')
+
+  return DOMPurify.sanitize(html, {
+    USE_PROFILES: { html: true }
+  })
+}
+
 const normalizeArticleContent = (rawContent) => {
   if (!rawContent) {
     return { html: '<p>这篇文章暂时还没有正文内容。</p>', toc: [], codes: {} }
   }
 
-  const sourceHtml = /<\/?[a-z][\s\S]*>/i.test(rawContent)
-    ? rawContent
-    : marked.parse(rawContent)
+  const resolvedSource = resolveMarkdownSourceText(rawContent)
+  const sourceHtml = /<\/?[a-z][\s\S]*>/i.test(resolvedSource)
+    ? resolvedSource
+    : markdownToHtml(resolvedSource)
 
   const parser = new DOMParser()
   const doc = parser.parseFromString(`<div id="article-root">${sourceHtml}</div>`, 'text/html')
@@ -590,7 +733,32 @@ const loadArticleNavigation = async (currentArticle) => {
 
 const goToArticle = (id) => {
   if (!id) return
-  router.push(`/blog/article/${id}`)
+  router.push({
+    path: `/blog/article/${id}`,
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const goToAuthorProfile = (targetArticle) => {
+  if (!targetArticle?.authorId) return
+  router.push({
+    path: `/profile/${targetArticle.authorId}`,
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const goToEditArticle = () => {
+  if (!article.value?.id || !canEditArticle.value) return
+  router.push({
+    path: `/blog/edit/${article.value.id}`,
+    query: {
+      back: route.fullPath
+    }
+  })
 }
 
 const goToPractice = (subjectId) => {
@@ -679,7 +847,10 @@ const loadArticle = async () => {
     blogApi.recordViewLog(route.params.id)
   } catch (error) {
     console.error('加载文章失败:', error)
-    ElMessage.error('文章加载失败')
+    const message = error?.response?.data?.message || error?.message || '文章加载失败'
+    ElMessage.error(message)
+    article.value = null
+    router.push('/blog/list')
   }
 }
 
@@ -893,6 +1064,14 @@ onBeforeUnmount(() => {
   border-radius: 20px;
 }
 
+.article-summary :deep(p) {
+  margin: 0;
+}
+
+.article-summary :deep(p + p) {
+  margin-top: 12px;
+}
+
 .hero-author-row {
   display: flex;
   justify-content: space-between;
@@ -905,6 +1084,19 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.author-button {
+  transition: opacity var(--transition-fast);
+}
+
+.author-button:hover {
+  opacity: 0.92;
 }
 
 .author-avatar,
@@ -923,6 +1115,11 @@ onBeforeUnmount(() => {
   width: 54px;
   height: 54px;
   font-size: 18px;
+  overflow: hidden;
+}
+
+.author-avatar-image {
+  object-fit: cover;
 }
 
 .author-info {
@@ -1294,6 +1491,17 @@ onBeforeUnmount(() => {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
   cursor: pointer;
+}
+
+.action-btn-edit {
+  color: var(--color-accent);
+  border-color: rgba(37, 99, 235, 0.22);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.action-btn-edit:hover {
+  border-color: rgba(37, 99, 235, 0.3);
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .action-btn:hover {

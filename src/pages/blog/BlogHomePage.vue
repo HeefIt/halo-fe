@@ -10,7 +10,14 @@
           把题解、项目经验、架构思考和踩坑复盘写成文章，让知识从一次输入变成长期资产
         </p>
         <div class="hero-actions">
-          <button class="btn-primary" @click="navigateTo('/blog/list')">
+          <button class="btn-ghost" @click="goToSiteHome">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+            </svg>
+            返回网站首页
+          </button>
+          <button class="btn-primary" @click="openBlogList">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
               <line x1="7" y1="8" x2="17" y2="8"/>
@@ -19,7 +26,7 @@
             </svg>
             进入文章广场
           </button>
-          <button v-if="userStore.isLoggedIn" class="btn-secondary" @click="navigateTo('/blog/write')">
+          <button v-if="userStore.isLoggedIn" class="btn-secondary" @click="openWritePage">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 19l7-7 3 3-7 7-3-3z"/>
               <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
@@ -62,13 +69,14 @@
               <div class="card-meta">
                 <span class="category-tag">{{ article.categoryName || '未分类' }}</span>
               </div>
-              <h3 class="card-title">{{ article.title }}</h3>
-              <p class="card-summary">{{ article.summary || '暂无摘要' }}</p>
+              <h3 class="card-title">{{ getDisplayTitle(article.title) }}</h3>
+              <p class="card-summary">{{ getSummaryPreview(article.summary) || '暂无摘要' }}</p>
               <div class="card-footer">
-                <div class="author-info">
-                  <div class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
+                <button class="author-info author-button" type="button" @click.stop="goToAuthorProfile(article)">
+                  <img v-if="article.authorAvatar" :src="article.authorAvatar" :alt="article.authorName || '作者头像'" class="author-avatar author-avatar-image" />
+                  <div v-else class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
                   <span class="author-name">{{ article.authorName || '匿名' }}</span>
-                </div>
+                </button>
                 <div class="article-stats">
                   <span class="stat">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -112,13 +120,18 @@
                 <span class="category-tag small">{{ article.categoryName || '未分类' }}</span>
                 <span class="publish-time">{{ formatDate(article.publishTime) }}</span>
               </div>
-              <h3 class="item-title">{{ article.title }}</h3>
-              <p class="item-summary">{{ article.summary || '暂无摘要' }}</p>
+              <h3 class="item-title">{{ getDisplayTitle(article.title) }}</h3>
+              <p class="item-summary">{{ getSummaryPreview(article.summary) || '暂无摘要' }}</p>
               <div class="item-tags" v-if="article.tags?.length">
                 <span v-for="tag in article.tags.slice(0, 3)" :key="tag.id" class="tag">
                   {{ tag.tagName }}
                 </span>
               </div>
+              <button class="author-info author-button item-author" type="button" @click.stop="goToAuthorProfile(article)">
+                <img v-if="article.authorAvatar" :src="article.authorAvatar" :alt="article.authorName || '作者头像'" class="author-avatar author-avatar-image" />
+                <div v-else class="author-avatar">{{ article.authorName?.charAt(0) || 'U' }}</div>
+                <span class="author-name">{{ article.authorName || '匿名' }}</span>
+              </button>
             </div>
             <div class="item-cover" v-if="article.coverImage">
               <img :src="article.coverImage" :alt="article.title" />
@@ -132,11 +145,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/modules/user'
 import { blogApi } from '@/api/modules/blog'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const hotArticles = ref([])
@@ -146,9 +160,99 @@ const navigateTo = (path) => {
   router.push(path)
 }
 
-const goToArticle = (id) => {
-  router.push(`/blog/article/${id}`)
+const goToSiteHome = () => {
+  router.push(userStore.isLoggedIn ? '/home' : '/')
 }
+
+const openBlogList = () => {
+  router.push({
+    path: '/blog/list',
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const openWritePage = () => {
+  router.push({
+    path: '/blog/write',
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const goToArticle = (id) => {
+  router.push({
+    path: `/blog/article/${id}`,
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const goToAuthorProfile = (article) => {
+  if (!article?.authorId) return
+  router.push({
+    path: `/profile/${article.authorId}`,
+    query: {
+      back: route.fullPath
+    }
+  })
+}
+
+const decodeHtmlEntities = (value) => {
+  if (!value) return ''
+
+  if (typeof document === 'undefined') {
+    return String(value)
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&mdash;/g, '—')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = String(value)
+  return textarea.value
+}
+
+const extractTextFromHtml = (value) => {
+  if (!value) return ''
+  const doc = new DOMParser().parseFromString(String(value), 'text/html')
+  return (doc.body?.textContent || '').replace(/\u00a0/g, ' ').trim()
+}
+
+const looksLikeMarkdown = (value) => {
+  const text = String(value || '').trim()
+  if (!text) return false
+
+  return /(^|\n)\s{0,3}#{1,6}\s+\S+/m.test(text) ||
+    /(^|\n)\s*[-*+]\s+\S+/m.test(text) ||
+    /(^|\n)\s*\d+\.\s+\S+/m.test(text) ||
+    /\*\*[^*]+\*\*/.test(text) ||
+    /`[^`]+`/.test(text)
+}
+
+const getPlainText = (value) => {
+  const rawValue = String(value || '').trim()
+  if (!rawValue) return ''
+
+  const decoded = decodeHtmlEntities(rawValue)
+  const text = /<\/?[a-z][\s\S]*>/i.test(decoded) ? extractTextFromHtml(decoded) : decoded
+
+  return text
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+const getDisplayTitle = (value) => getPlainText(value)
+
+const getSummaryPreview = (value) => getPlainText(value)
 
 const formatNumber = (num) => {
   if (!num) return '0'
@@ -273,6 +377,27 @@ onMounted(() => {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(15, 23, 42, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(10px);
+}
+
+.btn-ghost:hover {
+  background: rgba(15, 23, 42, 0.38);
+  border-color: rgba(255, 255, 255, 0.24);
 }
 
 .btn-secondary {
@@ -473,6 +598,13 @@ onMounted(() => {
   gap: var(--spacing-sm);
 }
 
+.author-button {
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
 .author-avatar {
   width: 24px;
   height: 24px;
@@ -484,6 +616,11 @@ onMounted(() => {
   font-size: var(--text-xs);
   font-weight: 600;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.author-avatar-image {
+  object-fit: cover;
 }
 
 .author-name {
@@ -566,6 +703,10 @@ onMounted(() => {
   display: flex;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
+}
+
+.item-author {
+  margin-top: 12px;
 }
 
 .tag {

@@ -112,51 +112,96 @@
       <section class="hero" ref="heroRef">
         <canvas ref="canvasRef" class="hero-canvas"></canvas>
         <div class="hero-gradient"></div>
+        <div class="hero-noise"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
         
         <div class="hero-content">
-          <div class="hero-badge animate-fade-up">
-            <span class="badge-dot"></span>
-            <span>给代码、表达和好问题留个位置</span>
-          </div>
-          
-          <h1 class="hero-title animate-fade-up" style="animation-delay: 100ms">
-            <span class="title-line">把灵感、技术与观点</span>
-            <span class="title-line title-gradient">放进同一个地方</span>
-          </h1>
-          
-          <p class="hero-subtitle animate-fade-up" style="animation-delay: 200ms">
-            题库、博客、AI 和讨论，不用再分散着找。<br>
-            想练，想写，想聊，都能顺着往下走。
-          </p>
-          
-          <div class="hero-actions animate-fade-up" style="animation-delay: 300ms">
-            <button class="btn-primary btn-lg" @click="$router.push('/register')">
-              立即进入
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </button>
-            <button class="btn-secondary btn-lg" @click="$router.push('/home')">
-              先看内容
-            </button>
-          </div>
-          
-          <div class="hero-stats animate-fade-up" style="animation-delay: 400ms">
-            <div class="stat">
-              <span class="stat-value">1000+</span>
-              <span class="stat-label">题目与主题</span>
+          <div class="hero-copy">
+            <p class="hero-brand animate-fade-up">
+              <span class="hero-brand__name">halo coding do</span>
+              <span class="hero-brand__caption">developer study flow</span>
+            </p>
+
+            <div class="hero-kicker animate-fade-up" style="animation-delay: 80ms">
+              <span>题库</span>
+              <span>博客</span>
+              <span>AI</span>
+              <span>讨论</span>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat">
-              <span class="stat-value">5000+</span>
-              <span class="stat-label">活跃用户</span>
+            
+            <h1 class="hero-title animate-fade-up" style="animation-delay: 140ms">
+              <span class="title-line">把练习、表达和讨论</span>
+              <span class="title-line hero-title__accent">排进同一条开发者动线</span>
+            </h1>
+            
+            <p class="hero-subtitle animate-fade-up" style="animation-delay: 220ms">
+              从第一道题开始，到一篇文章、一次追问、再到一场讨论，
+              路径不用再断开。
+            </p>
+            
+            <div class="hero-actions animate-fade-up" style="animation-delay: 300ms">
+              <button class="btn-primary btn-lg hero-btn-primary" @click="$router.push('/register')">
+                创建账号开始
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </button>
+              <button class="btn-secondary btn-lg hero-btn-secondary" @click="$router.push('/home')">
+                先逛逛内容
+              </button>
             </div>
-            <div class="stat-divider"></div>
-            <div class="stat">
-              <span class="stat-value">92%</span>
-              <span class="stat-label">AI 参与场景</span>
-            </div>
+
+            <ul class="hero-notes animate-fade-up" style="animation-delay: 380ms">
+              <li>题目不是孤岛，后面直接接上写作与复盘。</li>
+              <li>AI 不只是问答入口，也能接住拆解和追问。</li>
+              <li>社区不是边角功能，讨论本身就是学习的一部分。</li>
+            </ul>
           </div>
+
+          <div class="hero-stage animate-fade-up" style="animation-delay: 180ms" aria-hidden="true">
+            <div class="hero-stage__halo"></div>
+            <div class="hero-stage__ring hero-stage__ring--outer"></div>
+            <div class="hero-stage__ring hero-stage__ring--middle"></div>
+            <div class="hero-stage__ring hero-stage__ring--inner"></div>
+
+            <div class="hero-stage__core">
+              <span class="hero-stage__core-kicker">One flow</span>
+              <strong class="hero-stage__core-title">Practice to Voice</strong>
+              <span class="hero-stage__core-copy">for curious developers</span>
+            </div>
+
+            <div class="hero-orbit hero-orbit--question">
+              <span class="hero-orbit__eyebrow">Practice</span>
+              <strong>题库</strong>
+              <p>从真实题目开场</p>
+            </div>
+
+            <div class="hero-orbit hero-orbit--blog">
+              <span class="hero-orbit__eyebrow">Write</span>
+              <strong>博客</strong>
+              <p>把判断写下来</p>
+            </div>
+
+            <div class="hero-orbit hero-orbit--ai">
+              <span class="hero-orbit__eyebrow">Ask</span>
+              <strong>AI</strong>
+              <p>卡住时继续往前</p>
+            </div>
+
+            <div class="hero-orbit hero-orbit--community">
+              <span class="hero-orbit__eyebrow">Discuss</span>
+              <strong>讨论</strong>
+              <p>把问题放回人群里</p>
+            </div>
+
+            <div class="hero-stage__axis hero-stage__axis--x"></div>
+            <div class="hero-stage__axis hero-stage__axis--y"></div>
+          </div>
+        </div>
+
+        <div class="hero-scroll animate-fade-up" style="animation-delay: 460ms">
+          <span class="hero-scroll__label">向下看内容</span>
+          <span class="hero-scroll__line"></span>
         </div>
       </section>
 
@@ -981,9 +1026,10 @@ onUnmounted(() => {
 .hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
-  padding: 120px 0 80px;
+  padding: 132px 0 48px;
   overflow: hidden;
 }
 
@@ -996,120 +1042,398 @@ onUnmounted(() => {
 .hero-gradient {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent);
+  background:
+    radial-gradient(circle at 16% 18%, rgba(59, 130, 246, 0.2), transparent 26%),
+    radial-gradient(circle at 82% 22%, rgba(16, 185, 129, 0.2), transparent 28%),
+    radial-gradient(circle at 48% 68%, rgba(6, 182, 212, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(5, 7, 12, 0.18) 0%, rgba(5, 7, 12, 0.72) 100%);
   pointer-events: none;
+}
+
+.hero-noise,
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-noise {
+  opacity: 0.08;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.7) 0 1px, transparent 1px),
+    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.5) 0 1px, transparent 1px),
+    radial-gradient(circle at 45% 75%, rgba(255, 255, 255, 0.65) 0 1px, transparent 1px);
+  background-size: 180px 180px;
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0));
+  opacity: 0.32;
 }
 
 .hero-content {
   position: relative;
   z-index: 1;
-  max-width: 1280px;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
   width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(520px, 0.88fr);
+  align-items: center;
+  gap: 36px;
 }
 
-.hero-badge {
+.hero-copy {
+  max-width: 580px;
+}
+
+.hero-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.hero-brand__name {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 5vw, 4.7rem);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.07em;
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.hero-brand__caption {
+  width: fit-content;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.24);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.58);
+}
+
+.hero-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.hero-kicker span {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 100px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 24px;
-}
-
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  background: #10b981;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: rgba(7, 12, 22, 0.48);
+  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .hero-title {
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: clamp(48px, 8vw, 80px);
+  margin-bottom: 22px;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 5.9vw, 5.4rem);
   font-weight: 700;
-  line-height: 1.05;
-  letter-spacing: -0.04em;
-  margin-bottom: 24px;
-  color: white;
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+  color: rgba(255, 255, 255, 0.98);
 }
 
 .title-line {
   display: block;
 }
 
-.title-gradient {
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #10b981 100%);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradientMove 3s linear infinite;
-}
-
-@keyframes gradientMove {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
+.hero-title__accent {
+  color: #8ef3dc;
 }
 
 .hero-subtitle {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.5);
-  line-height: 1.7;
-  max-width: 480px;
-  margin-bottom: 32px;
+  max-width: 28rem;
+  margin-bottom: 34px;
+  font-size: 1.05rem;
+  color: rgba(226, 232, 240, 0.68);
+  line-height: 1.85;
 }
 
 .hero-actions {
   display: flex;
-  gap: 16px;
-  margin-bottom: 48px;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 34px;
 }
 
-.hero-stats {
+.hero-btn-primary {
+  background: linear-gradient(135deg, #7dd3fc 0%, #5eead4 52%, #86efac 100%);
+  color: #04111e;
+  box-shadow: 0 18px 40px rgba(94, 234, 212, 0.2);
+}
+
+.hero-btn-primary:hover {
+  box-shadow: 0 22px 48px rgba(94, 234, 212, 0.28);
+}
+
+.hero-btn-secondary {
+  border-color: rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.hero-btn-secondary:hover {
+  border-color: rgba(125, 211, 252, 0.34);
+  background: rgba(15, 23, 42, 0.54);
+}
+
+.hero-notes {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.hero-notes li {
+  position: relative;
+  padding-left: 18px;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.hero-notes li::before {
+  content: '';
+  position: absolute;
+  top: 0.85em;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7dd3fc 0%, #5eead4 100%);
+  box-shadow: 0 0 0 6px rgba(94, 234, 212, 0.08);
+}
+
+.hero-stage {
+  position: relative;
+  min-height: 640px;
   display: flex;
   align-items: center;
-  gap: 32px;
-  padding: 20px 28px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  width: fit-content;
+  justify-content: center;
 }
 
-.stat {
+.hero-stage__halo {
+  position: absolute;
+  inset: 16% 10% 14% 14%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(94, 234, 212, 0.18) 0%, rgba(56, 189, 248, 0.12) 38%, transparent 72%);
+  filter: blur(12px);
+}
+
+.hero-stage__ring {
+  position: absolute;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 50%;
+}
+
+.hero-stage__ring--outer {
+  width: 520px;
+  height: 520px;
+  border-color: rgba(94, 234, 212, 0.16);
+  animation: hero-spin 28s linear infinite;
+}
+
+.hero-stage__ring--middle {
+  width: 400px;
+  height: 400px;
+  border-color: rgba(125, 211, 252, 0.18);
+  animation: hero-spin-reverse 22s linear infinite;
+}
+
+.hero-stage__ring--inner {
+  width: 270px;
+  height: 270px;
+  border-color: rgba(255, 255, 255, 0.12);
+  animation: hero-spin 16s linear infinite;
+}
+
+.hero-stage__core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.14), transparent 54%),
+    linear-gradient(180deg, rgba(10, 18, 34, 0.94), rgba(5, 10, 22, 0.9));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.36),
+    0 0 0 16px rgba(125, 211, 252, 0.03);
   text-align: center;
 }
 
-.stat-value {
-  display: block;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 28px;
+.hero-stage__core-kicker {
+  font-size: 0.72rem;
   font-weight: 700;
-  color: white;
-  margin-bottom: 4px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.72);
 }
 
-.stat-label {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.4);
+.hero-stage__core-title {
+  max-width: 10rem;
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+  color: rgba(255, 255, 255, 0.97);
 }
 
-.stat-divider {
+.hero-stage__core-copy {
+  color: rgba(226, 232, 240, 0.56);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.hero-stage__axis {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.22), transparent);
+  opacity: 0.8;
+}
+
+.hero-stage__axis--x {
+  width: min(92%, 560px);
+  height: 1px;
+}
+
+.hero-stage__axis--y {
   width: 1px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.1);
+  height: min(92%, 560px);
+  background: linear-gradient(180deg, transparent, rgba(148, 163, 184, 0.22), transparent);
+}
+
+.hero-orbit {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 168px;
+  padding: 14px 16px 14px 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(7, 12, 22, 0.88), rgba(10, 18, 34, 0.52));
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.hero-orbit strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.96);
+  letter-spacing: -0.03em;
+}
+
+.hero-orbit p {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.56);
+  line-height: 1.55;
+}
+
+.hero-orbit__eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.72);
+}
+
+.hero-orbit--question {
+  top: 11%;
+  right: 6%;
+  animation: hero-float 7s ease-in-out infinite;
+}
+
+.hero-orbit--blog {
+  top: 20%;
+  left: 3%;
+  animation: hero-float 8.5s ease-in-out infinite 1.2s;
+}
+
+.hero-orbit--ai {
+  right: 0;
+  bottom: 20%;
+  animation: hero-float 8s ease-in-out infinite 0.8s;
+}
+
+.hero-orbit--community {
+  left: 7%;
+  bottom: 8%;
+  animation: hero-float 7.5s ease-in-out infinite 1.8s;
+}
+
+.hero-scroll {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 24px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: rgba(148, 163, 184, 0.64);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.hero-scroll__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.34), transparent);
+}
+
+@keyframes hero-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hero-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
 }
 
 .animate-fade-up {
@@ -1798,6 +2122,19 @@ onUnmounted(() => {
 }
 
 @media (max-width: 1024px) {
+  .hero-content {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .hero-copy {
+    max-width: 100%;
+  }
+
+  .hero-stage {
+    min-height: 560px;
+  }
+
   .features-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1832,20 +2169,108 @@ onUnmounted(() => {
   .nav-links {
     display: none;
   }
-  
-  .hero-stats {
-    flex-direction: column;
-    width: 100%;
-    gap: 20px;
+
+  .hero {
+    padding: 116px 0 36px;
   }
-  
-  .stat-divider {
-    width: 100%;
-    height: 1px;
+
+  .hero-content {
+    padding: 0 20px;
   }
-  
+
+  .hero-brand {
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .hero-kicker {
+    margin-bottom: 18px;
+  }
+
+  .hero-subtitle {
+    margin-bottom: 28px;
+  }
+
   .hero-actions {
     flex-direction: column;
+  }
+
+  .hero-btn-primary,
+  .hero-btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-stage {
+    min-height: 420px;
+    margin-top: 10px;
+  }
+
+  .hero-stage__ring--outer {
+    width: 340px;
+    height: 340px;
+  }
+
+  .hero-stage__ring--middle {
+    width: 260px;
+    height: 260px;
+  }
+
+  .hero-stage__ring--inner {
+    width: 176px;
+    height: 176px;
+  }
+
+  .hero-stage__core {
+    width: 150px;
+    height: 150px;
+    box-shadow:
+      0 18px 40px rgba(0, 0, 0, 0.28),
+      0 0 0 10px rgba(125, 211, 252, 0.03);
+  }
+
+  .hero-stage__core-title {
+    font-size: 1.3rem;
+  }
+
+  .hero-orbit {
+    min-width: 126px;
+    padding: 10px 12px 10px 14px;
+    border-radius: 18px;
+  }
+
+  .hero-orbit strong {
+    font-size: 0.92rem;
+  }
+
+  .hero-orbit p,
+  .hero-orbit__eyebrow {
+    display: none;
+  }
+
+  .hero-orbit--question {
+    top: 8%;
+    right: 4%;
+  }
+
+  .hero-orbit--blog {
+    top: 18%;
+    left: 2%;
+  }
+
+  .hero-orbit--ai {
+    right: 1%;
+    bottom: 16%;
+  }
+
+  .hero-orbit--community {
+    left: 4%;
+    bottom: 6%;
+  }
+
+  .hero-scroll {
+    position: static;
+    padding: 18px 20px 0;
   }
   
   .features-grid {

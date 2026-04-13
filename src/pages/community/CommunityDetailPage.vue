@@ -6,7 +6,7 @@
       <div class="detail-layout">
         <section class="detail-column">
           <div class="back-row">
-            <button type="button" class="back-btn" @click="router.push('/community')">返回圈子社区</button>
+            <button type="button" class="back-btn" @click="goBack()">{{ backLabel }}</button>
           </div>
 
           <article v-if="momentDetail" class="moment-shell">
@@ -255,10 +255,12 @@ import Header from '@/layouts/AppHeader.vue'
 import { useThemeStore } from '@/stores/modules/theme'
 import { shareApi } from '@/api/modules/share'
 import { fileApi } from '@/api/modules/file'
+import { useSmartBack } from '@/composables/useSmartBack'
 
 const route = useRoute()
 const router = useRouter()
 const themeStore = useThemeStore()
+const { backLabel, goBack } = useSmartBack(route, router, { fallback: '/community' })
 
 const loading = ref(false)
 const submittingComment = ref(false)
@@ -464,7 +466,12 @@ const handleDeleteMoment = async () => {
 
 const goToUser = (userId) => {
   if (!userId) return
-  router.push(`/profile/${userId}`)
+  router.push({
+    path: `/profile/${userId}`,
+    query: {
+      back: route.fullPath
+    }
+  })
 }
 
 const getAuthorInitial = (author) => {
