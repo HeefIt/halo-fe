@@ -825,7 +825,8 @@ const handleLike = async () => {
     isLiked.value = !isLiked.value
   } catch (error) {
     console.error('操作失败:', error)
-    ElMessage.error('点赞操作失败')
+    const message = error?.response?.data?.message || error?.message || '点赞操作失败'
+    ElMessage.error(message)
   }
 }
 
@@ -866,7 +867,8 @@ const submitComment = async () => {
     ElMessage.success('评论成功')
   } catch (error) {
     console.error('评论失败:', error)
-    ElMessage.error('评论失败')
+    const message = error?.response?.data?.message || error?.message || '评论失败'
+    ElMessage.error(message)
   }
 }
 
@@ -930,6 +932,8 @@ const loadComments = async () => {
     comments.value = res.data?.result || []
   } catch (error) {
     console.error('加载评论失败:', error)
+    const message = error?.response?.data?.message || error?.message || '加载评论失败'
+    ElMessage.error(message)
   }
 }
 
