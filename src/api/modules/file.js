@@ -12,10 +12,7 @@ export const fileApi = {
     return request({
       url: '/file/upload',
       method: 'POST',
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+      data: formData
     })
   },
   
@@ -30,10 +27,7 @@ export const fileApi = {
     return request({
       url: '/file/upload/image',
       method: 'POST',
-      data: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+      data: formData
     })
   },
   
