@@ -486,6 +486,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getSubjects, addSubject, getSubjectInfo, updateSubject, deleteSubject } from '@/api/modules/question/subject.js'
 import { getCategoryList } from '@/api/modules/question/category.js'
 import { getLabelList } from '@/api/modules/question/label.js'
+import { normalizePageSize } from '@/utils/pagination'
 
 const loading = ref(false)
 const subjects = ref([])
@@ -684,7 +685,7 @@ const resetSearch = () => {
 }
 
 const handleSizeChange = (val) => {
-  pagination.pageSize = val
+  pagination.pageSize = normalizePageSize(val, pagination.pageSize)
   pagination.pageNo = 1
   fetchSubjects()
 }

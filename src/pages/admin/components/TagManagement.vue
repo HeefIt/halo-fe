@@ -255,6 +255,7 @@ import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getLabelPage, addLabel, updateLabel, deleteLabel } from '@/api/modules/question/label'
 import { getCategoryPage } from '@/api/modules/question/category'
+import { normalizePageSize } from '@/utils/pagination'
 
 const searchKeyword = ref('')
 const showAddTagDialog = ref(false)
@@ -366,7 +367,7 @@ const handleSearch = () => {
 }
 
 const handleSizeChange = (val) => {
-  pagination.pageSize = val
+  pagination.pageSize = normalizePageSize(val, pagination.pageSize)
   pagination.pageNum = 1
   fetchTagList()
 }

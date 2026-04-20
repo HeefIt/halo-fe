@@ -269,6 +269,7 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getCategoryPage, addCategory, updateCategory, deleteCategory } from '@/api/modules/question/category'
+import { normalizePageSize } from '@/utils/pagination'
 
 const searchKeyword = ref('')
 const showAddCategoryDialog = ref(false)
@@ -354,7 +355,7 @@ const handleSearch = () => {
 }
 
 const handleSizeChange = (val) => {
-  pagination.pageSize = val
+  pagination.pageSize = normalizePageSize(val, pagination.pageSize)
   pagination.pageNum = 1
   fetchCategoryList()
 }

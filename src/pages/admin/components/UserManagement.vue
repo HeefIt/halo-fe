@@ -335,6 +335,7 @@ import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/modules/user'
 import { authApi } from '@/api/modules/auth'
+import { normalizePageSize } from '@/utils/pagination'
 
 const userStore = useUserStore()
 
@@ -389,7 +390,8 @@ const visiblePages = computed(() => {
 })
 
 const handleSizeChange = (val) => {
-  pagination.pageSize = val
+  pagination.pageSize = normalizePageSize(val, pagination.pageSize)
+  pagination.pageNum = 1
   fetchUsers()
 }
 
