@@ -4,7 +4,7 @@
     @description AI消息操作功能栏组件，提供复制、分享、重新生成功能
     @param {string} content - AI回复的内容
     @param {string} sessionId - 会话ID，用于分享和重新生成
-    @param {Function} onRegenerate - 重新生成的回调函数
+    @param {number} messageIndex - 消息在列表中的索引，用于重新生成
   -->
   <div class="ai-message-actions">
     <button 
@@ -57,9 +57,9 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  onRegenerate: {
-    type: Function,
-    default: null
+  messageIndex: {
+    type: Number,
+    default: -1
   }
 })
 
@@ -111,10 +111,7 @@ const handleRegenerate = async () => {
 
   isRegenerating.value = true
   try {
-    if (props.onRegenerate) {
-      await props.onRegenerate()
-    }
-    emit('regenerate')
+    emit('regenerate', props.messageIndex)
   } catch (error) {
     console.error('重新生成失败:', error)
     ElMessage.error('重新生成失败')

@@ -1,7 +1,13 @@
 <template>
   <div class="blog-list">
+    <button class="back-home-btn" @click="goBack()" :title="backLabel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 10.5 12 3l9 7.5" />
+        <path d="M5 9.5V21h14V9.5" />
+      </svg>
+      <span>{{ backLabel }}</span>
+    </button>
     <div class="list-header">
-      <button type="button" class="header-back" @click="goBack()">{{ backLabel }}</button>
       <h1 class="page-title">{{ pageTitle }}</h1>
       <p class="page-desc">{{ pageDescription }}</p>
     </div>
@@ -404,18 +410,30 @@ watch(() => route.query, (query) => {
   text-align: center;
 }
 
-.header-back {
-  margin-bottom: var(--spacing-lg);
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: var(--text-sm);
+.back-home-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
 }
 
-.header-back:hover {
-  color: rgba(255, 255, 255, 0.92);
+.back-home-btn:hover {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
 }
 
 .page-title {
@@ -437,6 +455,7 @@ watch(() => route.query, (query) => {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-2xl) var(--spacing-lg);
+  align-items: flex-start;
 }
 
 .list-content--solo {
@@ -446,6 +465,21 @@ watch(() => route.query, (query) => {
 .sidebar {
   width: 240px;
   flex-shrink: 0;
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
 }
 
 .sidebar-section {

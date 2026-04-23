@@ -1,5 +1,12 @@
 <template>
   <div class="blog-home">
+    <button class="back-home-btn" @click="goToSiteHome" title="返回网站首页">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 10.5 12 3l9 7.5" />
+        <path d="M5 9.5V21h14V9.5" />
+      </svg>
+      <span>首页</span>
+    </button>
     <div class="blog-hero">
       <div class="hero-content">
         <h1 class="hero-title">
@@ -10,13 +17,6 @@
           把题解、项目经验、架构思考和踩坑复盘写成文章，让知识从一次输入变成长期资产
         </p>
         <div class="hero-actions">
-          <button class="btn-ghost" @click="goToSiteHome">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 10.5 12 3l9 7.5" />
-              <path d="M5 9.5V21h14V9.5" />
-            </svg>
-            返回网站首页
-          </button>
           <button class="btn-primary" @click="openBlogList">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/>
@@ -355,6 +355,32 @@ onMounted(() => {
   margin-top: var(--spacing-sm);
 }
 
+.back-home-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.back-home-btn:hover {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
 .hero-desc {
   font-size: var(--text-lg);
   color: rgba(255, 255, 255, 0.6);
@@ -388,27 +414,6 @@ onMounted(() => {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-xl);
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(15, 23, 42, 0.26);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  backdrop-filter: blur(10px);
-}
-
-.btn-ghost:hover {
-  background: rgba(15, 23, 42, 0.38);
-  border-color: rgba(255, 255, 255, 0.24);
 }
 
 .btn-secondary {

@@ -3,7 +3,7 @@
     <main class="chatbot-main">
       <AIToolHeader
         title="AI 对话"
-        badge="工作台"
+        badge="智能对话"
       />
 
       <section class="chatbot-workspace">
@@ -148,8 +148,15 @@
                   </svg>
                 </div>
               </div>
-              <div class="message-body">
+<div class="message-body">
                 <div class="message-content ai-markdown" v-html="formatMessage(message.content || '')"></div>
+                <AIMessageActions
+                  v-if="message.role === 'assistant' && !isLoading"
+                  :content="message.content || ''"
+                  :session-id="currentSessionId || ''"
+                  :message-index="index"
+                  @regenerate="handleRegenerate"
+                />
                 <div class="message-time">{{ formatMessageTime(message.timestamp) }}</div>
               </div>
             </div>
@@ -224,6 +231,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import * as aiApi from '@/api/modules/ai/chat'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
+import AIMessageActions from './components/AIMessageActions.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -328,11 +336,18 @@ const syncCurrentSessionState = ({ scrollIntoView = false } = {}) => {
   }
 }
 
+const isLearningCoachSession = (session) => {
+  const extMeta = parseSessionExt(session?.extJson)
+  return extMeta?.sceneType === 'AGENT_LEARNING_COACH'
+}
+
 const loadSessions = async () => {
   try {
     const response = await aiApi.getUserSessions(userStore.userInfo?.id)
     if (response.code === 200) {
-      sessions.value = (response.data || []).map(normalizeSession)
+      sessions.value = (response.data || [])
+        .filter(session => !isLearningCoachSession(session))
+        .map(normalizeSession)
       sessions.value.forEach(session => session.messages.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0)))
       sortSessionsByRecent()
     }
@@ -612,6 +627,45 @@ const sendMessageToAI = async (sessionId, content) => {
 
 const formatMessage = (content) => renderAiMarkdown(content)
 
+const handleRegenerate = async (messageIndex) => {
+  if (isLoading.value || !currentSession.value?.messages) return
+
+  const messages = currentSession.value.messages
+  if (messageIndex <= 0 || messageIndex >= messages.length) return
+
+  const userMessage = messages[messageIndex - 1]
+  if (!userMessage || userMessage.role !== 'user' || !userMessage.content?.trim()) {
+    ElMessage.warning('无法找到对应的用户消息')
+    return
+  }
+
+  const userContent = userMessage.content.trim()
+  messages.splice(messageIndex)
+  currentSession.value.updatedAt = new Date().toISOString()
+  syncCurrentSessionState({ scrollIntoView: true })
+
+  isLoading.value = true
+  scrollToBottom({ force: true, behavior: 'smooth' })
+
+  try {
+    const response = await sendMessageToAI(currentSessionId.value, userContent)
+    if (!isStreamingMode.value) {
+      currentSession.value.messages.push({
+        role: 'assistant',
+        content: response,
+        timestamp: new Date().toISOString()
+      })
+      currentSession.value.updatedAt = new Date().toISOString()
+      syncCurrentSessionState({ scrollIntoView: true })
+    }
+  } catch (error) {
+    ElMessage.error('重新生成失败: ' + error.message)
+  } finally {
+    isLoading.value = false
+    scrollToBottom({ force: false })
+  }
+}
+
 const formatTime = (date) => {
   const now = new Date()
   const diff = now - new Date(date)
@@ -779,19 +833,6 @@ watch([currentSessionId, sessions], () => {
 
 .chatbot-page.is-dark {
   --ai-chat-bg: rgba(9, 17, 29, 0.72);
-}
-
-.chatbot-page :deep(.ai-tool-header) {
-  gap: 8px;
-  padding: 10px 12px 8px;
-}
-
-.chatbot-page :deep(.ai-tool-header__main) {
-  gap: 10px;
-}
-
-.chatbot-page :deep(.ai-tool-nav) {
-  gap: 5px;
 }
 
 .chatbot-main {
@@ -1365,6 +1406,19 @@ watch([currentSessionId, sessions], () => {
 
 .message-time {
   margin-top: 7px;
+}
+
+.message-body :deep(.ai-message-actions) {
+  margin-top: 10px;
+}
+
+.message-body :deep(.action-btn) {
+  color: var(--ai-text-faint);
+}
+
+.message-body :deep(.action-btn:hover:not(:disabled)) {
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
 }
 
 .typing-dots {

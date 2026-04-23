@@ -248,7 +248,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElLoading, ElMessage, ElMessageBox } from 'element-plus'
 import Header from '@/layouts/AppHeader.vue'
@@ -276,6 +276,19 @@ const commentForm = reactive({
 
 const momentId = computed(() => route.params.id)
 
+const resetMomentDetailState = () => {
+  momentDetail.value = null
+  commentList.value = []
+  replyTarget.value = null
+  commentForm.content = ''
+  commentForm.pictures = []
+}
+
+const isMomentUnavailableError = (error) => {
+  const message = String(error?.message || '')
+  return message.includes('动态不存在') || message.includes('已删除') || message.includes('不存在')
+}
+
 const isCircleImage = (icon) => {
   if (!icon || typeof icon !== 'string') return false
   const normalizedIcon = icon.trim()
@@ -296,7 +309,8 @@ const getCircleVisualText = (icon, circleName) => {
 const loadMomentDetail = async () => {
   if (!momentId.value) {
     ElMessage.error('动态 ID 不存在')
-    router.push('/community')
+    resetMomentDetailState()
+    router.replace('/community')
     return
   }
 
@@ -310,7 +324,13 @@ const loadMomentDetail = async () => {
     momentDetail.value = response.data
     commentList.value = response.data?.comments || []
   } catch (error) {
+    resetMomentDetailState()
     console.error('获取动态详情失败:', error)
+    if (isMomentUnavailableError(error)) {
+      ElMessage.warning('这条动态已删除或暂时不可见')
+      router.replace('/community')
+      return
+    }
     ElMessage.error(error.message || '获取动态详情失败')
   } finally {
     loading.value = false
@@ -454,8 +474,9 @@ const handleDeleteMoment = async () => {
       throw new Error(response?.message || '删除失败')
     }
 
+    resetMomentDetailState()
     ElMessage.success('动态已删除')
-    router.push('/community')
+    router.replace('/community')
   } catch (error) {
     if (error !== 'cancel') {
       console.error('删除动态失败:', error)
@@ -493,9 +514,9 @@ const formatTime = (value) => {
   })
 }
 
-onMounted(() => {
+watch(momentId, () => {
   loadMomentDetail()
-})
+}, { immediate: true })
 </script>
 
 <style scoped>

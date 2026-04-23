@@ -507,6 +507,19 @@ const fetchCircles = async () => {
   }
 }
 
+const removeMomentFromView = (momentId) => {
+  if (!momentId) {
+    return
+  }
+
+  const previousLength = momentList.value.length
+  momentList.value = momentList.value.filter(item => String(item.id) !== String(momentId))
+  const removedCount = previousLength - momentList.value.length
+  if (removedCount > 0) {
+    totalMoments.value = Math.max(0, Number(totalMoments.value || 0) - removedCount)
+  }
+}
+
 const loadMoments = async (reset = true) => {
   if (reset) {
     loading.value = true
@@ -657,6 +670,7 @@ const handleDeleteMoment = async (moment) => {
       throw new Error(response?.message || '删除失败')
     }
 
+    removeMomentFromView(moment.id)
     ElMessage.success('动态已删除')
     await loadMoments(true)
   } catch (error) {

@@ -3,153 +3,143 @@
     <main class="service-main">
       <AIToolHeader
         title="智能客服"
-        badge="Guide"
+        badge="站内导航"
       />
 
-      <div class="workspace-shell">
+      <section class="service-workspace">
         <aside class="service-sidebar">
-          <section class="sidebar-card prompt-card">
-            <div class="sidebar-header">
-              <p class="card-eyebrow">快捷提问</p>
-              <h1>站内问题，直接问。</h1>
-              <p class="card-description">入口、数据、内容推荐都能接住。</p>
-
-              <div class="capability-inline-list">
-                <span
-                  v-for="item in capabilityCards"
-                  :key="item.title"
-                  class="capability-badge"
-                >
-                  <span class="capability-badge-icon">{{ item.icon }}</span>
-                  {{ item.title }}
-                </span>
-              </div>
-
-              <div class="sidebar-meta">
-                <span class="memory-tag">会话暂存</span>
-                <span class="sidebar-tip">左侧可快速切题</span>
-              </div>
+          <section class="service-sidebar__toolbar">
+            <div class="service-sidebar__toolbar-head">
+              <strong>Guide</strong>
             </div>
 
-            <div class="prompt-groups">
-              <div
-                v-for="group in quickPromptGroups"
-                :key="group.title"
-                class="prompt-group"
-              >
-                <div class="prompt-group-title">{{ group.title }}</div>
-                <div class="prompt-chip-list">
-                  <button
-                    v-for="question in group.questions"
-                    :key="question"
-                    class="prompt-chip"
-                    @click="sendPresetQuestion(question)"
-                  >
-                    {{ question }}
-                  </button>
-                </div>
-              </div>
+            <div class="service-sidebar__meta">
+              <span class="sidebar-mini-pill">{{ quickQuestions.length }} 快捷输入</span>
+              <span class="sidebar-mini-pill">内存会话</span>
             </div>
           </section>
+
+          <div class="service-sidebar__scroll">
+            <section class="sidebar-block sidebar-block--prompts sidebar-block--prompts-full">
+              <div class="sidebar-title-row">
+                <strong>快捷输入</strong>
+                <span>{{ quickQuestions.length }}</span>
+              </div>
+
+              <div class="prompt-list">
+                <button
+                  v-for="question in quickQuestions"
+                  :key="question"
+                  class="prompt-button"
+                  :class="{ active: inputMessage === question }"
+                  type="button"
+                  :title="question"
+                  @click="usePrompt(question)"
+                >
+                  {{ question }}
+                </button>
+              </div>
+            </section>
+          </div>
         </aside>
 
-        <section class="conversation-panel">
-          <div class="conversation-topbar">
+        <section class="service-stage">
+          <div class="service-stage__topbar">
             <div class="topbar-copy">
-              <strong>优先读取站内信息</strong>
-              <span>问路径、问数据、问内容都可以。</span>
+              <span class="topbar-label">当前会话</span>
+              <strong>站内咨询</strong>
             </div>
+
             <div class="topbar-meta">
-              <span class="meta-pill is-active">
-                <span class="meta-dot"></span>
-                流式回复
-              </span>
-              <span class="meta-pill">
-                当前页暂存
+              <span class="meta-pill">站内数据</span>
+              <span class="meta-pill" :class="{ active: streamingEnabled }">
+                {{ streamingEnabled ? '流式回复' : '同步回复' }}
               </span>
             </div>
           </div>
 
-          <div class="chat-area" ref="chatHistoryRef">
-            <div
+          <div ref="chatHistoryRef" class="service-messages">
+            <article
               v-for="(message, index) in store.messages"
-              :key="index"
-              class="chat-message"
+              :key="`${message.role}-${index}-${formatTime(message.timestamp)}`"
+              class="message-card"
               :class="message.role"
             >
-              <div class="message-avatar">
-                <div v-if="message.role === 'user'" class="avatar user">
+              <div class="message-card__avatar">
+                <div v-if="message.role === 'user'" class="avatar avatar--user">
                   {{ userInitial }}
                 </div>
-                <div v-else class="avatar service">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2v4"></path>
-                    <path d="M12 18v4"></path>
-                    <path d="M2 12h4"></path>
-                    <path d="M18 12h4"></path>
-                  </svg>
+                <div v-else class="avatar avatar--service">
+                  CS
                 </div>
               </div>
-              <div class="message-body">
-                <div class="message-content ai-markdown" v-html="formatMessage(message.content)"></div>
-                <div class="message-time">{{ formatTime(message.timestamp) }}</div>
-              </div>
-            </div>
 
-            <div v-if="isLoading" class="chat-message assistant">
-              <div class="message-avatar">
-                <div class="avatar service">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 2v4"></path>
-                    <path d="M12 18v4"></path>
-                    <path d="M2 12h4"></path>
-                    <path d="M18 12h4"></path>
-                  </svg>
+              <div class="message-card__body">
+                <div class="message-card__head">
+                  <strong>{{ message.role === 'user' ? '你' : '智能客服' }}</strong>
+                  <span>{{ formatTime(message.timestamp) }}</span>
                 </div>
+
+                <div
+                  class="message-card__reply ai-markdown"
+                  v-html="formatMessage(message.content)"
+                ></div>
+
+                <AIMessageActions
+                  v-if="message.role === 'assistant' && !isLoading"
+                  :content="message.content || ''"
+                  :message-index="index"
+                  @regenerate="handleRegenerate"
+                />
               </div>
-              <div class="message-body">
-                <div class="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
+            </article>
+
+            <div v-if="isLoading" class="loading-bar">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
           </div>
 
-          <div class="input-section">
-            <div class="input-box">
+          <div class="service-composer">
+            <div class="composer-toolbar">
+              <label class="option-switch">
+                <input v-model="streamingEnabled" type="checkbox">
+                <span>流式回复</span>
+              </label>
+
+              <div class="composer-actions">
+                <button
+                  class="ghost-button"
+                  type="button"
+                  :disabled="isLoading || store.messages.length <= 1"
+                  @click="clearChat"
+                >
+                  清空会话
+                </button>
+                <button
+                  class="primary-button"
+                  type="button"
+                  :disabled="!inputMessage.trim() || isLoading"
+                  @click="sendMessage"
+                >
+                  发送
+                </button>
+              </div>
+            </div>
+
+            <div class="composer-input">
               <textarea
                 v-model="inputMessage"
+                rows="2"
+                :disabled="isLoading"
                 placeholder="例如：帮我看看最近的刷题情况"
                 @keydown.enter.exact.prevent="sendMessage"
-                :disabled="isLoading"
-                rows="1"
               ></textarea>
-
-              <div class="input-toolbar">
-                <div class="toolbar-left">
-                  <label class="toggle-label">
-                    <input type="checkbox" v-model="streamingEnabled" />
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">流式</span>
-                  </label>
-                  <span class="helper-text">刷新后会重置。</span>
-                </div>
-
-                <div class="toolbar-actions">
-                  <button class="clear-btn" @click="clearChat" :disabled="isLoading || store.messages.length <= 1">
-                    清空会话
-                  </button>
-                  <button class="send-btn" @click="sendMessage" :disabled="!inputMessage.trim() || isLoading">
-                    发送
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </section>
-      </div>
+      </section>
     </main>
   </div>
 </template>
@@ -163,17 +153,11 @@ import { useCustomerServiceStore } from '@/stores/modules/customerService'
 import { customerServiceChat, customerServiceChatStream } from '@/api/modules/ai/chat'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
+import AIMessageActions from './components/AIMessageActions.vue'
 
 const userStore = useUserStore()
 const themeStore = useThemeStore()
 const store = useCustomerServiceStore()
-
-const capabilityCards = [
-  { icon: '◎', title: '站内数据', desc: '账号、刷题、榜单和博客都能问。' },
-  { icon: '◇', title: '页面入口', desc: '快速告诉你该去哪里。' },
-  { icon: '△', title: '操作说明', desc: '常见操作可以直接问。' },
-  { icon: '○', title: '实时信息', desc: '也支持简单实时查询。' }
-]
 
 const quickPromptGroups = [
   {
@@ -214,6 +198,7 @@ const isLoading = ref(false)
 const chatHistoryRef = ref(null)
 
 const userInitial = computed(() => userStore.userName?.charAt(0)?.toUpperCase() || 'U')
+const quickQuestions = computed(() => quickPromptGroups.flatMap(group => group.questions))
 
 const inputMessage = computed({
   get: () => store.draftMessage,
@@ -225,9 +210,8 @@ const streamingEnabled = computed({
   set: (value) => store.setStreaming(value)
 })
 
-const sendPresetQuestion = (question) => {
+const usePrompt = (question) => {
   store.setDraftMessage(question)
-  sendMessage()
 }
 
 const sendMessage = async () => {
@@ -300,12 +284,79 @@ const clearChat = () => {
   scrollToBottom()
 }
 
+const handleRegenerate = async (messageIndex) => {
+  if (isLoading.value) return
+
+  const messages = store.messages
+  if (messageIndex <= 0 || messageIndex >= messages.length) return
+
+  const userMessage = messages[messageIndex - 1]
+  if (!userMessage || userMessage.role !== 'user' || !userMessage.content?.trim()) {
+    ElMessage.warning('无法找到对应的用户消息')
+    return
+  }
+
+  const userContent = userMessage.content.trim()
+  store.messages.splice(messageIndex)
+  scrollToBottom()
+
+  isLoading.value = true
+
+  try {
+    if (streamingEnabled.value) {
+      let assistantReply = ''
+
+      await customerServiceChatStream(
+        userContent,
+        null,
+        (data) => {
+          const incrementalContent =
+            typeof data === 'object'
+              ? data.reply || data.content || ''
+              : typeof data === 'string'
+                ? data
+                : ''
+
+          assistantReply += incrementalContent
+          store.updateLastAssistantMessage(assistantReply)
+          scrollToBottom()
+        },
+        (error) => {
+          console.error('客服消息发送失败:', error)
+          ElMessage.error('重新生成失败')
+          isLoading.value = false
+        },
+        () => {
+          isLoading.value = false
+          scrollToBottom()
+        }
+      )
+    } else {
+      const response = await customerServiceChat(userContent, null)
+      if (response.data?.reply) {
+        store.appendMessage({
+          role: 'assistant',
+          content: response.data.reply,
+          timestamp: new Date()
+        })
+      }
+    }
+  } catch (error) {
+    console.error('重新生成失败:', error)
+    ElMessage.error('重新生成失败')
+  } finally {
+    isLoading.value = false
+    scrollToBottom()
+  }
+}
+
 const formatMessage = (content) => renderAiMarkdown(content)
 
 const formatTime = (timestamp) => {
   if (!timestamp) {
     return ''
   }
+
   return new Date(timestamp).toLocaleTimeString('zh-CN', {
     hour: '2-digit',
     minute: '2-digit'
@@ -335,17 +386,18 @@ onMounted(() => {
 
 <style scoped>
 .customer-service-page {
+  height: 100dvh;
+  min-height: 100dvh;
   --ai-accent: #0f766e;
   --ai-accent-soft: rgba(15, 118, 110, 0.08);
   --ai-accent-line: rgba(15, 118, 110, 0.16);
-  --ai-bg: #f3f6f8;
-  --ai-surface: rgba(255, 255, 255, 0.96);
-  --ai-surface-alt: #f8fbfc;
-  --ai-border: rgba(15, 23, 42, 0.09);
+  --ai-surface: rgba(255, 255, 255, 0.92);
+  --ai-surface-strong: #ffffff;
+  --ai-surface-alt: rgba(248, 250, 252, 0.96);
+  --ai-border: rgba(15, 23, 42, 0.08);
   --ai-text: var(--color-text);
   --ai-text-soft: var(--color-text-secondary);
   --ai-text-faint: var(--color-text-muted);
-  min-height: 100dvh;
   background:
     radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 24%),
     linear-gradient(180deg, #f7fafc 0%, #f3f6f8 100%);
@@ -356,9 +408,9 @@ onMounted(() => {
   --ai-accent: #5eead4;
   --ai-accent-soft: rgba(94, 234, 212, 0.12);
   --ai-accent-line: rgba(94, 234, 212, 0.2);
-  --ai-bg: #09111c;
-  --ai-surface: rgba(15, 23, 42, 0.96);
-  --ai-surface-alt: #101a2d;
+  --ai-surface: rgba(15, 23, 42, 0.94);
+  --ai-surface-strong: rgba(9, 17, 28, 0.94);
+  --ai-surface-alt: rgba(16, 26, 45, 0.92);
   --ai-border: rgba(148, 163, 184, 0.14);
   --ai-text: var(--text-1);
   --ai-text-soft: var(--text-2);
@@ -373,406 +425,385 @@ onMounted(() => {
   margin: 0 auto;
   width: 100%;
   height: 100dvh;
-  padding: 10px 18px 14px;
+  min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 12px;
+  padding: 10px 16px 14px;
+}
+
+.service-workspace {
+  display: grid;
+  grid-template-columns: 292px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
   overflow: hidden;
 }
 
-.workspace-shell {
+.service-sidebar,
+.service-stage {
   min-height: 0;
-  height: 100%;
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 14px;
-  overflow: hidden;
 }
 
 .service-sidebar {
-  min-height: 0;
-  height: 100%;
-}
-
-.sidebar-card,
-.conversation-panel {
-  background: var(--ai-surface);
-  border: 1px solid var(--ai-border);
-  border-radius: 8px;
-}
-
-.prompt-card {
-  height: 100%;
-  padding: 18px 18px 16px;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  overflow: hidden;
-}
-
-.card-eyebrow {
-  margin: 0 0 8px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ai-accent);
-  font-weight: 700;
-}
-
-.prompt-card h1 {
-  margin: 0;
-  color: var(--ai-text);
-}
-
-.prompt-card h1 {
-  font-size: 22px;
-  line-height: 1.22;
-}
-
-.card-description {
-  margin: 12px 0 0;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--ai-text-soft);
-}
-
-.sidebar-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--ai-border);
-}
-
-.capability-inline-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.capability-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--ai-surface-alt);
-  border: 1px solid var(--ai-border);
-  color: var(--ai-text-soft);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.capability-badge-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-  font-size: 11px;
-}
-
-.sidebar-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 14px;
+  min-width: 0;
 }
 
-.memory-tag {
+.service-sidebar__toolbar,
+.sidebar-block,
+.service-stage,
+.service-stage__topbar,
+.service-composer {
+  border: 1px solid var(--ai-border);
+  background: var(--ai-surface);
+  border-radius: 12px;
+}
+
+.service-sidebar__toolbar,
+.sidebar-block {
+  padding: 12px;
+}
+
+.service-sidebar__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.service-sidebar__toolbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.service-sidebar__toolbar-head strong {
+  color: var(--ai-accent);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(15, 118, 110, 0.16);
+}
+
+.service-sidebar__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sidebar-mini-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.sidebar-tip {
-  font-size: 11px;
-  color: var(--ai-text-faint);
-}
-
-.prompt-groups {
-  margin-top: 14px;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-right: 4px;
-}
-
-.prompt-groups::-webkit-scrollbar,
-.chat-area::-webkit-scrollbar {
-  width: 6px;
-}
-
-.prompt-groups::-webkit-scrollbar-thumb,
-.chat-area::-webkit-scrollbar-thumb {
-  background: rgba(15, 118, 110, 0.18);
-  border-radius: 999px;
-}
-
-.prompt-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.prompt-group-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ai-text-soft);
-}
-
-.prompt-chip-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.prompt-chip {
+  min-height: 26px;
+  padding: 0 9px;
   border: 1px solid var(--ai-border);
-  background: var(--ai-surface-alt);
-  color: var(--ai-text);
   border-radius: 999px;
-  min-height: 34px;
-  padding: 0 12px;
-  font-size: 12px;
-  line-height: 1.4;
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  background: var(--ai-surface-alt);
+  color: var(--ai-text-soft);
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.prompt-chip:hover {
-  border-color: var(--ai-accent-line);
-  background: var(--ai-accent-soft);
-  transform: translateY(-1px);
-}
-
-.conversation-panel {
+.service-sidebar__scroll {
   min-height: 0;
+  overflow: hidden;
+  display: block;
+}
+
+.sidebar-block--prompts-full {
   height: 100%;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.sidebar-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  color: var(--ai-text-soft);
+  font-size: 11px;
+}
+
+.sidebar-title-row strong {
+  color: var(--ai-accent);
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+.prompt-list,
+.session-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.prompt-list {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.prompt-button,
+.session-item {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--ai-border);
+  background: var(--ai-surface-alt);
+  border-radius: 10px;
+  text-align: left;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.prompt-button,
+.session-item__title {
+  color: var(--ai-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.prompt-button {
+  min-height: 38px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prompt-button.active,
+.session-item.active {
+  border-color: var(--ai-accent-line);
+  background: var(--ai-accent-soft);
+}
+
+.session-item {
+  min-height: 52px;
+}
+
+.session-item__title {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-item__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+  color: var(--ai-text-faint);
+  font-size: 10px;
+}
+
+.empty-sidebar {
+  margin-top: 12px;
+  color: var(--ai-text-faint);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.service-stage {
+  min-width: 0;
+  display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 10px;
   overflow: hidden;
 }
 
-.conversation-topbar {
-  padding: 16px 18px 14px;
-  border-bottom: 1px solid var(--ai-border);
+.service-stage__topbar {
   display: flex;
   justify-content: space-between;
-  gap: 14px;
-  align-items: flex-start;
-  background: linear-gradient(180deg, var(--ai-surface-alt), var(--ai-surface));
+  gap: 10px;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--ai-surface-alt);
 }
 
 .topbar-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.topbar-label {
+  color: var(--ai-text-faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .topbar-copy strong {
   color: var(--ai-text);
-  font-size: 14px;
-}
-
-.topbar-copy span {
-  color: var(--ai-text-soft);
   font-size: 12px;
-  line-height: 1.6;
+  letter-spacing: -0.01em;
 }
 
 .topbar-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
+  gap: 5px;
 }
 
 .meta-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 28px;
-  padding: 0 10px;
+  min-height: 22px;
+  padding: 0 7px;
   border-radius: 999px;
-  border: 1px solid var(--ai-border);
-  background: var(--ai-surface);
+  background: var(--ai-surface-alt);
   color: var(--ai-text-soft);
-  font-size: 11px;
-}
-
-.meta-pill.is-active {
-  color: var(--ai-accent);
-  border-color: var(--ai-accent-line);
-  background: var(--ai-accent-soft);
-}
-
-.meta-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.chat-area {
-  min-height: 0;
-  overflow-y: auto;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  background:
-    linear-gradient(180deg, rgba(15, 118, 110, 0.025), transparent 18%),
-    var(--ai-surface);
-}
-
-.chat-message {
-  display: flex;
-  gap: 12px;
-  animation: slideIn 0.22s ease;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chat-message.user {
-  flex-direction: row-reverse;
-}
-
-.message-avatar {
-  flex-shrink: 0;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
+  font-size: 10px;
   font-weight: 700;
 }
 
-.avatar.user {
-  background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
-  color: #fff;
+.meta-pill.active {
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
 }
 
-.avatar.service {
-  background: var(--ai-accent);
-  color: #fff;
-}
-
-.message-body {
-  flex: 1;
-  max-width: 78%;
-}
-
-.chat-message.user .message-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.message-content {
-  padding: 14px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.chat-message.user .message-content {
-  background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%);
-  color: #fff;
-}
-
-.chat-message.assistant .message-content {
-  background: var(--ai-surface-alt);
+.service-messages {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  display: grid;
+  gap: 12px;
   border: 1px solid var(--ai-border);
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.03), transparent 18%), var(--ai-surface);
+  border-radius: 12px;
+}
+
+.message-card {
+  display: flex;
+  gap: 10px;
+  max-width: min(76%, 820px);
+}
+
+.message-card.user {
+  flex-direction: row-reverse;
+  justify-self: end;
+  max-width: min(76%, 820px);
+}
+
+.message-card.assistant {
+  justify-self: start;
+  max-width: min(84%, 960px);
+}
+
+.message-card.assistant .message-card__body {
+  border-color: var(--ai-accent-line);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.04);
+}
+
+.message-card__avatar {
+  padding-top: 2px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.avatar--user {
+  background: var(--ai-surface-alt);
   color: var(--ai-text);
 }
 
-.message-content :deep(p) {
-  margin: 0 0 10px;
+.avatar--service {
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
 }
 
-.message-content :deep(p:last-child) {
-  margin-bottom: 0;
+.message-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--ai-border);
+  background: var(--ai-surface-strong);
+  border-radius: 12px;
+  min-width: 0;
+  width: fit-content;
+  max-width: 100%;
 }
 
-.chat-message.user .message-content :deep(a) {
-  color: inherit;
+.message-card.user .message-card__body {
+  background: var(--ai-surface-alt);
 }
 
-.chat-message.user .message-content :deep(code):not(pre code) {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff7ed;
-}
-
-.chat-message.user .message-content :deep(blockquote) {
-  background: rgba(255, 255, 255, 0.12);
-  border-left-color: rgba(255, 255, 255, 0.34);
-}
-
-.message-time {
-  margin-top: 6px;
+.message-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  color: var(--ai-text-faint);
   font-size: 11px;
+}
+
+.message-card__head strong {
+  color: var(--ai-text);
+  font-size: 12px;
+}
+
+.message-card__reply {
+  color: var(--ai-text);
+  font-size: 14px;
+  line-height: 1.75;
+  word-break: break-word;
+}
+
+.message-card__body :deep(.ai-message-actions) {
+  margin-top: 10px;
+}
+
+.message-card__body :deep(.action-btn) {
   color: var(--ai-text-faint);
 }
 
-.typing-indicator {
-  display: flex;
-  gap: 5px;
-  padding: 14px 16px;
-  background: var(--ai-surface-alt);
-  border: 1px solid var(--ai-border);
-  border-radius: 8px;
+.message-card__body :deep(.action-btn:hover:not(:disabled)) {
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
 }
 
-.typing-indicator span {
+.loading-bar {
+  display: inline-flex;
+  gap: 8px;
+  padding: 0 4px 12px;
+  justify-self: start;
+}
+
+.loading-bar span {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: var(--ai-accent);
-  animation: bounce 1.4s infinite ease-in-out both;
+  animation: pulse 1.2s infinite ease-in-out;
 }
 
-.typing-indicator span:nth-child(1) {
-  animation-delay: -0.32s;
+.loading-bar span:nth-child(2) {
+  animation-delay: 0.15s;
 }
 
-.typing-indicator span:nth-child(2) {
-  animation-delay: -0.16s;
+.loading-bar span:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
-@keyframes bounce {
+@keyframes pulse {
   0%, 80%, 100% {
-    transform: scale(0.6);
-    opacity: 0.42;
+    transform: scale(0.7);
+    opacity: 0.4;
   }
 
   40% {
@@ -781,202 +812,154 @@ onMounted(() => {
   }
 }
 
-.input-section {
-  padding: 14px 18px 18px;
-  border-top: 1px solid var(--ai-border);
-  background: var(--ai-surface);
+.service-composer {
+  display: grid;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
 }
 
-.input-box {
-  background: var(--ai-surface-alt);
+.composer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.composer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.option-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ai-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.option-switch input {
+  accent-color: var(--ai-accent);
+}
+
+.composer-input textarea {
+  width: 100%;
+  min-height: 58px;
+  resize: none;
   border: 1px solid var(--ai-border);
-  border-radius: 8px;
+  border-radius: 10px;
+  background: var(--ai-surface-alt);
+  color: var(--ai-text);
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.65;
+  outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.input-box:focus-within {
+.composer-input textarea:focus {
   border-color: var(--ai-accent-line);
   box-shadow: 0 0 0 4px var(--ai-accent-soft);
 }
 
-.input-box textarea {
-  width: 100%;
-  min-height: 56px;
-  background: transparent;
-  border: none;
-  outline: none;
-  resize: none;
-  padding: 14px 16px 10px;
-  font-family: inherit;
-  color: var(--ai-text);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.input-box textarea::placeholder {
+.composer-input textarea::placeholder {
   color: var(--ai-text-faint);
 }
 
-.input-toolbar {
-  padding: 10px 12px 12px;
-  border-top: 1px solid var(--ai-border);
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.toggle-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-
-.toggle-label input {
-  display: none;
-}
-
-.toggle-slider {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.28);
-  transition: all 0.2s ease;
-}
-
-.toggle-slider::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #fff;
-  transition: all 0.2s ease;
-}
-
-.toggle-label input:checked + .toggle-slider {
-  background: var(--ai-accent);
-}
-
-.toggle-label input:checked + .toggle-slider::after {
-  left: 18px;
-}
-
-.toggle-text,
-.helper-text {
+.primary-button,
+.ghost-button {
+  min-height: 34px;
+  border-radius: 9px;
   font-size: 12px;
-  color: var(--ai-text-soft);
+  font-weight: 700;
 }
 
-.toolbar-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.clear-btn,
-.send-btn {
-  min-width: 86px;
-  height: 38px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.clear-btn {
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  background: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
-}
-
-.clear-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.14);
-}
-
-.send-btn {
-  border: none;
+.primary-button {
+  min-width: 84px;
+  border: 1px solid transparent;
   background: var(--ai-accent);
-  color: #fff;
+  color: #ffffff;
 }
 
-.send-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
+.ghost-button {
+  border: 1px solid var(--ai-border);
+  background: transparent;
+  color: var(--ai-text);
+  padding: 0 14px;
 }
 
-.clear-btn:disabled,
-.send-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
+.service-sidebar__scroll::-webkit-scrollbar,
+.prompt-list::-webkit-scrollbar,
+.session-list::-webkit-scrollbar,
+.service-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.service-sidebar__scroll::-webkit-scrollbar-thumb,
+.prompt-list::-webkit-scrollbar-thumb,
+.session-list::-webkit-scrollbar-thumb,
+.service-messages::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.18);
+  border-radius: 999px;
 }
 
 @media (max-width: 1160px) {
-  .workspace-shell {
-    grid-template-columns: 320px minmax(0, 1fr);
-  }
-
-  .conversation-topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .topbar-meta {
-    justify-content: flex-start;
+  .service-workspace {
+    grid-template-columns: 276px minmax(0, 1fr);
   }
 }
 
 @media (max-width: 900px) {
   .service-main {
     padding: 8px 10px 10px;
-    height: 100dvh;
   }
 
-  .workspace-shell {
+  .service-workspace {
     grid-template-columns: 1fr;
-    grid-template-rows: 280px minmax(0, 1fr);
+    grid-template-rows: 300px minmax(0, 1fr);
   }
 
-  .conversation-panel {
-    min-height: 0;
+  .service-stage__topbar,
+  .composer-toolbar {
+    align-items: stretch;
+    flex-direction: column;
   }
+
+  .topbar-meta {
+    justify-content: flex-start;
+  }
+
+.message-card,
+.message-card.assistant,
+.message-card.user {
+  max-width: 100%;
+}
+
+.message-card.assistant .message-card__body {
+  max-width: 85%;
+}
 }
 
 @media (max-width: 640px) {
-  .prompt-card,
-  .conversation-topbar,
-  .chat-area,
-  .input-section {
-    padding-left: 14px;
-    padding-right: 14px;
+  .service-workspace {
+    grid-template-rows: 268px minmax(0, 1fr);
   }
 
-  .message-body {
-    max-width: 88%;
+  .service-sidebar__toolbar,
+  .sidebar-block,
+  .service-stage,
+  .service-messages,
+  .service-composer {
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
-  .workspace-shell {
-    grid-template-rows: 250px minmax(0, 1fr);
-  }
-
-  .input-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .toolbar-actions {
-    justify-content: flex-end;
+  .service-stage {
+    padding: 8px;
   }
 }
 </style>

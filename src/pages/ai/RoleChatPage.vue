@@ -3,40 +3,22 @@
     <main class="role-chat-main">
       <AIToolHeader
         title="角色对话"
-        badge="新入口"
-        subtitle="选一个角色，直接进入更有场景感的对话。"
+        badge="角色扮演"
       />
 
-      <section class="role-stage">
-        <div class="role-stage__lead">
-          <span class="role-stage__kicker">Role Workspace</span>
-          <h2>让每场对话都从明确人设开始</h2>
-          <p>选定角色，再补几项参数，就能把语气和场景调准。</p>
-
-          <div class="role-stage__facts">
-            <div class="fact-strip">
-              <span>预设角色</span>
-              <strong>{{ templates.length }}</strong>
-            </div>
-            <div class="fact-strip">
-              <span>当前选择</span>
-              <strong>{{ selectedTemplate?.roleName || '未选择' }}</strong>
-            </div>
-            <div class="fact-strip">
-              <span>进入方式</span>
-              <strong>创建后直达聊天</strong>
-            </div>
+      <section class="role-toolbar">
+        <div class="role-toolbar__main">
+          <span class="role-toolbar__title">{{ selectedTemplate?.roleName || '选择角色' }}</span>
+          <div class="role-toolbar__meta">
+            <span class="summary-pill">{{ templates.length }} 个角色</span>
+            <span class="summary-pill">{{ schemaFields.length }} 个字段</span>
+            <span v-if="selectedTemplate?.roleCategory" class="summary-pill">{{ selectedTemplate.roleCategory }}</span>
           </div>
         </div>
 
-        <aside class="role-stage__rail">
-          <span class="role-stage__rail-label">当前角色说明</span>
-          <strong>{{ selectedTemplate?.roleCategory || 'role' }}</strong>
-          <p>{{ selectedTemplate?.roleDesc || '选择角色后，这里会显示角色简介。' }}</p>
-          <button class="rail-link" type="button" @click="router.push('/ai/chatbot')">
-            回到通用工作台
-          </button>
-        </aside>
+        <button class="rail-link" type="button" @click="router.push('/ai/chatbot')">
+          回到通用工作台
+        </button>
       </section>
 
       <section class="role-layout">
@@ -46,30 +28,32 @@
               <span class="section-kicker">Templates</span>
               <h3 class="section-title">系统角色</h3>
             </div>
-            <span class="section-note">按角色切换</span>
+            <span class="section-note">{{ templates.length }}</span>
           </div>
 
-          <div v-if="templates.length" class="role-grid">
-            <button
-              v-for="template in templates"
-              :key="template.id"
-              class="role-card"
-              :class="{ active: String(template.id) === String(selectedTemplateId) }"
-              type="button"
-              @click="handleTemplateSelect(template.id)"
-            >
-              <div class="role-card__head">
-                <span class="role-card__avatar">{{ template.avatar || 'AI' }}</span>
-                <span class="role-card__tag">{{ template.roleCategory || 'role' }}</span>
-              </div>
-              <strong class="role-card__title">{{ template.roleName }}</strong>
-              <p class="role-card__desc">{{ template.roleDesc }}</p>
-            </button>
-          </div>
+          <div class="role-gallery__body">
+            <div v-if="templates.length" class="role-grid">
+              <button
+                v-for="template in templates"
+                :key="template.id"
+                class="role-card"
+                :class="{ active: String(template.id) === String(selectedTemplateId) }"
+                type="button"
+                @click="handleTemplateSelect(template.id)"
+              >
+                <div class="role-card__head">
+                  <span class="role-card__avatar">{{ template.avatar || 'AI' }}</span>
+                  <span class="role-card__tag">{{ template.roleCategory || 'role' }}</span>
+                </div>
+                <strong class="role-card__title">{{ template.roleName }}</strong>
+                <p class="role-card__desc">{{ template.roleDesc }}</p>
+              </button>
+            </div>
 
-          <div v-else class="empty-card">
-            <strong>暂无角色模板</strong>
-            <p>请先初始化角色模板数据。</p>
+            <div v-else class="empty-card">
+              <strong>暂无角色模板</strong>
+              <p>请先初始化角色模板数据。</p>
+            </div>
           </div>
         </div>
 
@@ -79,6 +63,7 @@
               <span class="section-kicker">Compose</span>
               <h3 class="section-title">对话设定</h3>
             </div>
+            <span v-if="selectedTemplate" class="section-note">{{ selectedTemplate.roleCategory || 'role' }}</span>
           </div>
 
           <div v-if="selectedTemplate" class="config-panel">
@@ -91,12 +76,12 @@
             </div>
 
             <div class="config-block">
-              <span class="config-label">角色简介</span>
+              <span class="config-label">说明</span>
               <p>{{ selectedTemplate.roleDesc }}</p>
             </div>
 
             <div class="config-block">
-              <span class="config-label">开场预览</span>
+              <span class="config-label">开场</span>
               <p>{{ selectedTemplate.openingMessage || '创建后将直接进入角色会话。' }}</p>
             </div>
 
@@ -145,7 +130,7 @@
                   id="customPrompt"
                   v-model="customPrompt"
                   class="form-control form-control--textarea"
-                  placeholder="例如：多问项目难点、语气更温柔、每轮追问更强一些。"
+                  placeholder="例如：多问项目难点、语气更温和。"
                 />
               </div>
             </div>
@@ -335,10 +320,12 @@ onMounted(() => {
   --ai-text: var(--color-text);
   --ai-text-soft: var(--color-text-secondary);
   --ai-text-faint: var(--color-text-muted);
+  height: 100dvh;
   min-height: 100dvh;
   background:
     radial-gradient(circle at top left, rgba(29, 78, 216, 0.08), transparent 28%),
     linear-gradient(180deg, #f6f8fb 0%, #eef2f7 100%);
+  overflow: hidden;
 }
 
 .role-chat-page.is-dark {
@@ -357,23 +344,17 @@ onMounted(() => {
 }
 
 .role-chat-main {
-  max-width: 1360px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 10px 16px 24px;
+  padding: 10px 16px 14px;
+  min-height: 0;
+  height: 100dvh;
   display: grid;
-  gap: 16px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 12px;
 }
 
-.role-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
-  gap: 28px;
-  padding: 22px 0 10px;
-}
-
-.role-stage__kicker,
 .section-kicker,
-.role-stage__rail-label,
 .config-label,
 .role-card__tag {
   display: inline-flex;
@@ -388,60 +369,64 @@ onMounted(() => {
   text-transform: uppercase;
 }
 
-.role-stage__lead h2,
+.role-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid var(--ai-border);
+  border-radius: 14px;
+  background: var(--ai-surface);
+}
+
+.role-toolbar__main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.role-toolbar__title {
+  color: var(--ai-text);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+}
+
+.role-toolbar__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .section-title {
-  margin: 14px 0 0;
+  margin: 10px 0 0;
   color: var(--ai-text);
   font-family: var(--font-display);
   letter-spacing: -0.04em;
 }
 
-.role-stage__lead h2 {
-  max-width: 760px;
-  font-size: clamp(34px, 4vw, 52px);
-  line-height: 0.98;
-}
-
-.role-stage__lead p,
-.role-stage__rail p,
 .role-card__desc,
 .config-block p {
   color: var(--ai-text-soft);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
-.role-stage__facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 26px;
-}
-
-.fact-strip {
-  padding-top: 14px;
-  border-top: 1px solid var(--ai-border);
-}
-
-.fact-strip span {
-  color: var(--ai-text-faint);
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid var(--ai-border);
+  border-radius: 999px;
+  background: var(--ai-surface-alt);
+  color: var(--ai-text-soft);
   font-size: 12px;
   font-weight: 700;
-}
-
-.fact-strip strong,
-.role-stage__rail strong {
-  display: block;
-  margin-top: 10px;
-  color: var(--ai-text);
-  font-size: 22px;
-  line-height: 1.1;
-}
-
-.role-stage__rail {
-  align-self: start;
-  padding: 10px 0 0 22px;
-  border-left: 1px solid var(--ai-border);
 }
 
 .rail-link,
@@ -456,7 +441,6 @@ onMounted(() => {
 
 .rail-link,
 .secondary-btn {
-  margin-top: 18px;
   border: 1px solid var(--ai-border);
   background: transparent;
   color: var(--ai-text);
@@ -472,6 +456,9 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.72fr);
   gap: 22px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
   align-items: start;
 }
 
@@ -483,7 +470,15 @@ onMounted(() => {
 }
 
 .role-gallery {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
   padding: 18px;
+}
+
+.role-gallery__body,
+.role-config {
+  min-height: 0;
 }
 
 .section-head {
@@ -564,9 +559,11 @@ onMounted(() => {
   line-height: 1.1;
 }
 
-.role-config {
-  position: sticky;
-  top: 10px;
+.role-card__desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .config-panel,
@@ -665,29 +662,38 @@ onMounted(() => {
   margin-top: 18px;
 }
 
+.role-layout::-webkit-scrollbar {
+  width: 6px;
+}
+
+.role-layout::-webkit-scrollbar-thumb {
+  background: rgba(29, 78, 216, 0.18);
+  border-radius: 999px;
+}
+
 @media (max-width: 1080px) {
-  .role-stage,
+  .role-chat-page,
+  .role-chat-main {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .role-toolbar,
   .role-layout {
     grid-template-columns: 1fr;
-  }
-
-  .role-stage__rail {
-    padding: 18px 0 0;
-    border-left: none;
-    border-top: 1px solid var(--ai-border);
-  }
-
-  .role-config {
-    position: static;
   }
 }
 
 @media (max-width: 768px) {
   .role-chat-main {
-    padding: 8px 10px 18px;
+    padding: 8px 10px 12px;
   }
 
-  .role-stage__facts,
+  .role-toolbar__main {
+    flex-direction: column;
+    align-items: start;
+  }
+
   .role-grid {
     grid-template-columns: 1fr;
   }

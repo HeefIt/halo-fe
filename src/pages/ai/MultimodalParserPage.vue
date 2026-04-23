@@ -1,9 +1,9 @@
 <template>
   <div class="multimodal-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <main class="multimodal-main">
-      <AIToolHeader
+<AIToolHeader
         title="多模态解析"
-        badge="识别"
+        badge="图文解析"
       />
 
       <section class="workspace">
@@ -13,7 +13,7 @@
               <span class="section-kicker">INPUT</span>
               <h2>上传图片</h2>
             </div>
-            <span class="section-note">支持 JPG、PNG、GIF、WebP</span>
+            <span class="section-note">JPG / PNG / GIF / WebP</span>
           </div>
 
           <div
@@ -35,7 +35,6 @@
                 </svg>
               </div>
               <h3>拖拽或点击上传</h3>
-              <p>先选一张图，再决定识别模式和附加说明。</p>
             </div>
 
             <div v-else class="image-preview">
@@ -60,12 +59,6 @@
           </div>
 
           <div class="demo-strip">
-            <div class="section-head section-head--compact">
-              <div>
-                <span class="section-kicker">DEMO</span>
-                <h3>演示样例</h3>
-              </div>
-            </div>
             <div class="demo-list">
               <button v-for="demo in demoImages" :key="demo.id" class="demo-btn" @click="loadDemoImage(demo)">
                 <span class="demo-badge">{{ demo.name.charAt(0) }}</span>
@@ -87,48 +80,47 @@
             </button>
           </div>
 
-          <div class="mode-list">
-            <button
-              v-for="mode in analysisModes"
-              :key="mode.id"
-              class="mode-btn"
-              :class="{ active: selectedMode === mode.id }"
-              @click="selectedMode = mode.id"
-            >
-              <component :is="mode.icon" />
-              <span>{{ mode.label }}</span>
-            </button>
-          </div>
-
-          <label class="prompt-field">
-            <span>补充说明</span>
-            <textarea v-model="customPrompt" rows="4" placeholder="可选：例如提取重点、格式化输出、标注题干与答案..." />
-          </label>
-
-          <div v-if="analysisResult" class="result-shell">
-            <div class="result-header">
-              <h3>解析结果</h3>
-              <div class="result-actions">
-                <button class="ghost-btn" @click="copyResult">复制</button>
-                <button class="ghost-btn" @click="clearResult">清空</button>
-              </div>
+          <div class="analysis-stage__body">
+            <div class="mode-list">
+              <button
+                v-for="mode in analysisModes"
+                :key="mode.id"
+                class="mode-btn"
+                :class="{ active: selectedMode === mode.id }"
+                @click="selectedMode = mode.id"
+              >
+                <component :is="mode.icon" />
+                <span>{{ mode.label }}</span>
+              </button>
             </div>
-            <div class="result-content ai-markdown" v-html="formatResult(analysisResult)"></div>
-          </div>
 
-          <div v-else class="result-empty">
-            <div class="empty-mark">AI</div>
-            <h3>等待解析</h3>
-            <p>上传图片并选择模式后，结果会显示在这里。</p>
+            <label class="prompt-field">
+              <span>补充</span>
+              <textarea v-model="customPrompt" rows="4" placeholder="例如：提取重点、格式化输出、标注题干与答案。" />
+            </label>
+
+<div v-if="analysisResult" class="result-shell">
+               <div class="result-header">
+                 <h3>解析结果</h3>
+                 <div class="result-actions">
+                   <button class="ghost-btn" @click="copyResult">复制</button>
+                   <button class="ghost-btn" @click="clearResult">清空</button>
+                 </div>
+               </div>
+               <div class="result-content ai-markdown" v-html="formatResult(analysisResult)"></div>
+               <div class="result-footer">
+                 <AIMessageActions
+                   :content="analysisResult || ''"
+                 />
+               </div>
+             </div>
+
+            <div v-else class="result-empty">
+              <div class="empty-mark">AI</div>
+              <h3>等待解析</h3>
+            </div>
           </div>
         </section>
-      </section>
-
-      <section class="capability-strip">
-        <div class="capability-item" v-for="item in capabilityItems" :key="item.title">
-          <strong>{{ item.title }}</strong>
-          <p>{{ item.desc }}</p>
-        </div>
       </section>
     </main>
   </div>
@@ -140,6 +132,7 @@ import { ElMessage } from 'element-plus'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import { useThemeStore } from '@/stores/modules/theme'
 import AIToolHeader from './components/AIToolHeader.vue'
+import AIMessageActions from './components/AIMessageActions.vue'
 
 const themeStore = useThemeStore()
 const fileInput = ref(null)
@@ -162,13 +155,6 @@ const analysisModes = [
   { id: 'ocr', label: 'OCR文字', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }), h('polyline', { points: '14 2 14 8 20 8' }), h('line', { x1: 16, y1: 13, x2: 8, y2: 13 })]) },
   { id: 'question', label: '题目解析', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('circle', { cx: 12, cy: 12, r: 10 }), h('path', { d: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3' }), h('line', { x1: 12, y1: 17, x2: '12.01', y2: 17 })]) },
   { id: 'code', label: '代码识别', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('polyline', { points: '16 18 22 12 16 6' }), h('polyline', { points: '8 6 2 12 8 18' })]) }
-]
-
-const capabilityItems = [
-  { title: 'OCR 文字识别', desc: '提取图片中的文本并整理结构。' },
-  { title: '题目拆解', desc: '识别题干、选项、答案与知识点。' },
-  { title: '代码截图解析', desc: '处理代码图片并给出格式化结果。' },
-  { title: '图像理解', desc: '补充场景说明或对象识别结论。' }
 ]
 
 const triggerFileInput = () => { fileInput.value?.click() }
@@ -294,18 +280,19 @@ const clearResult = () => { analysisResult.value = '' }
 .multimodal-main {
   max-width: 1380px;
   margin: 0 auto;
-  padding: 10px 16px 12px;
+  padding: 10px 16px 14px;
   display: grid;
-  gap: 14px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
   height: 100dvh;
-  overflow-y: auto;
-  align-content: start;
+  min-height: 0;
 }
 
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
   gap: 16px;
+  min-height: 0;
 }
 
 .upload-stage,
@@ -313,18 +300,27 @@ const clearResult = () => { analysisResult.value = '' }
   border: 1px solid var(--ai-border);
   border-radius: 16px;
   background: var(--ai-surface);
+  min-height: 0;
 }
 
 .upload-stage {
   padding: 18px;
   display: grid;
+  align-content: start;
   gap: 16px;
 }
 
 .analysis-stage {
   padding: 18px;
   display: grid;
-  grid-template-rows: auto auto auto minmax(280px, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 16px;
+}
+
+.analysis-stage__body {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 16px;
 }
 
@@ -333,10 +329,6 @@ const clearResult = () => { analysisResult.value = '' }
   align-items: start;
   justify-content: space-between;
   gap: 16px;
-}
-
-.section-head--compact {
-  margin-bottom: -4px;
 }
 
 .section-kicker {
@@ -404,15 +396,6 @@ const clearResult = () => { analysisResult.value = '' }
   font-size: 24px;
 }
 
-.upload-placeholder p,
-.result-empty p {
-  max-width: 360px;
-  margin-top: 8px;
-  color: var(--ai-text-soft);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
 .image-preview,
 .image-preview img {
   width: 100%;
@@ -444,8 +427,7 @@ const clearResult = () => { analysisResult.value = '' }
   color: #fff;
 }
 
-.file-strip,
-.capability-strip {
+.file-strip {
   display: grid;
   gap: 12px;
 }
@@ -454,22 +436,19 @@ const clearResult = () => { analysisResult.value = '' }
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.file-item,
-.capability-item {
+.file-item {
   padding: 12px 14px;
   border: 1px solid var(--ai-border);
   border-radius: 12px;
   background: var(--ai-surface-alt);
 }
 
-.file-item span,
-.capability-item p {
+.file-item span {
   color: var(--ai-text-faint);
   font-size: 12px;
 }
 
-.file-item strong,
-.capability-item strong {
+.file-item strong {
   display: block;
   margin-top: 6px;
   color: var(--ai-text);
@@ -551,6 +530,10 @@ const clearResult = () => { analysisResult.value = '' }
   font-weight: 600;
 }
 
+.demo-strip {
+  padding-top: 2px;
+}
+
 .prompt-field textarea {
   width: 100%;
   border: 1px solid var(--ai-border);
@@ -571,7 +554,7 @@ const clearResult = () => { analysisResult.value = '' }
 
 .result-shell,
 .result-empty {
-  min-height: 320px;
+  min-height: 0;
   border: 1px solid var(--ai-border);
   border-radius: 14px;
   background: var(--ai-surface-alt);
@@ -580,6 +563,11 @@ const clearResult = () => { analysisResult.value = '' }
 .result-shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+}
+
+.result-empty {
+  display: flex;
+  flex-direction: column;
 }
 
 .result-header {
@@ -602,13 +590,40 @@ const clearResult = () => { analysisResult.value = '' }
   line-height: 1.8;
 }
 
-.capability-strip {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.result-footer {
+  padding: 0 14px 14px;
+}
+
+.result-footer :deep(.ai-message-actions) {
+  margin-top: 8px;
+}
+
+.result-footer :deep(.action-btn) {
+  color: var(--ai-text-faint);
+}
+
+.result-footer :deep(.action-btn:hover:not(:disabled)) {
+  background: var(--ai-accent-soft);
+  color: var(--ai-accent);
+}
+
+.result-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.result-content::-webkit-scrollbar-thumb {
+  background: rgba(21, 94, 117, 0.18);
+  border-radius: 999px;
 }
 
 @media (max-width: 1024px) {
+  .multimodal-page,
+  .multimodal-main {
+    height: auto;
+    min-height: 100dvh;
+  }
+
   .workspace,
-  .capability-strip,
   .file-strip {
     grid-template-columns: 1fr;
   }
