@@ -179,3 +179,45 @@ export const runLearningCoachStream = (payload, userId, onEvent, onError, onComp
       })
   })
 }
+
+/**
+ * 更新学习规划会话标题
+ *
+ * @param {string} sessionId 会话 ID
+ * @param {string} title 新标题
+ * @param {number} userId 用户 ID
+ * @returns {Promise}
+ */
+export const updateLearningCoachSessionTitle = (sessionId, title, userId) => {
+  const config = {
+    url: `/ai/agent/learning-coach/session/${sessionId}/title`,
+    method: 'PATCH',
+    data: { title }
+  }
+
+  if (userId) {
+    config.headers = { userId }
+  }
+
+  return request(config)
+}
+
+/**
+ * 删除学习规划会话
+ *
+ * @param {string} sessionId 会话 ID
+ * @param {number} userId 用户 ID
+ * @returns {Promise}
+ */
+export const deleteLearningCoachSession = (sessionId, userId) => {
+  const config = {
+    url: `/ai/agent/learning-coach/session/${sessionId}`,
+    method: 'DELETE'
+  }
+
+  if (userId) {
+    config.headers = { userId }
+  }
+
+  return request(config)
+}

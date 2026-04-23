@@ -3,88 +3,109 @@
     <main class="coach-main">
       <AIToolHeader
         title="学习规划 Agent"
-        badge="Learning Coach"
-        subtitle="结合最近练题记录，帮你整理下一步。"
+        badge="学习规划"
       />
 
-      <section class="coach-layout">
+      <section class="coach-workspace">
         <aside class="coach-sidebar">
-          <section class="sidebar-block sidebar-block--intro">
-            <div class="sidebar-kicker">策略入口</div>
-            <h2>把最近的练题情况和目标交给我，我来整理下一步。</h2>
-            <p>适合做阶段诊断、短期计划和题目推荐。</p>
-
-            <div class="capability-list">
-              <span
-                v-for="tag in capabilityTags"
-                :key="tag"
-                class="capability-chip"
-              >
-                {{ tag }}
-              </span>
-            </div>
-
-            <button class="primary-action" type="button" @click="createNewSession()">
-              新建学习规划
-            </button>
-          </section>
-
-          <section class="sidebar-block sidebar-block--prompts">
-            <div class="sidebar-title-row">
-              <strong>快捷任务</strong>
-              <span>{{ quickPrompts.length }} 条</span>
-            </div>
-            <div class="prompt-list">
-              <button
-                v-for="prompt in quickPrompts"
-                :key="prompt"
-                class="prompt-button"
-                type="button"
-                @click="usePrompt(prompt)"
-              >
-                {{ prompt }}
+          <section class="coach-sidebar__toolbar">
+            <div class="coach-sidebar__toolbar-head">
+              <strong>Coach</strong>
+              <button class="primary-action primary-action--compact" type="button" @click="createNewSession()" title="新建学习规划会话">
+                新建
               </button>
             </div>
+            <div class="coach-sidebar__meta">
+              <span class="sidebar-mini-pill">{{ sessions.length }} 会话</span>
+              <span class="sidebar-mini-pill">{{ quickPrompts.length }} 快捷任务</span>
+            </div>
           </section>
 
-          <section class="sidebar-block sidebar-block--sessions">
-            <div class="sidebar-title-row">
-              <strong>历史会话</strong>
-              <span>{{ sessions.length }}</span>
-            </div>
+          <div class="coach-sidebar__scroll">
+            <section class="sidebar-block sidebar-block--sessions">
+              <div class="sidebar-title-row">
+                <strong>会话</strong>
+                <span>{{ sessions.length }}</span>
+              </div>
 
-            <div v-if="sessions.length" class="session-list">
-              <button
-                v-for="session in sessions"
-                :key="session.sessionId"
-                class="session-item"
-                :class="{ active: session.sessionId === currentSessionId }"
-                type="button"
-                @click="selectSession(session.sessionId)"
-              >
-                <div class="session-item__title">{{ session.title || '学习规划' }}</div>
-                <div class="session-item__meta">
-                  <span>{{ formatSessionTime(session.updatedAt) }}</span>
-                  <span>{{ session.messageCount || 0 }} 条</span>
+              <div v-if="sessions.length" class="session-list">
+                <div
+                  v-for="session in sessions"
+                  :key="session.sessionId"
+                  class="session-item"
+                  :class="{ active: session.sessionId === currentSessionId }"
+                  @click="selectSession(session.sessionId)"
+                >
+                  <div v-if="editingSessionId !== session.sessionId" class="session-item__main">
+                    <div class="session-item__title" @dblclick="startEditingTitle(session)">
+                      {{ session.title || '学习规划' }}
+                    </div>
+                    <div class="session-item__meta">
+                      <span>{{ formatSessionTime(session.updatedAt) }}</span>
+                      <span>{{ session.messageCount || 0 }} 条</span>
+                    </div>
+                  </div>
+                  <input
+                    v-else
+                    v-model="editingTitle"
+                    class="session-item__input"
+                    autofocus
+                    @click.stop
+                    @blur="finishEditingTitle(session)"
+                    @keyup.enter="finishEditingTitle(session)"
+                    @keyup.esc="cancelEditingTitle"
+                  />
+                  <div class="session-item__actions">
+                    <button class="session-action-btn" type="button" title="编辑标题" @click.stop="startEditingTitle(session)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                      </svg>
+                    </button>
+                    <button class="session-action-btn session-action-btn--danger" type="button" title="删除会话" @click.stop="handleDeleteSession(session.sessionId)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </button>
-            </div>
+              </div>
 
-            <div v-else class="empty-sidebar">
-              还没有学习规划会话。
-            </div>
-          </section>
+              <div v-else class="empty-sidebar">
+                还没有学习规划会话。
+              </div>
+            </section>
+
+            <section class="sidebar-block sidebar-block--prompts">
+              <div class="sidebar-title-row">
+                <strong>快捷输入</strong>
+                <span>{{ quickPrompts.length }}</span>
+              </div>
+              <div class="prompt-list">
+                <button
+                  v-for="prompt in quickPrompts"
+                  :key="prompt"
+                  class="prompt-button"
+                  type="button"
+                  :title="prompt"
+                  @click="usePrompt(prompt)"
+                >
+                  {{ prompt }}
+                </button>
+              </div>
+            </section>
+          </div>
         </aside>
 
         <section class="coach-stage">
           <div class="coach-stage__topbar">
             <div class="topbar-copy">
-              <strong>{{ currentSession?.title || '学习规划工作台' }}</strong>
-              <span>{{ capability.description || '围绕最近练题数据生成学习计划。' }}</span>
+              <span class="topbar-label">当前会话</span>
+              <strong :title="currentSession?.title || '新会话'">{{ currentSession?.title || '新会话' }}</strong>
             </div>
             <div class="topbar-meta">
-              <span class="meta-pill">默认只读工具</span>
-              <span class="meta-pill">会话持久化</span>
+              <span class="meta-pill">站内数据</span>
               <span class="meta-pill" :class="{ active: useStreaming }">{{ useStreaming ? '流式输出' : '同步输出' }}</span>
             </div>
           </div>
@@ -92,8 +113,7 @@
           <div ref="messageContainerRef" class="coach-messages">
             <div v-if="displayMessages.length === 0 && !isLoading" class="empty-stage">
               <div class="empty-stage__orb"></div>
-              <h3>先描述你的目标</h3>
-              <p>例如：分析最近 7 天刷题情况，并给我 3 天复习计划。</p>
+              <h3>输入目标</h3>
             </div>
 
             <article
@@ -152,6 +172,13 @@
                     v-html="renderFallbackReply(message.content)"
                   ></div>
                 </template>
+                <AIMessageActions
+                  v-if="message.role === 'assistant' && !isLoading"
+                  :content="message.content || ''"
+                  :session-id="currentSessionId || ''"
+                  :message-index="index"
+                  @regenerate="handleRegenerate"
+                />
               </div>
             </article>
 
@@ -163,7 +190,8 @@
           </div>
 
           <div class="coach-composer">
-            <div class="composer-options">
+            <div class="composer-toolbar">
+              <div class="composer-options">
               <label class="option-field">
                 <span>分析区间</span>
                 <select v-model="timeRangeDays">
@@ -193,28 +221,25 @@
                 <input v-model="useStreaming" type="checkbox">
                 <span>流式输出</span>
               </label>
+              </div>
+              <div class="composer-buttons">
+                <button class="ghost-button" type="button" @click="createNewSession()" :disabled="isLoading">
+                  新会话
+                </button>
+                <button class="primary-button" type="button" @click="sendMessage" :disabled="!inputMessage.trim() || isLoading">
+                  开始分析
+                </button>
+              </div>
             </div>
 
             <div class="composer-input">
               <textarea
                 v-model="inputMessage"
-                rows="3"
+                rows="2"
                 :disabled="isLoading"
                 placeholder="例如：帮我分析最近 7 天的练题情况"
                 @keydown.enter.exact.prevent="sendMessage"
               ></textarea>
-
-              <div class="composer-actions">
-                <p class="composer-tip">会优先读取真实站内数据。</p>
-                <div class="composer-buttons">
-                  <button class="ghost-button" type="button" @click="createNewSession()" :disabled="isLoading">
-                    新会话
-                  </button>
-                  <button class="primary-button" type="button" @click="sendMessage" :disabled="!inputMessage.trim() || isLoading">
-                    开始分析
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -225,19 +250,22 @@
 
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useThemeStore } from '@/stores/modules/theme'
 import { useUserStore } from '@/stores/modules/user'
 import {
   createLearningCoachSession,
+  deleteLearningCoachSession,
   getLearningCoachCapabilities,
   getLearningCoachSession,
   getLearningCoachSessions,
   runLearningCoach,
-  runLearningCoachStream
+  runLearningCoachStream,
+  updateLearningCoachSessionTitle
 } from '@/api/modules/ai/agent'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
+import AIMessageActions from './components/AIMessageActions.vue'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -253,6 +281,8 @@ const includeQuestionRecommendations = ref(true)
 const timeRangeDays = ref(7)
 const focusSubjectType = ref('')
 const messageContainerRef = ref(null)
+const editingSessionId = ref('')
+const editingTitle = ref('')
 
 const defaultQuickPrompts = [
   '帮我分析最近一周的刷题情况，并给我三天复习计划',
@@ -260,10 +290,6 @@ const defaultQuickPrompts = [
   '如果我要准备前端面试，题库里我应该优先刷什么题型',
   '我这周练了不少题，但感觉效率一般，帮我找找原因'
 ]
-
-const capabilityTags = computed(() => capability.value.capabilityTags?.length
-  ? capability.value.capabilityTags
-  : ['学习诊断', '计划生成', '薄弱点分析'])
 
 const quickPrompts = computed(() => capability.value.examplePrompts?.length
   ? capability.value.examplePrompts
@@ -463,6 +489,73 @@ const refreshCurrentSession = async () => {
   ])
 }
 
+const startEditingTitle = (session) => {
+  editingSessionId.value = session.sessionId
+  editingTitle.value = session.title || '学习规划'
+}
+
+const finishEditingTitle = async (session) => {
+  const newTitle = editingTitle.value.trim()
+  if (!newTitle || newTitle === session.title) {
+    cancelEditingTitle()
+    return
+  }
+
+  try {
+    const response = await updateLearningCoachSessionTitle(session.sessionId, newTitle, userStore.userId)
+    if (response.success || response.code === 200) {
+      session.title = newTitle
+      if (currentSessionId.value === session.sessionId && currentSession.value) {
+        currentSession.value.title = newTitle
+      }
+      ElMessage.success('标题已更新')
+    } else {
+      throw new Error(response.message || '更新失败')
+    }
+  } catch (error) {
+    console.error('更新会话标题失败:', error)
+    ElMessage.error(error.message || '更新标题失败')
+  } finally {
+    cancelEditingTitle()
+  }
+}
+
+const cancelEditingTitle = () => {
+  editingSessionId.value = ''
+  editingTitle.value = ''
+}
+
+const handleDeleteSession = async (sessionId) => {
+  try {
+    await ElMessageBox.confirm('确定要删除这个学习规划会话吗？', '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+
+    const response = await deleteLearningCoachSession(sessionId, userStore.userId)
+    if (response.success || response.code === 200) {
+      sessions.value = sessions.value.filter(s => s.sessionId !== sessionId)
+      if (currentSessionId.value === sessionId) {
+        if (sessions.value.length > 0) {
+          await selectSession(sessions.value[0].sessionId)
+        } else {
+          currentSessionId.value = ''
+          currentSession.value = null
+        }
+      }
+      ElMessage.success('会话已删除')
+    } else {
+      throw new Error(response.message || '删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除会话失败:', error)
+      ElMessage.error(error.message || '删除会话失败')
+    }
+  }
+}
+
 const appendLocalMessage = (message) => {
   if (!currentSession.value) {
     currentSession.value = {
@@ -497,6 +590,72 @@ const replaceLastAssistantMessage = (content) => {
   currentSession.value = {
     ...currentSession.value,
     messages
+  }
+}
+
+const handleRegenerate = async (messageIndex) => {
+  if (isLoading.value || !currentSession.value?.messages) return
+
+  const messages = currentSession.value.messages
+  if (messageIndex <= 0 || messageIndex >= messages.length) return
+
+  const userMessage = messages[messageIndex - 1]
+  if (!userMessage || userMessage.role !== 'user' || !userMessage.content?.trim()) {
+    ElMessage.warning('无法找到对应的用户消息')
+    return
+  }
+
+  const userContent = userMessage.content.trim()
+  currentSession.value.messages.splice(messageIndex)
+  await scrollToBottom()
+
+  isLoading.value = true
+
+  appendLocalMessage({
+    role: 'assistant',
+    content: '正在重新生成学习规划...',
+    timestamp: new Date().toISOString()
+  })
+
+  const payload = {
+    sessionId: currentSessionId.value,
+    goal: userContent,
+    timeRangeDays: timeRangeDays.value,
+    focusSubjectType: focusSubjectType.value,
+    includeRecentPractice: true,
+    includeQuestionRecommendations: includeQuestionRecommendations.value,
+    recommendedSubjectLimit: 5,
+    planDays: 3
+  }
+
+  try {
+    if (useStreaming.value) {
+      await runLearningCoachStream(
+        payload,
+        userStore.userId,
+        handleStreamEvent,
+        (error) => {
+          console.error('学习规划 Agent 流式执行失败:', error)
+          replaceLastAssistantMessage('学习规划生成失败，请稍后重试。')
+          ElMessage.error('重新生成失败')
+        }
+      )
+    } else {
+      const response = await runLearningCoach(payload, userStore.userId)
+      if (!response.success || !response.data) {
+        throw new Error(response.message || '学习规划生成失败')
+      }
+      replaceLastAssistantMessage(response.data.rawContent || response.data.reply || '')
+    }
+
+    await refreshCurrentSession()
+  } catch (error) {
+    console.error('学习规划 Agent 执行失败:', error)
+    replaceLastAssistantMessage('学习规划生成失败，请稍后重试。')
+    ElMessage.error(error.message || '重新生成失败')
+  } finally {
+    isLoading.value = false
+    await scrollToBottom()
   }
 }
 
@@ -598,7 +757,8 @@ onMounted(async () => {
 
 <style scoped>
 .learning-coach-page {
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   --coach-bg: linear-gradient(180deg, rgba(245, 247, 250, 0.98) 0%, rgba(236, 240, 244, 0.96) 100%);
   --coach-surface: rgba(255, 255, 255, 0.9);
   --coach-surface-strong: #ffffff;
@@ -611,6 +771,7 @@ onMounted(async () => {
   --coach-accent-soft: rgba(15, 118, 110, 0.1);
   --coach-accent-line: rgba(15, 118, 110, 0.18);
   background: var(--coach-bg);
+  overflow: hidden;
 }
 
 .learning-coach-page.is-dark {
@@ -628,85 +789,98 @@ onMounted(async () => {
 }
 
 .coach-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
   display: grid;
-  gap: 14px;
-  padding: 16px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 16px 14px;
 }
 
-.coach-layout {
+.coach-workspace {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
+  grid-template-columns: 292px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .coach-sidebar,
 .coach-stage {
-  display: grid;
-  gap: 12px;
+  min-height: 0;
 }
 
+.coach-sidebar {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+}
+
+.coach-sidebar__toolbar,
 .sidebar-block,
+.coach-stage,
 .coach-stage__topbar,
-.coach-messages,
 .coach-composer {
   border: 1px solid var(--coach-border);
   background: var(--coach-surface);
   border-radius: 12px;
 }
 
+.coach-sidebar__toolbar,
 .sidebar-block {
-  padding: 14px;
+  padding: 12px;
 }
 
-.sidebar-kicker {
-  color: var(--coach-text-faint);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.sidebar-block--intro h2 {
-  margin: 8px 0 6px;
-  color: var(--coach-text);
-  font-size: 22px;
-  line-height: 1.2;
-  letter-spacing: -0.04em;
-}
-
-.sidebar-block--intro p {
-  margin: 0;
-  color: var(--coach-text-soft);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.capability-list {
+.coach-sidebar__toolbar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.capability-chip {
+.coach-sidebar__toolbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.coach-sidebar__toolbar-head strong {
+  color: var(--coach-accent);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(15, 118, 110, 0.16);
+}
+
+.coach-sidebar__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sidebar-mini-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--coach-border);
   border-radius: 999px;
-  background: var(--coach-accent-soft);
-  color: var(--coach-accent);
-  font-size: 12px;
+  background: var(--coach-surface-muted);
+  color: var(--coach-text-soft);
+  font-size: 11px;
   font-weight: 700;
 }
 
 .primary-action,
 .primary-button,
 .ghost-button {
-  min-height: 38px;
-  border-radius: 10px;
-  font-size: 13px;
+  min-height: 34px;
+  border-radius: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -729,26 +903,62 @@ onMounted(async () => {
   margin-top: 14px;
 }
 
+.primary-action--compact {
+  width: auto;
+  margin-top: 0;
+  min-width: 68px;
+  padding: 0 12px;
+}
+
+.coach-sidebar__scroll {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, auto) minmax(0, auto);
+  gap: 10px;
+  align-content: start;
+}
+
 .sidebar-title-row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
   align-items: center;
   color: var(--coach-text-soft);
+  font-size: 11px;
+}
+
+.sidebar-title-row strong {
+  color: var(--coach-accent);
   font-size: 12px;
+  letter-spacing: 0.03em;
 }
 
 .prompt-list,
 .session-list {
   display: grid;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 10px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.prompt-list {
+  max-height: 138px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.session-list {
+  max-height: 248px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .prompt-button,
 .session-item {
   width: 100%;
-  padding: 10px 12px;
+  padding: 9px 10px;
   border: 1px solid var(--coach-border);
   background: var(--coach-surface-muted);
   border-radius: 10px;
@@ -757,8 +967,13 @@ onMounted(async () => {
 
 .prompt-button {
   color: var(--coach-text);
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  min-height: 38px;
 }
 
 .session-item.active {
@@ -766,19 +981,87 @@ onMounted(async () => {
   background: var(--coach-accent-soft);
 }
 
+.session-item {
+  padding: 10px 11px;
+  min-height: 52px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.session-item__main {
+  min-width: 0;
+  flex: 1;
+}
+
+.session-item__actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.session-item:hover .session-item__actions {
+  opacity: 1;
+}
+
+.session-action-btn {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  background: var(--coach-surface);
+  color: var(--coach-text-faint);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.session-action-btn:hover {
+  background: var(--coach-surface-muted);
+  color: var(--coach-text);
+}
+
+.session-action-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.session-item__input {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--coach-accent-line);
+  border-radius: 6px;
+  background: var(--coach-surface);
+  color: var(--coach-text);
+  font-size: 12px;
+  outline: none;
+}
+
 .session-item__title {
   color: var(--coach-text);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .session-item__meta {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 4px;
   color: var(--coach-text-faint);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .empty-sidebar {
@@ -788,46 +1071,62 @@ onMounted(async () => {
   line-height: 1.6;
 }
 
+.coach-stage {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+}
+
 .coach-stage__topbar {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  align-items: start;
-  padding: 14px 16px;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 10px;
+  background: var(--coach-surface-muted);
 }
 
 .topbar-copy {
   display: grid;
-  gap: 4px;
+  min-width: 0;
+  gap: 2px;
+}
+
+.topbar-label {
+  color: var(--coach-text-faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .topbar-copy strong {
   color: var(--coach-text);
-  font-size: 18px;
-  letter-spacing: -0.03em;
-}
-
-.topbar-copy span {
-  color: var(--coach-text-soft);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 5px;
 }
 
 .meta-pill {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
+  min-height: 22px;
+  padding: 0 7px;
   border-radius: 999px;
   background: var(--coach-surface-muted);
   color: var(--coach-text-soft);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
 }
 
@@ -837,59 +1136,56 @@ onMounted(async () => {
 }
 
 .coach-messages {
-  min-height: 480px;
-  max-height: calc(100vh - 260px);
+  min-height: 0;
   overflow-y: auto;
-  padding: 16px;
+  padding: 12px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
+  border: 1px solid var(--coach-border);
+  background: linear-gradient(180deg, rgba(15, 118, 110, 0.03), transparent 18%), var(--coach-surface);
+  border-radius: 12px;
 }
 
 .empty-stage {
   display: grid;
   place-items: center;
-  min-height: 320px;
+  min-height: 100%;
   text-align: center;
   color: var(--coach-text-soft);
+  gap: 10px;
 }
 
 .empty-stage__orb {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   background: radial-gradient(circle at 30% 30%, rgba(15, 118, 110, 0.22), rgba(15, 118, 110, 0.04));
-  margin-bottom: 14px;
 }
 
 .empty-stage h3 {
   margin: 0;
   color: var(--coach-text);
-  font-size: 22px;
-}
-
-.empty-stage p {
-  margin: 6px 0 0;
-  max-width: 520px;
-  line-height: 1.7;
+  font-size: 18px;
 }
 
 .message-card {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  max-width: min(78%, 860px);
 }
 
 .message-card__avatar {
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  font-size: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -905,8 +1201,8 @@ onMounted(async () => {
 
 .message-card__body {
   display: grid;
-  gap: 10px;
-  padding: 14px;
+  gap: 8px;
+  padding: 12px;
   border: 1px solid var(--coach-border);
   background: var(--coach-surface-strong);
   border-radius: 12px;
@@ -916,36 +1212,60 @@ onMounted(async () => {
   background: var(--coach-surface-muted);
 }
 
+.message-card.user {
+  justify-self: end;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  max-width: min(78%, 860px);
+}
+
+.message-card.user .message-card__avatar {
+  grid-column: 2;
+}
+
+.message-card.user .message-card__body {
+  grid-column: 1;
+}
+
+.message-card.assistant {
+  justify-self: start;
+  max-width: min(84%, 940px);
+}
+
+.message-card.assistant .message-card__body {
+  border-color: var(--coach-accent-line);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.04);
+}
+
 .message-card__head {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   color: var(--coach-text-faint);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .message-card__head strong {
   color: var(--coach-text);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .message-card__reply {
   color: var(--coach-text);
   font-size: 14px;
-  line-height: 1.8;
+  line-height: 1.75;
 }
 
 .analysis-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .analysis-panel {
   display: grid;
-  gap: 8px;
-  padding: 12px;
+  gap: 6px;
+  padding: 10px;
   border: 1px solid var(--coach-border);
   background: var(--coach-surface-muted);
   border-radius: 10px;
@@ -953,14 +1273,14 @@ onMounted(async () => {
 
 .analysis-panel__title {
   color: var(--coach-text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .analysis-panel__text {
   color: var(--coach-text-soft);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 .analysis-panel__list {
@@ -972,19 +1292,33 @@ onMounted(async () => {
 .analysis-tag {
   display: inline-flex;
   align-items: center;
-  min-height: 28px;
-  padding: 0 10px;
+  min-height: 24px;
+  padding: 0 8px;
   border-radius: 999px;
   background: var(--coach-surface-strong);
   color: var(--coach-text-soft);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
+}
+
+.message-card__body :deep(.ai-message-actions) {
+  margin-top: 10px;
+}
+
+.message-card__body :deep(.action-btn) {
+  color: var(--coach-text-faint);
+}
+
+.message-card__body :deep(.action-btn:hover:not(:disabled)) {
+  background: var(--coach-accent-soft);
+  color: var(--coach-accent);
 }
 
 .loading-bar {
   display: inline-flex;
   gap: 8px;
   padding: 0 4px 12px;
+  justify-self: start;
 }
 
 .loading-bar span {
@@ -1005,14 +1339,22 @@ onMounted(async () => {
 
 .coach-composer {
   display: grid;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, var(--coach-surface), var(--coach-surface-muted));
+}
+
+.composer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
 }
 
 .composer-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -1020,19 +1362,20 @@ onMounted(async () => {
 .option-switch {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--coach-text-soft);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
 .option-field select {
-  min-height: 32px;
-  padding: 0 10px;
+  min-height: 30px;
+  padding: 0 9px;
   border: 1px solid var(--coach-border);
   background: var(--coach-surface-muted);
   border-radius: 8px;
   color: var(--coach-text);
+  font-size: 12px;
 }
 
 .option-switch input {
@@ -1041,35 +1384,37 @@ onMounted(async () => {
 
 .composer-input textarea {
   width: 100%;
-  resize: vertical;
-  min-height: 120px;
-  padding: 12px 14px;
+  resize: none;
+  min-height: 72px;
+  max-height: 112px;
+  padding: 10px 12px;
   border: 1px solid var(--coach-border);
   background: var(--coach-surface-muted);
   border-radius: 10px;
   color: var(--coach-text);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.composer-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-  margin-top: 10px;
-}
-
-.composer-tip {
-  margin: 0;
-  color: var(--coach-text-faint);
-  font-size: 12px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .composer-buttons {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
+}
+
+.coach-sidebar__scroll::-webkit-scrollbar,
+.prompt-list::-webkit-scrollbar,
+.session-list::-webkit-scrollbar,
+.coach-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.coach-sidebar__scroll::-webkit-scrollbar-thumb,
+.prompt-list::-webkit-scrollbar-thumb,
+.session-list::-webkit-scrollbar-thumb,
+.coach-messages::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.18);
+  border-radius: 999px;
 }
 
 @keyframes pulse {
@@ -1087,8 +1432,19 @@ onMounted(async () => {
 }
 
 @media (max-width: 1080px) {
-  .coach-layout {
+  .learning-coach-page,
+  .coach-main {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .coach-workspace {
     grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .coach-sidebar {
+    grid-template-rows: auto;
   }
 
   .analysis-grid {
@@ -1098,11 +1454,11 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .coach-main {
-    padding: 12px;
+    padding: 8px 10px 12px;
   }
 
   .coach-stage__topbar,
-  .composer-actions {
+  .composer-toolbar {
     flex-direction: column;
     align-items: start;
   }
