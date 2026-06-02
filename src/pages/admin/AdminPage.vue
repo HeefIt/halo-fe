@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, h, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, h, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { getStatistics } from '@/api/modules/question/subject'
@@ -94,6 +94,7 @@ import BlogStatistics from '@/pages/admin/components/BlogStatistics.vue'
 import NoticeManagement from '@/pages/admin/components/NoticeManagement.vue'
 import RoleTemplateManagement from '@/pages/admin/components/RoleTemplateManagement.vue'
 import CircleManagement from '@/pages/admin/components/CircleManagement.vue'
+const KnowledgeBaseManagement = defineAsyncComponent(() => import('@/pages/admin/components/KnowledgeBaseManagement.vue'))
 
 const router = useRouter()
 
@@ -107,6 +108,7 @@ const loadedTabs = reactive({
   notices: false,
   circles: false,
   roleTemplates: false,
+  knowledgeBases: false,
   statistics: false,
   blogStatistics: false
 })
@@ -217,6 +219,15 @@ const navItems = [
     ])
   },
   {
+    id: 'knowledgeBases',
+    label: '知识库管理',
+    icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
+      h('path', { d: 'M12 2 3 7l9 5 9-5-9-5Z' }),
+      h('path', { d: 'm3 12 9 5 9-5' }),
+      h('path', { d: 'm3 17 9 5 9-5' })
+    ])
+  },
+  {
     id: 'notices',
     label: '公告管理',
     icon: h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [
@@ -250,6 +261,7 @@ const tabTitles = {
   problems: { title: '题目管理', desc: '管理题库内容和信息' },
   circles: { title: '圈子管理', desc: '管理社区圈子名称、图标和封面展示内容' },
   roleTemplates: { title: '角色模板管理', desc: '管理角色对话的人设、提示词和变量配置' },
+  knowledgeBases: { title: '知识库管理', desc: '维护知识库、目录层级、文档构建和向量调试能力' },
   notices: { title: '公告管理', desc: '管理首页公告、弹窗策略和过期时间' },
   blogStatistics: { title: '博客统计', desc: '查看文章表现与后台管理动作的真实数据' },
   statistics: { title: '数据统计', desc: '查看系统运营数据和趋势' }
@@ -266,6 +278,7 @@ const currentComponent = computed(() => {
     problems: SubjectManagement,
     circles: CircleManagement,
     roleTemplates: RoleTemplateManagement,
+    knowledgeBases: KnowledgeBaseManagement,
     notices: NoticeManagement,
     blogStatistics: BlogStatistics,
     statistics: Statistics
