@@ -292,6 +292,10 @@ const parseSessionExt = (extJson) => {
     return null
   }
 
+  if (typeof extJson === 'object') {
+    return extJson
+  }
+
   try {
     return JSON.parse(extJson)
   } catch (error) {
@@ -303,6 +307,12 @@ const parseSessionExt = (extJson) => {
 const isRoleSession = (session) => {
   const sessionMeta = parseSessionExt(session?.extJson)
   return sessionMeta?.sceneType === 'ROLE_CHAT'
+}
+
+const isExcludedAgentSession = (session) => {
+  const extMeta = parseSessionExt(session?.extJson)
+  const sceneType = String(extMeta?.sceneType || '')
+  return sceneType.startsWith('AGENT_')
 }
 
 const getSessionActivityTime = (session) => {
@@ -336,17 +346,12 @@ const syncCurrentSessionState = ({ scrollIntoView = false } = {}) => {
   }
 }
 
-const isLearningCoachSession = (session) => {
-  const extMeta = parseSessionExt(session?.extJson)
-  return extMeta?.sceneType === 'AGENT_LEARNING_COACH'
-}
-
 const loadSessions = async () => {
   try {
     const response = await aiApi.getUserSessions(userStore.userInfo?.id)
     if (response.code === 200) {
       sessions.value = (response.data || [])
-        .filter(session => !isLearningCoachSession(session))
+        .filter(session => !isExcludedAgentSession(session))
         .map(normalizeSession)
       sessions.value.forEach(session => session.messages.sort((a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0)))
       sortSessionsByRecent()

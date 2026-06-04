@@ -35,6 +35,15 @@
             <button
               type="button"
               class="ai-nav-item"
+              :class="{ active: isActive('halo-study-agent') }"
+              @click="navigateTo('halo-study-agent')"
+            >
+              <el-icon><ChatLineRound /></el-icon>
+              <span>学习</span>
+            </button>
+            <button
+              type="button"
+              class="ai-nav-item"
               :class="{ active: isActive('customer-service') }"
               @click="navigateTo('customer-service')"
             >
@@ -71,7 +80,7 @@
             </p>
 
             <div class="hero-actions">
-              <button class="hero-primary" type="button" @click="navigateTo('chatbot')">开始对话</button>
+              <button class="hero-primary" type="button" @click="navigateTo('halo-study-agent')">找学习搭子</button>
               <button class="hero-secondary" type="button" @click="navigateTo('role-chat')">进入角色模式</button>
             </div>
           </div>
@@ -79,8 +88,8 @@
           <div class="hero-side">
             <div class="hero-metric">
               <span>推荐起点</span>
-              <strong>AI 对话</strong>
-              <p>先把问题说开。</p>
+              <strong>学习搭子</strong>
+              <p>结合站内数据给建议。</p>
             </div>
             <div class="hero-metric">
               <span>最快出结果</span>
@@ -91,16 +100,16 @@
         </section>
 
         <section class="features-grid">
-          <button class="feature-card feature-card--primary" type="button" @click="navigateTo('chatbot')">
+          <button class="feature-card feature-card--primary" type="button" @click="navigateTo('halo-study-agent')">
             <div class="feature-head">
               <span class="feature-icon">
                 <el-icon :size="24"><ChatLineRound /></el-icon>
               </span>
               <span class="feature-status feature-status--solid">推荐</span>
             </div>
-            <h3 class="feature-title">AI 对话</h3>
-            <p class="feature-description">适合梳理需求、代码和连续追问。</p>
-            <span class="feature-meta">适合深聊</span>
+            <h3 class="feature-title">学习搭子</h3>
+            <p class="feature-description">结合刷题、题库和知识库，沉淀学习建议。</p>
+            <span class="feature-meta">适合学习复盘</span>
           </button>
 
           <button class="feature-card" type="button" @click="navigateTo('role-chat')">

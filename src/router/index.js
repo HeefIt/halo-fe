@@ -133,6 +133,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/ai/halo-study-agent',
+    name: 'HaloStudyAgent',
+    component: () => import('@/pages/ai/HaloStudyAgentPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/ai/multimodal',
     name: 'MultimodalParser',
     component: () => import('@/pages/ai/MultimodalParserPage.vue'),

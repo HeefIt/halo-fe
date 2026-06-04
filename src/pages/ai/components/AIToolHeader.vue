@@ -51,6 +51,13 @@
             <circle cx="12" cy="4" r="2"></circle>
             <circle cx="18" cy="11" r="2"></circle>
           </svg>
+          <svg v-else-if="item.icon === 'study-agent'" viewBox="0 0 24 24" fill="none">
+            <path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5Z"></path>
+            <path d="M7 10v4.2c0 1.5 2.2 2.8 5 2.8s5-1.3 5-2.8V10"></path>
+            <path d="M19 9.2v4.3"></path>
+            <path d="M5.5 17.5h3"></path>
+            <path d="M15.5 17.5h3"></path>
+          </svg>
           <svg v-else viewBox="0 0 24 24" fill="none">
             <rect x="4" y="5" width="16" height="14" rx="3"></rect>
             <path d="M9 10h6"></path>
@@ -97,6 +104,7 @@ const toolItems = [
   { label: '角色对话', shortLabel: '角色', path: '/ai/role-chat', icon: 'role' },
   { label: '智能客服', shortLabel: '客服', path: '/ai/customer-service', icon: 'service' },
   { label: '学习规划', shortLabel: '学习规划', path: '/ai/learning-coach', icon: 'coach' },
+  { label: '学习搭子', shortLabel: '学习搭子', path: '/ai/halo-study-agent', icon: 'study-agent' },
   { label: '多模态解析', shortLabel: '多模态', path: '/ai/multimodal', icon: 'multi' }
 ]
 

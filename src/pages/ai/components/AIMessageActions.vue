@@ -60,6 +60,10 @@ const props = defineProps({
   messageIndex: {
     type: Number,
     default: -1
+  },
+  sharePath: {
+    type: String,
+    default: ''
   }
 })
 
@@ -84,7 +88,7 @@ const handleCopy = async () => {
 
 const handleShare = async () => {
   const shareUrl = props.sessionId
-    ? `${window.location.origin}/ai/chatbot?sessionId=${props.sessionId}`
+    ? `${window.location.origin}${props.sharePath || `/ai/chatbot?sessionId=${props.sessionId}`}`
     : window.location.href
 
   try {

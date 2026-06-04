@@ -28,7 +28,7 @@
               <button class="btn-secondary" @click="goTo('/community')">
                 看讨论
               </button>
-              <button class="btn-tertiary" @click="goTo('/ai/role-chat')">
+              <button class="btn-tertiary" @click="goTo('/ai/halo-study-agent')">
                 进 AI
               </button>
             </div>
@@ -196,7 +196,7 @@
               <article class="content-panel content-panel--ai">
                 <div class="content-panel__head">
                   <span class="section-kicker">AI Zone</span>
-                  <button class="text-link" @click="goTo('/ai/customer-service')">
+                  <button class="text-link" @click="goTo('/ai/halo-study-agent')">
                     进入
                   </button>
                 </div>
@@ -490,12 +490,12 @@ const primaryEntries = computed(() => [
     featured: true
   },
   {
-    title: '角色对话',
-    desc: '换个角色进入对练，表达会更贴近真实场景。',
-    path: '/ai/role-chat',
+    title: '学习搭子',
+    desc: '结合刷题记录、题库和知识库，给出下一步学习建议。',
+    path: '/ai/halo-study-agent',
     tag: 'AI',
     tone: 'role',
-    meta: '模拟'
+    meta: '诊断'
   },
   {
     title: '圈子社区',
@@ -539,6 +539,11 @@ const supportEntries = [
 const communityChips = ['说说动态', '评论互动', '表情包', '用户主页', '轻松讨论']
 
 const aiTools = [
+  {
+    title: '学习搭子',
+    badge: 'Study',
+    path: '/ai/halo-study-agent'
+  },
   {
     title: '通用对话',
     badge: 'Chat',
