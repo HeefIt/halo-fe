@@ -1,117 +1,53 @@
 # Halo Coding Do Frontend
 
-`halo-fe` 是 `Halo Coding Do` 的前端工程，基于 `Vue 3 + Vite + Pinia + Element Plus` 实现，负责承接落地页、登录注册、站内首页、博客、刷题、排行榜、AI 助手和管理后台等页面。
+`halo-fe` 是 Halo Coding Do 的前端工程，负责落地页、认证页、站内首页、题库刷题、练习记录、排行榜、博客、社区、AI 助手和管理后台页面。
 
-## 模块概览
-
-- 落地页与认证：品牌首页、登录、注册、找回密码
-- 站内学习：刷题首页、题库、练习页、练习记录、学习计划
-- 内容社区：博客首页、文章列表、文章详情、文章发布/编辑
-- AI 能力：通用对话、练题助手、智能客服、多模态解析
-- 管理后台：用户管理、题目管理、分类标签、系统统计、博客统计
-
-主要路由定义见：
-
-- [src/router/index.js](E:/ToSchool/halo_project/halo-fe/src/router/index.js)
+本轮文档只说明当前项目实际配置和联调入口。登录页、落地页、注册页属于外部入口页面；站内页面样式后续会另行统一。
 
 ## 技术栈
 
-- Vue 3
-- Vite 5
-- Vue Router 4
-- Pinia
-- Element Plus
-- Axios
-- ECharts
-- TinyMCE
-- highlight.js / marked / DOMPurify
+Vue 3、Vite 5、Vue Router 4、Pinia、Element Plus、Axios、TinyMCE、ECharts、marked、highlight.js、DOMPurify。
 
-## 目录说明
+## 目录结构
 
 ```text
 halo-fe
 ├─ src
-│  ├─ api                 # 接口请求封装
-│  ├─ stores              # Pinia 状态
-│  ├─ router              # 路由与守卫
-│  ├─ views               # 页面级视图
-│  │  ├─ modules/user     # 登录注册/个人中心
-│  │  ├─ modules/blog     # 博客模块
-│  │  ├─ modules/ai       # AI 模块
-│  │  ├─ modules/admin    # 管理后台
-│  │  ├─ modules/ranking  # 排行榜
-│  │  └─ modules/questionBank / studyPlan / practiceHistory
-│  └─ assets / styles     # 资源与样式
-├─ favicon                # favicon 与站点图标资源
-└─ package.json
+│  ├─ api              # Axios 实例和接口模块
+│  ├─ assets           # 图片和品牌资源
+│  ├─ components       # 通用组件
+│  ├─ composables      # 组合式逻辑
+│  ├─ layouts          # 布局组件
+│  ├─ pages            # 页面级组件
+│  ├─ router           # 路由和守卫
+│  ├─ stores           # Pinia 状态
+│  ├─ styles           # 全局样式
+│  ├─ App.vue
+│  └─ main.js
+├─ favicon             # Vite publicDir
+├─ package.json
+└─ vite.config.js
 ```
+
+页面目录包括 `landing`、`auth`、`home`、`question-bank`、`practice`、`practice-history`、`ranking`、`blog`、`community`、`ai`、`admin`、`profile`。
 
 ## 本地启动
 
-### 1. 环境要求
+环境要求：Node.js 18+、npm 9+。
 
-- Node.js 18+，建议使用较新的 LTS 版本
-- npm 9+
-
-### 2. 安装依赖
+安装依赖：
 
 ```bash
 npm install
 ```
 
-### 3. 启动开发环境
+启动开发服务：
 
 ```bash
 npm run dev
 ```
 
-默认访问地址：
-
-- `http://localhost:2444`
-
-## 代理与联调
-
-Vite 开发代理配置见：
-
-- [vite.config.js](E:/ToSchool/halo_project/halo-fe/vite.config.js)
-
-当前约定：
-
-- 前端端口：`2444`
-- 后端端口：`2004`
-- `/api` 请求会代理到 `http://localhost:2004`
-
-因此本地联调前，请先确认后端已经启动。
-
-## 与后端对接关系
-
-推荐先导入总 SQL：
-
-- [../data/base/halo_all_in_one.sql](E:/ToSchool/halo_project/data/base/halo_all_in_one.sql)
-
-当前前端已经对接的重点能力包括：
-
-- 用户登录、注册、邮箱验证码、找回密码
-- 刷题与练习记录
-- 排行榜与统计卡片
-- 博客列表、详情、点赞、评论、发布与编辑
-- AI 会话列表、会话标题生成、消息持久化
-- 管理后台真实统计数据与博客统计面板
-
-## 开发建议
-
-- 页面入口优先从 [src/views](E:/ToSchool/halo_project/halo-fe/src/views) 开始看
-- 路由权限逻辑优先看 [src/router/index.js](E:/ToSchool/halo_project/halo-fe/src/router/index.js)
-- 接口封装优先看 `src/api`
-- 如果新增站内模块，建议继续沿用 `views/modules/*` 的拆分方式
-
-## 构建说明
-
-开发环境：
-
-```bash
-npm run dev
-```
+默认访问：`http://localhost:2444`。
 
 生产构建：
 
@@ -119,21 +55,113 @@ npm run dev
 npm run build
 ```
 
-当前已知问题：
+当前 README 曾记录部分本地环境可能出现 `crypto$2.getRandomValues is not a function` 的构建兼容问题。后续以当前 Node 版本和依赖实测为准；只做功能联调时优先使用 `npm run dev`。
 
-- 现有环境下 `npm run build` 可能报错：`crypto$2.getRandomValues is not a function`
-- 这个问题更偏向本地 Node / 依赖运行环境兼容性，不是当前业务页面代码语法错误
-- 如果只是本地联调与功能开发，优先使用 `npm run dev`
+## 代理配置
 
-## 推荐阅读顺序
+配置文件：`vite.config.js`。
 
-1. 先看 [../README.md](E:/ToSchool/halo_project/README.md)
-2. 再确认 [vite.config.js](E:/ToSchool/halo_project/halo-fe/vite.config.js)
-3. 然后联动查看 [../halo-be/README.md](E:/ToSchool/halo_project/halo-be/README.md)
-4. 最后进入具体模块页面与接口进行联调
+当前配置：
 
-## 说明
+```js
+server: {
+  port: 2444,
+  open: true,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:2004',
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, '/api')
+    }
+  }
+}
+```
 
-- 这是前后端分离项目，前端不建议写死接口地址，开发期统一走代理
-- 如果要部署到生产环境，建议补充 `.env` 配置并区分不同环境
-- 当前界面风格、博客阅读体验、AI 会话体验和后台统计能力都已经做过一轮项目化调整，后续可以继续在这个基础上迭代
+说明：
+
+- 前端 Axios `baseURL` 是 `/api`。
+- API 模块中写 `/auth/user/login`，实际请求为 `/api/auth/user/login`。
+- Vite 代理保持 `/api` 前缀转发给后端。
+- 后端 Controller 也挂 `/api/**`，所以当前配置是匹配的。
+
+## 请求封装
+
+Axios 实例：`src/api/http.js`。
+
+当前行为：
+
+- 请求头自动带 `satoken`。
+- 非 FormData 请求默认 `Content-Type: application/json`。
+- `responseType === 'blob'` 时直接返回原始 response。
+- 普通接口直接返回后端 `Result`。
+
+后端返回结构：`success/message/code/data`。当前后端部分业务失败可能仍是 HTTP 200，只在响应体里体现 `success=false`，前端业务代码需要同时判断 `success` 和 `code`。
+
+## 路由入口
+
+路由文件：`src/router/index.js`。
+
+主要路由：
+
+- `/`、`/login`、`/register`、`/forgot-password`
+- `/home`、`/home/questions`、`/practice/:id?`
+- `/practice-history`、`/practice-history/:id`
+- `/ranking`
+- `/blog`、`/blog/list`、`/blog/article/:id`、`/blog/write`
+- `/community`、`/community/:id`
+- `/ai/chatbot`、`/ai/role-chat`、`/ai/customer-service`、`/ai/learning-coach`、`/ai/halo-study-agent`、`/ai/multimodal`
+- `/admin`、`/profile`
+
+路由守卫：需要登录的页面依赖 `userStore.isLoggedIn`；本地 token key 是 `halo_token`；用户信息 key 是 `halo_user_info`；管理后台基于 `roleKeys` 是否包含 `admin_user` 判断。
+
+## API 模块
+
+```text
+src/api/modules
+├─ auth.js
+├─ blog.js
+├─ file.js
+├─ notice.js
+├─ share.js
+├─ shareAdmin.js
+├─ ai
+│  ├─ agent.js
+│  ├─ chat.js
+│  ├─ haloStudyAgent.js
+│  ├─ knowledgeAdmin.js
+│  ├─ practice.js
+│  ├─ role.js
+│  └─ roleAdmin.js
+└─ question
+   ├─ category.js
+   ├─ label.js
+   ├─ practiceSession.js
+   └─ subject.js
+```
+
+核心链路：登录注册 -> `/api/auth/**`；题库 -> `/api/subject/**`；练习会话 -> `/api/practice/session/**`；博客 -> `/api/blog/**`；社区 -> `/api/share/**`；AI -> `/api/ai/**`。
+
+## 状态管理
+
+- `stores/modules/user.js`：登录态、用户信息、管理员判断。
+- `stores/modules/practice.js`：刷题上下文、练习会话和题目列表。
+- `stores/modules/customerService.js`：客服会话状态。
+- `stores/modules/theme.js`：主题状态。
+
+登录和退出时会清理练题上下文，避免不同账号之间串练习状态。
+
+## 联调建议
+
+1. 后端启动在 `http://localhost:2004`。
+2. 前端启动在 `http://localhost:2444`。
+3. 使用 `haloAdmin / 123456` 或 `haloNomal / 123456` 登录。
+4. 先验证 `/home/questions -> /practice -> /practice-history`。
+5. 再验证博客、社区、后台。
+6. 最后验证 AI 和知识库，因为这些依赖外部模型或向量服务。
+
+## 当前已知风险
+
+- 构建是否通过受本机 Node 和依赖环境影响，需要实测。
+- 前端对后端业务失败需要按 `success/code/message` 判断。
+- 后端全局异常和前端 401/403 拦截口径后续可以统一。
+- 站内页面样式目前存在多个历史风格，后续计划以题库组件页的方正规整风格作为内部页面基准。
