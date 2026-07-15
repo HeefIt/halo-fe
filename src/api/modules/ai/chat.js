@@ -1,4 +1,4 @@
-import request from '@/api/http'
+﻿import request from '@/api/http'
 
 /**
  * AI会话相关API
@@ -139,12 +139,13 @@ export const generateSessionTitle = (sessionId, question, userId) => {
  * @param {number} userId - 用户ID
  * @returns {Promise}
  */
-export const sendChatMessage = (sessionId, content, userId) => {
+export const sendChatMessage = (sessionId, content, userId, requestId) => {
   const config = {
     url: '/ai/chat',
     method: 'POST',
     data: {
       sessionID: sessionId,  // 必须传递sessionID（与后端字段名保持一致）
+      requestId,
       messages: [
         {
           role: 'user',
@@ -158,19 +159,20 @@ export const sendChatMessage = (sessionId, content, userId) => {
     config.headers = { 'userId': userId }
   }
 
-  console.log('发送消息请求:', { sessionId, content, userId })
+  console.log('发送消息请求:', { sessionId, content, userId, requestId })
   return request(config)
 }
 
 // 发送聊天消息 - 标准SSE流式输出版本（修复重复内容问题）
 // 使用标准SSE解析逻辑，按"\n\n"分割完整事件
 // 修复：每次只发送增量内容，避免重复累积
-export const sendChatMessageStream = (sessionId, content, userId, onMessage, onError, onComplete) => {
+export const sendChatMessageStream = (sessionId, content, userId, requestId, onMessage, onError, onComplete) => {
   return new Promise((resolve, reject) => {
-    console.log('发送标准SSE流式消息请求:', { sessionId, content, userId });
+    console.log('发送标准SSE流式消息请求:', { sessionId, content, userId, requestId });
 
     const requestBody = {
       sessionID: sessionId,
+      requestId,
       messages: [{
         role: 'user',
         content: content
@@ -458,3 +460,4 @@ export const customerServiceChatStream = (content, userId, onMessage, onError, o
     });
   });
 }
+

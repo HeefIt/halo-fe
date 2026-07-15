@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="chatbot-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
     <main class="chatbot-main">
       <AIToolHeader
@@ -512,6 +512,10 @@ const autoGenerateSessionTitle = async (sessionId, question) => {
   }
 }
 
+const generateChatRequestId = () => {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID()
+  return `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
 const handleSendMessage = async () => {
   const message = inputMessage.value.trim()
   if (!message || isLoading.value) return
@@ -547,7 +551,7 @@ const handleSendMessage = async () => {
   isLoading.value = true
 
   try {
-    const response = await sendMessageToAI(currentSessionId.value, message)
+    const response = await sendMessageToAI(currentSessionId.value, message, generateChatRequestId())
     if (!isStreamingMode.value) {
       currentSession.value.messages.push({
         role: 'assistant',
@@ -566,7 +570,7 @@ const handleSendMessage = async () => {
   }
 }
 
-const sendMessageToAI = async (sessionId, content) => {
+const sendMessageToAI = async (sessionId, content, requestId) => {
   if (isStreamingMode.value) {
     return new Promise((resolve, reject) => {
       let fullResponse = ''
@@ -576,6 +580,7 @@ const sendMessageToAI = async (sessionId, content) => {
         sessionId,
         content,
         userStore.userInfo?.id,
+        requestId,
         (data) => {
           let replyContent = ''
           if (data && typeof data === 'object') replyContent = data.reply || data.fullReply || data.content || data.fullContent || data.message || ''
@@ -621,7 +626,7 @@ const sendMessageToAI = async (sessionId, content) => {
   }
 
   try {
-    const response = await aiApi.sendChatMessage(sessionId, content, userStore.userInfo?.id)
+    const response = await aiApi.sendChatMessage(sessionId, content, userStore.userInfo?.id, requestId)
     if (response.code === 200) return response.data.reply
     throw new Error(response.message || '请求失败')
   } catch (error) {
@@ -653,7 +658,7 @@ const handleRegenerate = async (messageIndex) => {
   scrollToBottom({ force: true, behavior: 'smooth' })
 
   try {
-    const response = await sendMessageToAI(currentSessionId.value, userContent)
+    const response = await sendMessageToAI(currentSessionId.value, userContent, generateChatRequestId())
     if (!isStreamingMode.value) {
       currentSession.value.messages.push({
         role: 'assistant',
@@ -1642,3 +1647,4 @@ watch([currentSessionId, sessions], () => {
   }
 }
 </style>
+
