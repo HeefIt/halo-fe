@@ -3,109 +3,110 @@
     <Header />
 
     <main class="community-main">
-      <section class="community-topbar">
-        <div class="topbar-copy">
-          <span class="topbar-kicker">COMMUNITY HUB</span>
-          <h1 class="topbar-title">圈子社区</h1>
-          <p class="topbar-text">
-            看看最近有什么新梗、新观点，或者把今天的状态直接发出来。
-          </p>
-
-          <div class="summary-strip">
-            <div class="summary-chip">
-              <span class="summary-chip__label">动态总数</span>
-              <strong class="summary-chip__value">{{ totalMoments }}</strong>
-            </div>
-            <div class="summary-chip">
-              <span class="summary-chip__label">圈子数量</span>
-              <strong class="summary-chip__value">{{ circles.length }}</strong>
-            </div>
-            <div class="summary-chip">
-              <span class="summary-chip__label">当前可见作者</span>
-              <strong class="summary-chip__value">{{ activeAuthorCount }}</strong>
-            </div>
+      <section class="community-hero" aria-labelledby="community-page-title">
+        <div class="hero-copy">
+          <div class="hero-kicker">
+            <span class="hero-kicker__dot"></span>
+            <span>开发者社区</span>
           </div>
+          <h1 id="community-page-title">圈子社区</h1>
+          <p>和志同道合的开发者交流、分享、成长。</p>
         </div>
 
-        <div class="topbar-cta">
-          <div class="cta-card">
-            <span class="cta-eyebrow">当前浏览</span>
-            <strong class="cta-title">{{ selectedCircle ? selectedCircle.circleName : '全部圈子' }}</strong>
-            <p class="cta-text">{{ selectedCircle ? '当前只看这个圈子的内容' : '正在看全站最新动态' }}</p>
-            <div class="cta-actions">
-              <button type="button" class="secondary-btn" @click="switchCircle('all')">查看全部</button>
-              <button type="button" class="primary-btn" @click="scrollToComposer">发动态</button>
-            </div>
+        <div class="hero-stats" aria-label="社区统计">
+          <div class="hero-stat">
+            <strong>{{ totalMoments }}</strong>
+            <span>条动态</span>
           </div>
-        </div>
-      </section>
-
-      <section class="circle-nav-band">
-        <div class="circle-nav-band__head">
-          <div>
-            <h2>圈子导航</h2>
-            <p>切到你想看的圈子，信息流会立刻收拢。</p>
+          <span class="hero-stats__divider"></span>
+          <div class="hero-stat">
+            <strong>{{ circles.length }}</strong>
+            <span>个圈子</span>
           </div>
-          <span class="circle-nav-band__meta">{{ visibleMomentText }}</span>
-        </div>
-
-        <div class="circle-nav">
-          <button
-            type="button"
-            class="circle-nav__item circle-nav__item--all"
-            :class="{ active: selectedCircleId === 'all' }"
-            @click="switchCircle('all')"
-          >
-            <span class="circle-nav__text">全部</span>
-            <span class="circle-nav__meta">{{ totalMoments }}</span>
-          </button>
-
-          <button
-            v-for="circle in circles"
-            :key="circle.id"
-            type="button"
-            class="circle-nav__item"
-            :class="{ active: String(selectedCircleId) === String(circle.id) }"
-            @click="switchCircle(circle.id)"
-          >
-            <span class="circle-nav__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
-              <img
-                v-if="isCircleImage(circle.icon)"
-                :src="circle.icon"
-                :alt="circle.circleName"
-                class="circle-nav__image"
-              />
-              <span v-else class="circle-nav__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
-            </span>
-            <span class="circle-nav__text">{{ circle.circleName }}</span>
-            <span class="circle-nav__meta">{{ getCircleVisibleCount(circle.id) }}</span>
+          <span class="hero-stats__divider"></span>
+          <div class="hero-stat">
+            <strong>{{ activeAuthorCount }}</strong>
+            <span>位发言者</span>
+          </div>
+          <button type="button" class="hero-publish" @click="scrollToComposer">
+            <span>发一条</span>
+            <span class="hero-publish__plus">+</span>
           </button>
         </div>
       </section>
 
-      <section class="workspace">
-        <div class="primary-column">
+      <section class="community-layout">
+        <aside class="circle-rail" aria-label="圈子索引">
+          <div class="circle-rail__head">
+            <div>
+              <h2>圈子</h2>
+            </div>
+            <span class="circle-rail__count">{{ circles.length }}</span>
+          </div>
+
+          <div class="circle-rail__list">
+            <button
+              type="button"
+              class="circle-link circle-link--all"
+              :class="{ active: selectedCircleId === 'all' }"
+              :aria-pressed="selectedCircleId === 'all'"
+              @click="switchCircle('all')"
+            >
+              <span class="circle-link__marker circle-link__marker--all">✦</span>
+              <span class="circle-link__body">
+                <strong>全部动态</strong>
+              </span>
+              <span class="circle-link__number">{{ totalMoments }}</span>
+            </button>
+
+            <button
+              v-for="circle in circles"
+              :key="circle.id"
+              type="button"
+              class="circle-link"
+              :class="{ active: String(selectedCircleId) === String(circle.id) }"
+              :aria-pressed="String(selectedCircleId) === String(circle.id)"
+              @click="switchCircle(circle.id)"
+            >
+              <span class="circle-link__marker" :class="{ 'is-image': isCircleImage(circle.icon) }">
+                <img
+                  v-if="isCircleImage(circle.icon)"
+                  :src="circle.icon"
+                  :alt="circle.circleName"
+                  class="circle-link__image"
+                />
+                <span v-else>{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
+              </span>
+              <span class="circle-link__body">
+                <strong>{{ circle.circleName }}</strong>
+              </span>
+              <span class="circle-link__number">{{ getCircleVisibleCount(circle.id) }}</span>
+            </button>
+          </div>
+
+        </aside>
+
+        <section class="community-stream" aria-label="社区动态">
           <section ref="composerPanelRef" class="composer-card">
+            <div class="composer-card__accent"></div>
             <div class="composer-card__head">
-              <div class="composer-user" @click="goToOwnProfile">
+              <button type="button" class="composer-user" aria-label="查看我的资料" @click="goToOwnProfile">
                 <img v-if="userStore.userAvatar" :src="userStore.userAvatar" :alt="userStore.userName" class="avatar-image" />
                 <span v-else class="avatar-fallback">{{ currentUserInitial }}</span>
-              </div>
+              </button>
 
               <div class="composer-intro">
                 <strong>{{ userStore.userName || '你' }}</strong>
-                <span>有想法就发出来，轻一点也没关系。</span>
+                <span>发布动态</span>
               </div>
 
               <div class="composer-target">
-                <span class="composer-target__label">发布到</span>
-                <button type="button" class="composer-target__value" @click="focusSelectedCircle">
-                  {{ composerCircleName }}
-                </button>
+                <span>圈子</span>
+                <button type="button" @click="focusSelectedCircle">{{ composerCircleName }}</button>
               </div>
             </div>
 
-            <div class="composer-circle-picker">
+            <div class="composer-circle-picker" aria-label="选择发布圈子">
               <button
                 v-for="circle in circles"
                 :key="`composer-${circle.id}`"
@@ -121,95 +122,112 @@
                     :alt="circle.circleName"
                     class="composer-circle__image"
                   />
-                  <span v-else class="composer-circle__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
+                  <span v-else>{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
                 </span>
-                <span class="composer-circle__label">{{ circle.circleName }}</span>
+                <span>{{ circle.circleName }}</span>
               </button>
             </div>
 
             <textarea
               v-model.trim="momentForm.content"
               class="composer-input"
-              rows="5"
+              rows="4"
               maxlength="1200"
-              :placeholder="`在 ${composerCircleName} 里说点什么`"
+              placeholder="分享一个问题、一个发现，或最近解决的 Bug..."
             ></textarea>
 
             <div v-if="momentForm.pictures.length" class="upload-grid">
               <div v-for="(picture, index) in momentForm.pictures" :key="`${picture}-${index}`" class="upload-card">
-                <img :src="picture" alt="moment" />
-                <button type="button" class="upload-remove" @click="removePicture(index)">×</button>
+                <img :src="picture" alt="已上传的动态图片" />
+                <button type="button" class="upload-remove" aria-label="移除图片" @click="removePicture(index)">×</button>
               </div>
             </div>
 
             <div class="composer-footer">
-              <div class="composer-actions">
-                <button type="button" class="secondary-btn" :disabled="uploadingImage" @click="pickImages">
-                  {{ uploadingImage ? '上传中...' : '添加图片/表情包' }}
+              <div class="composer-tools">
+                <button type="button" class="composer-tool" :disabled="uploadingImage" @click="pickImages">
+                  <span class="composer-tool__icon">▧</span>
+                  <span>{{ uploadingImage ? '图片上传中' : '添加图片' }}</span>
                 </button>
-                <div class="composer-helper">
-                  <span>{{ momentForm.content.length }}/1200</span>
-                  <span>最多 9 张图，单图不超过 5MB</span>
-                </div>
+                <span class="composer-helper">{{ momentForm.content.length }}/1200 · 最多 9 张图</span>
               </div>
-
-              <button type="button" class="primary-btn primary-btn--strong" :disabled="postingMoment" @click="submitMoment">
+              <button type="button" class="publish-btn" :disabled="postingMoment" @click="submitMoment">
                 {{ postingMoment ? '发布中...' : '发布动态' }}
               </button>
             </div>
           </section>
 
-          <section class="feed-header">
-            <div class="feed-header__copy">
-              <h2>{{ selectedCircle ? `${selectedCircle.circleName} 动态` : '全部动态' }}</h2>
-              <p>{{ selectedCircle ? '只看当前圈子' : '全站最新动态都在这里' }}</p>
+          <div class="feed-search-row" role="search" aria-label="搜索社区帖子">
+            <div class="feed-search">
+              <span class="feed-search__icon" aria-hidden="true">⌕</span>
+              <input
+                v-model="postSearchQuery"
+                type="search"
+                placeholder="搜索帖子、话题或作者"
+                @keyup.enter="handlePostSearch"
+              />
+              <button
+                v-if="postSearchQuery"
+                type="button"
+                class="feed-search__clear"
+                aria-label="清除搜索"
+                @click="clearPostSearch"
+              >
+                ×
+              </button>
+              <button type="button" class="feed-search__submit" @click="handlePostSearch">搜索</button>
             </div>
-            <div class="feed-header__meta">
-              <span class="feed-header__count">{{ visibleMomentText }}</span>
-            </div>
-          </section>
+            <span v-if="postSearchState" class="feed-search__state" role="status">{{ postSearchState }}</span>
+          </div>
 
-          <section class="feed-panel">
-            <div v-if="loading && !momentList.length" class="feed-empty">社区加载中...</div>
+          <div class="stream-toolbar">
+            <div class="stream-toolbar__title">
+              <h2>{{ selectedCircle ? selectedCircle.circleName : '全部动态' }}</h2>
+            </div>
+            <div class="stream-toolbar__meta">
+              <span class="live-dot"></span>
+              <span>{{ visibleMomentText }}</span>
+            </div>
+          </div>
+
+          <section class="moment-feed">
+            <div v-if="loading && !momentList.length" class="feed-state feed-state--loading">
+              <span class="feed-state__loader"></span>
+              <span>正在把新动态搬过来...</span>
+            </div>
 
             <template v-else-if="momentList.length">
               <article v-for="moment in momentList" :key="moment.id" class="moment-card">
+                <div class="moment-card__timeline" aria-hidden="true">
+                  <span></span>
+                </div>
+
                 <div class="moment-head">
                   <div class="moment-author">
-                    <button type="button" class="author-link" @click="goToUser(moment.author?.userId)">
+                    <button type="button" class="author-link" :aria-label="`查看 ${moment.author?.nickName || '用户'} 的资料`" @click="goToUser(moment.author?.userId)">
                       <img v-if="moment.author?.avatar" :src="moment.author.avatar" :alt="moment.author?.nickName" class="avatar-image" />
                       <span v-else class="avatar-fallback">{{ getAuthorInitial(moment.author) }}</span>
                     </button>
-
                     <div class="moment-meta">
                       <div class="moment-title-row">
                         <button type="button" class="author-name" @click="goToUser(moment.author?.userId)">
                           {{ moment.author?.nickName || '未知用户' }}
                         </button>
-                        <span class="circle-badge">
-                          <span class="circle-badge__visual" :class="{ 'is-image': isCircleImage(moment.circleIcon) }">
-                            <img
-                              v-if="isCircleImage(moment.circleIcon)"
-                              :src="moment.circleIcon"
-                              :alt="moment.circleName || '圈子'"
-                              class="circle-badge__image"
-                            />
-                            <span v-else class="circle-badge__emoji">{{ getCircleVisualText(moment.circleIcon, moment.circleName) }}</span>
-                          </span>
-                          <span class="circle-badge__label">{{ moment.circleName || '默认圈子' }}</span>
-                        </span>
+                        <span class="moment-time">{{ formatTime(moment.createdTime) }}</span>
                       </div>
-                      <div class="moment-subline">
-                        <span>@{{ moment.author?.userName || 'unknown' }}</span>
-                        <span>{{ formatTime(moment.createdTime) }}</span>
-                      </div>
+                      <span class="moment-subline">@{{ moment.author?.userName || 'unknown' }}</span>
                     </div>
+                  </div>
+
+                  <div class="moment-card__context">
+                    <span class="context-arrow">↳</span>
+                    <span>{{ moment.circleName || '默认圈子' }}</span>
                   </div>
 
                   <button
                     v-if="moment.ownedByCurrentUser"
                     type="button"
-                    class="ghost-btn ghost-btn--danger"
+                    class="delete-btn"
                     @click.stop="handleDeleteMoment(moment)"
                   >
                     删除
@@ -245,86 +263,75 @@
                 </div>
 
                 <div class="moment-footer">
-                  <button type="button" class="text-action" @click="goToDetail(moment.id)">
-                    评论 {{ moment.commentCount || 0 }}
+                  <button type="button" class="moment-action" @click="goToDetail(moment.id)">
+                    <span>评论</span>
+                    <strong>{{ moment.commentCount || 0 }}</strong>
                   </button>
-                  <button type="button" class="text-action" @click="goToDetail(moment.id)">
-                    查看讨论
+                  <button type="button" class="moment-action moment-action--accent" @click="goToDetail(moment.id)">
+                    进入讨论 <span>↗</span>
                   </button>
                 </div>
               </article>
 
               <div class="feed-loadmore">
-                <button type="button" class="secondary-btn" :disabled="loadingMore || !hasMore" @click="loadMoments(false)">
+                <button type="button" class="loadmore-btn" :disabled="loadingMore || !hasMore" @click="loadMoments(false)">
                   {{ hasMore ? (loadingMore ? '加载中...' : '继续查看更多') : '已经到底了' }}
                 </button>
               </div>
             </template>
 
-            <div v-else class="feed-empty">
-              <strong>还没有动态</strong>
-              <span>第一条发言，往往最容易带起气氛。</span>
+            <div v-else class="feed-state feed-state--empty">
+              <span class="feed-state__sticker">✎</span>
+              <strong>这里还没有动态</strong>
+              <span>发第一条，让这个圈子热闹起来。</span>
+              <button type="button" class="empty-action" @click="scrollToComposer">去发一条</button>
             </div>
           </section>
-        </div>
+        </section>
 
-        <aside class="secondary-column">
-          <section class="side-panel side-panel--light">
-            <div class="side-panel__head">
-              <h3>热门圈子</h3>
-              <span>{{ recommendedCircles.length }} 个推荐</span>
+        <aside class="community-pulse" aria-label="社区脉搏">
+          <section class="pulse-section pulse-section--hot">
+            <div class="pulse-heading">
+              <div>
+                <h2>本周活跃圈子</h2>
+              </div>
+              <span class="pulse-heading__spark">✹</span>
             </div>
 
-            <div class="highlight-list">
+            <div class="hot-list">
               <button
-                v-for="circle in recommendedCircles"
+                v-for="(circle, index) in recommendedCircles"
                 :key="`highlight-${circle.id}`"
                 type="button"
-                class="highlight-item"
+                class="hot-item"
                 :class="{ active: String(selectedCircleId) === String(circle.id) }"
                 @click="switchCircle(circle.id)"
               >
-                <span class="highlight-item__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
+                <span class="hot-item__rank">0{{ index + 1 }}</span>
+                <span class="hot-item__visual" :class="{ 'is-image': isCircleImage(circle.icon) }">
                   <img
                     v-if="isCircleImage(circle.icon)"
                     :src="circle.icon"
                     :alt="circle.circleName"
-                    class="highlight-item__image"
+                    class="hot-item__image"
                   />
-                  <span v-else class="highlight-item__emoji">{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
+                  <span v-else>{{ getCircleVisualText(circle.icon, circle.circleName) }}</span>
                 </span>
-                <span class="highlight-item__copy">
+                <span class="hot-item__copy">
                   <strong>{{ circle.circleName }}</strong>
-                  <span>{{ getCircleVisibleCount(circle.id) }} 条可见动态</span>
+                  <span>{{ getCircleVisibleCount(circle.id) }} 条动态</span>
                 </span>
+                <span class="hot-item__arrow">↗</span>
               </button>
             </div>
           </section>
 
-          <section class="side-panel">
-            <div class="side-panel__head">
-              <h3>社区手感</h3>
-            </div>
-            <div class="tips-list">
-              <div class="tip-item">
-                <strong>先说重点</strong>
-                <span>一句短话、一张图，往往就够把讨论带起来。</span>
+          <section class="pulse-section">
+            <div class="pulse-heading">
+              <div>
+                <h2>正在讨论</h2>
               </div>
-              <div class="tip-item">
-                <strong>图文一起发更轻松</strong>
-                <span>截图、表情包和碎片想法都能自然混在一起。</span>
-              </div>
-              <div class="tip-item">
-                <strong>关系会慢慢长出来</strong>
-                <span>从动态点进资料，再回到讨论，互动会更有温度。</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="side-panel side-panel--compact">
-            <div class="side-panel__head">
-              <h3>今日热议</h3>
-              <span>{{ hotTopics.length }} 条</span>
+              <span class="pulse-heading__count">{{ hotTopics.length }}</span>
             </div>
 
             <div v-if="hotTopics.length" class="topic-list">
@@ -335,13 +342,14 @@
                 class="topic-item"
                 @click="goToDetail(topic.id)"
               >
-                <strong>{{ topic.circleName || '默认圈子' }}</strong>
-                <span>{{ getMomentSummary(topic) }}</span>
+                <span class="topic-item__circle">{{ topic.circleName || '默认圈子' }}</span>
+                <strong>{{ getMomentSummary(topic) }}</strong>
+                <span class="topic-item__arrow">↗</span>
               </button>
             </div>
-
             <div v-else class="topic-empty">再热一点，这里就会出现正在发酵的话题。</div>
           </section>
+
         </aside>
       </section>
     </main>
@@ -365,6 +373,8 @@ const userStore = useUserStore()
 const composerPanelRef = ref(null)
 const circles = ref([])
 const momentList = ref([])
+const postSearchQuery = ref('')
+const postSearchState = ref('')
 const selectedCircleId = ref('all')
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -489,6 +499,23 @@ const scrollToComposer = () => {
 
 const focusSelectedCircle = () => {
   scrollToComposer()
+}
+
+const handlePostSearch = () => {
+  const query = postSearchQuery.value.trim()
+
+  if (!query) {
+    postSearchState.value = '请输入搜索关键词'
+    return
+  }
+
+  postSearchState.value = '帖子搜索接口待接入'
+  ElMessage.info('帖子搜索功能待接入，当前仅保留搜索入口。')
+}
+
+const clearPostSearch = () => {
+  postSearchQuery.value = ''
+  postSearchState.value = ''
 }
 
 const selectComposerCircle = (circleId) => {
@@ -726,648 +753,844 @@ onMounted(async () => {
 
 <style scoped>
 .community-page {
-  --community-bg: #f3f6fb;
-  --community-surface: rgba(255, 255, 255, 0.92);
-  --community-surface-strong: #ffffff;
-  --community-surface-muted: #eef3f8;
-  --community-border: rgba(15, 23, 42, 0.08);
-  --community-border-strong: rgba(15, 23, 42, 0.14);
-  --community-text: #0f172a;
-  --community-text-soft: #475569;
-  --community-text-faint: #64748b;
-  --community-accent: #0f766e;
-  --community-accent-deep: #0b5d57;
-  --community-accent-soft: rgba(15, 118, 110, 0.12);
-  --community-accent-line: rgba(15, 118, 110, 0.22);
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.07), transparent 24%),
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 26%),
-    var(--community-bg);
+  --community-bg: #f3f6fa;
+  --community-panel: #ffffff;
+  --community-panel-soft: #f8fafc;
+  --community-panel-warm: #fff8e8;
+  --community-text: #172033;
+  --community-text-soft: #667085;
+  --community-text-faint: #98a2b3;
+  --community-line: #dce4ee;
+  --community-line-strong: #c8d4e3;
+  --community-coral: #ef6f61;
+  --community-coral-dark: #d8574c;
+  --community-yellow: #e6ad37;
+  --community-mint: #55b796;
+  --community-blue: #4e6ee8;
+  --community-shadow: 0 12px 28px rgba(28, 43, 68, 0.08);
+  --community-shadow-soft: 0 5px 16px rgba(28, 43, 68, 0.06);
+  --community-radius: 16px;
+  --community-radius-sm: 10px;
+  background: var(--community-bg);
   color: var(--community-text);
+  min-height: 100vh;
 }
 
 .community-page.is-dark {
-  --community-bg: #09111f;
-  --community-surface: rgba(15, 23, 42, 0.92);
-  --community-surface-strong: #121d31;
-  --community-surface-muted: #162338;
-  --community-border: rgba(148, 163, 184, 0.14);
-  --community-border-strong: rgba(148, 163, 184, 0.22);
-  --community-text: #e2e8f0;
-  --community-text-soft: #cbd5e1;
-  --community-text-faint: #94a3b8;
-  --community-accent: #2dd4bf;
-  --community-accent-deep: #18b9a7;
-  --community-accent-soft: rgba(45, 212, 191, 0.14);
-  --community-accent-line: rgba(45, 212, 191, 0.26);
+  --community-bg: #0d1728;
+  --community-panel: #14233a;
+  --community-panel-soft: #182942;
+  --community-panel-warm: #2b2a24;
+  --community-text: #f6f8fc;
+  --community-text-soft: #b9c5d7;
+  --community-text-faint: #8291a7;
+  --community-line: rgba(178, 197, 226, 0.15);
+  --community-line-strong: rgba(178, 197, 226, 0.26);
+  --community-coral: #ff8c7d;
+  --community-coral-dark: #ffad9f;
+  --community-yellow: #f4c85e;
+  --community-mint: #78d5b1;
+  --community-blue: #91a9ff;
+  --community-shadow: 0 18px 34px rgba(2, 8, 21, 0.26);
+  --community-shadow-soft: 0 8px 22px rgba(2, 8, 21, 0.18);
 }
 
 .community-main {
-  max-width: 1340px;
+  width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 18px 20px 28px;
+  padding: 34px 0 72px;
 }
 
-.community-topbar,
-.circle-nav-band,
-.composer-card,
-.feed-panel,
-.side-panel {
-  border: 1px solid var(--community-border);
-  background: var(--community-surface);
-  backdrop-filter: blur(18px);
-  border-radius: 18px;
+.community-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 12px 4px 30px;
+  border-bottom: 1px solid var(--community-line);
 }
 
-.community-topbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) 320px;
-  gap: 18px;
-  padding: 22px 24px;
-  margin-bottom: 18px;
+.hero-copy {
+  max-width: 640px;
 }
 
-.topbar-kicker {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  color: var(--community-text-faint);
+.hero-kicker,
+.section-overline {
+  color: var(--community-coral);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
   text-transform: uppercase;
 }
 
-.topbar-title {
-  margin: 10px 0 12px;
-  font-size: clamp(32px, 5vw, 44px);
-  line-height: 1.04;
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.topbar-text {
-  max-width: 700px;
+.hero-kicker__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--community-yellow);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--community-yellow) 18%, transparent);
+}
+
+.community-hero h1 {
   margin: 0;
+  color: var(--community-text);
+  font-size: clamp(30px, 4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+
+.hero-copy p {
+  max-width: 580px;
+  margin: 13px 0 0;
   color: var(--community-text-soft);
   font-size: 15px;
-  line-height: 1.8;
+  line-height: 1.75;
 }
 
-.summary-strip {
+.hero-stats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
 }
 
-.summary-chip {
-  display: inline-flex;
-  flex-direction: column;
+.hero-stat {
+  display: flex;
+  align-items: baseline;
   gap: 6px;
-  min-width: 132px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--community-border);
-  background: var(--community-surface-strong);
+  white-space: nowrap;
 }
 
-.summary-chip__label {
-  color: var(--community-text-faint);
-  font-size: 12px;
-}
-
-.summary-chip__value {
-  font-size: 24px;
-  line-height: 1;
-}
-
-.topbar-cta {
-  display: flex;
-}
-
-.cta-card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
-  border-radius: 16px;
-  border: 1px solid var(--community-accent-line);
-  background: linear-gradient(145deg, var(--community-accent-soft), transparent);
-}
-
-.cta-eyebrow {
-  color: var(--community-text-faint);
-  font-size: 12px;
-}
-
-.cta-title {
-  font-size: 26px;
-}
-
-.cta-text {
-  margin: 0;
-  color: var(--community-text-soft);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.cta-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: auto;
-}
-
-.circle-nav-band {
-  margin-bottom: 18px;
-  padding: 18px 20px;
-}
-
-.circle-nav-band__head,
-.composer-card__head,
-.composer-footer,
-.feed-header,
-.side-panel__head,
-.moment-head,
-.moment-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.circle-nav-band__head {
-  gap: 16px;
-  margin-bottom: 14px;
-}
-
-.circle-nav-band__head h2,
-.feed-header__copy h2,
-.side-panel__head h3 {
-  margin: 0;
-}
-
-.circle-nav-band__head p,
-.feed-header__copy p {
-  margin: 6px 0 0;
-  color: var(--community-text-faint);
-  font-size: 13px;
-}
-
-.circle-nav-band__meta,
-.feed-header__count,
-.side-panel__head span {
-  color: var(--community-text-faint);
-  font-size: 13px;
-}
-
-.circle-nav {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding-bottom: 2px;
-}
-
-.circle-nav__item {
-  position: relative;
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 0 14px;
-  border: 1px solid var(--community-border);
-  border-radius: 14px;
-  background: var(--community-surface-strong);
-  color: var(--community-text-soft);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.circle-nav__item:hover {
-  border-color: var(--community-border-strong);
-  transform: translateY(-1px);
-}
-
-.circle-nav__item.active {
-  border-color: var(--community-accent-line);
-  background: var(--community-accent-soft);
+.hero-stat strong {
   color: var(--community-text);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
-.circle-nav__item.active::after {
-  content: '';
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 6px;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--community-accent);
+.hero-stat span {
+  color: var(--community-text-faint);
+  font-size: 12px;
 }
 
-.circle-nav__visual,
-.composer-circle__visual,
-.circle-badge__visual,
-.highlight-item__visual {
-  width: 26px;
-  height: 26px;
-  flex-shrink: 0;
+.hero-stats__divider {
+  width: 1px;
+  height: 24px;
+  background: var(--community-line);
+}
+
+.hero-publish,
+.publish-btn,
+.empty-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  overflow: hidden;
-  background: var(--community-surface-muted);
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 11px;
+  background: var(--community-coral);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  transition: transform 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
 }
 
-.circle-nav__image,
-.composer-circle__image,
-.circle-badge__image,
-.highlight-item__image,
-.moment-media__image,
+.hero-publish:hover,
+.publish-btn:hover:not(:disabled),
+.empty-action:hover {
+  background: var(--community-coral-dark);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--community-coral) 24%, transparent);
+  transform: translateY(-2px);
+}
+
+.hero-publish__plus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.community-layout {
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 24px;
+  padding-top: 28px;
+}
+
+.circle-rail,
+.community-pulse,
+.composer-card,
+.moment-card {
+  min-width: 0;
+}
+
+.circle-rail {
+  position: sticky;
+  top: 88px;
+}
+
+.circle-rail__head,
+.pulse-heading,
+.stream-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.circle-rail__head {
+  padding: 0 8px 13px;
+  border-bottom: 1px solid var(--community-line);
+}
+
+.circle-rail h2,
+.pulse-heading h2,
+.stream-toolbar h2 {
+  margin: 4px 0 0;
+  color: var(--community-text);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.circle-rail__count,
+.pulse-heading__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 8px;
+  background: var(--community-panel-warm);
+  color: var(--community-yellow);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.circle-rail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 0;
+}
+
+.circle-link {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 54px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  color: var(--community-text-soft);
+  text-align: left;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.circle-link::before {
+  position: absolute;
+  top: 11px;
+  bottom: 11px;
+  left: -1px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: transparent;
+  content: '';
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.circle-link:hover {
+  background: var(--community-panel-soft);
+  color: var(--community-text);
+  transform: translateX(2px);
+}
+
+.circle-link.active {
+  background: color-mix(in srgb, var(--community-coral) 10%, var(--community-panel));
+  color: var(--community-text);
+}
+
+.circle-link.active::before {
+  background: var(--community-coral);
+  transform: scaleY(1);
+}
+
+.circle-link__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border: 1px solid var(--community-line-strong);
+  border-radius: 10px;
+  background: var(--community-panel);
+  color: var(--community-coral);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.circle-link__marker--all {
+  border-color: color-mix(in srgb, var(--community-coral) 35%, var(--community-line));
+  background: color-mix(in srgb, var(--community-coral) 10%, var(--community-panel));
+}
+
+.circle-link__marker.is-image,
+.circle-link__image {
+  border-radius: 10px;
+}
+
+.circle-link__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.circle-link__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.circle-link__body strong {
+  overflow: hidden;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.circle-link__body span {
+  overflow: hidden;
+  color: var(--community-text-faint);
+  font-size: 11px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.circle-link__number {
+  align-self: start;
+  padding-top: 4px;
+  color: var(--community-text-faint);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.circle-link.active .circle-link__number {
+  color: var(--community-coral);
+}
+
+.circle-rail__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 6px 8px 0;
+  padding: 13px 12px;
+  border: 1px solid color-mix(in srgb, var(--community-yellow) 36%, var(--community-line));
+  border-radius: 12px;
+  background: var(--community-panel-warm);
+}
+
+.circle-rail__note-icon {
+  color: var(--community-yellow);
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.circle-rail__note p {
+  margin: 0;
+  color: var(--community-text-soft);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.community-stream {
+  min-width: 0;
+}
+
+.composer-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--community-line);
+  border-radius: var(--community-radius);
+  background: var(--community-panel);
+  box-shadow: var(--community-shadow);
+}
+
+.composer-card__accent {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: var(--community-coral);
+}
+
+.composer-card__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 22px 14px;
+}
+
+.composer-user,
+.author-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.composer-user {
+  width: 42px;
+  height: 42px;
+}
+
+.avatar-image,
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.avatar-image {
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--community-coral);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.composer-intro {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.composer-intro strong {
+  overflow: hidden;
+  color: var(--community-text);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-intro span {
+  color: var(--community-text-soft);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.composer-target {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--community-text-faint);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.composer-target button {
+  max-width: 130px;
+  overflow: hidden;
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--community-coral) 10%, var(--community-panel));
+  color: var(--community-coral);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-circle-picker {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 0 22px 14px;
+  scrollbar-width: none;
+}
+
+.composer-circle-picker::-webkit-scrollbar {
+  display: none;
+}
+
+.composer-circle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 4px 9px 4px 5px;
+  border: 1px solid var(--community-line);
+  border-radius: 999px;
+  background: var(--community-panel-soft);
+  color: var(--community-text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.composer-circle:hover,
+.composer-circle.active {
+  border-color: color-mix(in srgb, var(--community-coral) 48%, var(--community-line));
+  background: color-mix(in srgb, var(--community-coral) 11%, var(--community-panel));
+  color: var(--community-coral);
+}
+
+.composer-circle__visual {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--community-panel);
+  color: var(--community-coral);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.composer-circle__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.composer-input {
+  display: block;
+  width: calc(100% - 44px);
+  min-height: 98px;
+  margin: 0 22px;
+  padding: 13px 14px;
+  resize: vertical;
+  border: 1px solid var(--community-line);
+  border-radius: 11px;
+  outline: none;
+  background: var(--community-panel-soft);
+  color: var(--community-text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.7;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+
+.composer-input::placeholder {
+  color: var(--community-text-faint);
+}
+
+.composer-input:focus {
+  border-color: color-mix(in srgb, var(--community-coral) 62%, var(--community-line));
+  background: var(--community-panel);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--community-coral) 13%, transparent);
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  padding: 12px 22px 0;
+}
+
+.upload-card {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 9px;
+  background: var(--community-panel-soft);
+}
+
 .upload-card img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.circle-nav__emoji,
-.composer-circle__emoji,
-.circle-badge__emoji,
-.highlight-item__emoji {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--community-text);
-}
-
-.circle-nav__text,
-.composer-circle__label,
-.circle-badge__label {
-  white-space: nowrap;
-}
-
-.circle-nav__meta {
-  display: inline-flex;
-  min-width: 22px;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(148, 163, 184, 0.16);
-  color: var(--community-text-faint);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 18px;
-}
-
-.primary-column,
-.secondary-column {
-  min-width: 0;
-}
-
-.primary-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.secondary-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.composer-card {
-  padding: 20px;
-}
-
-.composer-card__head {
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.composer-user,
-.author-link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.avatar-image,
-.avatar-fallback {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  object-fit: cover;
-  background: var(--community-surface-muted);
-  color: var(--community-text);
-  font-weight: 700;
-}
-
-.composer-intro {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.composer-intro strong {
-  font-size: 16px;
-}
-
-.composer-intro span,
-.composer-helper,
-.moment-subline,
-.topic-item span,
-.tip-item span,
-.highlight-item__copy span {
-  color: var(--community-text-faint);
-}
-
-.composer-intro span,
-.tip-item span {
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.composer-target {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.composer-target__label {
-  color: var(--community-text-faint);
-  font-size: 12px;
-}
-
-.composer-target__value {
-  border: 1px solid var(--community-accent-line);
-  background: var(--community-accent-soft);
-  color: var(--community-accent);
-  border-radius: 999px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-}
-
-.composer-circle-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.composer-circle {
-  border: 1px solid var(--community-border);
-  background: transparent;
-  color: var(--community-text-soft);
-  border-radius: 999px;
-  padding: 8px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.composer-circle:hover {
-  border-color: var(--community-border-strong);
-}
-
-.composer-circle.active {
-  border-color: var(--community-accent-line);
-  background: var(--community-accent-soft);
-  color: var(--community-text);
-  box-shadow: inset 0 0 0 1px rgba(15, 118, 110, 0.04);
-}
-
-.composer-input {
-  width: 100%;
-  resize: vertical;
-  min-height: 148px;
-  border: 1px solid var(--community-border);
-  border-radius: 16px;
-  background: var(--community-surface-strong);
-  color: var(--community-text);
-  padding: 16px 18px;
-  line-height: 1.8;
-  outline: none;
-}
-
-.upload-grid {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 12px;
-}
-
-.upload-card {
-  position: relative;
-  border-radius: 14px;
-  overflow: hidden;
-  aspect-ratio: 1 / 1;
-  background: var(--community-surface-muted);
-}
-
 .upload-remove {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.72);
+  top: 5px;
+  right: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(20, 32, 51, 0.76);
   color: #fff;
-  cursor: pointer;
+  font-size: 17px;
+  line-height: 1;
 }
 
 .composer-footer {
-  margin-top: 16px;
-  gap: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px 20px;
 }
 
-.composer-actions {
+.composer-tools {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
-.composer-helper {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.composer-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 9px;
+  border-radius: 8px;
+  color: var(--community-text-soft);
   font-size: 12px;
-}
-
-.primary-btn,
-.secondary-btn,
-.ghost-btn,
-.text-action,
-.author-name {
-  font: inherit;
-}
-
-.primary-btn,
-.secondary-btn,
-.ghost-btn {
-  border-radius: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.primary-btn {
-  border: 0;
-  background: var(--community-accent);
-  color: #fff;
-}
-
-.primary-btn:hover {
-  background: var(--community-accent-deep);
-}
-
-.primary-btn--strong {
-  min-width: 132px;
-  min-height: 48px;
   font-weight: 700;
 }
 
-.secondary-btn {
-  border: 1px solid var(--community-border-strong);
-  background: var(--community-surface-strong);
-  color: var(--community-text);
+.composer-tool:hover:not(:disabled) {
+  background: var(--community-panel-soft);
+  color: var(--community-coral);
 }
 
-.secondary-btn:hover {
-  border-color: var(--community-accent-line);
-  color: var(--community-accent);
+.composer-tool:disabled,
+.publish-btn:disabled,
+.loadmore-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
-.ghost-btn {
-  border: 0;
-  background: transparent;
+.composer-tool__icon {
+  color: var(--community-mint);
+  font-size: 17px;
+}
+
+.composer-helper {
+  overflow: hidden;
   color: var(--community-text-faint);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.ghost-btn--danger:hover {
-  color: #ef4444;
+.stream-toolbar {
+  align-items: flex-end;
+  padding: 32px 4px 13px;
 }
 
-.feed-header {
-  padding: 0 4px;
-  gap: 16px;
+.stream-toolbar__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding-bottom: 2px;
+  color: var(--community-text-faint);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
-.feed-header__copy h2 {
-  font-size: 24px;
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--community-mint);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--community-mint) 15%, transparent);
 }
 
-.feed-panel {
-  padding: 8px 0;
+.moment-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .moment-card {
-  padding: 18px 20px;
-  border-bottom: 1px solid var(--community-border);
+  position: relative;
+  overflow: hidden;
+  padding: 20px 22px 15px 48px;
+  border: 1px solid var(--community-line);
+  border-radius: var(--community-radius-sm);
+  background: var(--community-panel);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.moment-card:last-child {
-  border-bottom: 0;
+.moment-card:hover {
+  border-color: var(--community-line-strong);
+  box-shadow: var(--community-shadow-soft);
+  transform: translateY(-1px);
+}
+
+.moment-card__timeline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 20px;
+  width: 1px;
+  background: var(--community-line);
+}
+
+.moment-card__timeline span {
+  position: absolute;
+  top: 28px;
+  left: -4px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--community-panel);
+  border-radius: 50%;
+  background: var(--community-coral);
+  box-shadow: 0 0 0 1px var(--community-coral);
 }
 
 .moment-head {
-  gap: 14px;
+  display: flex;
   align-items: flex-start;
+  gap: 12px;
 }
 
 .moment-author {
-  flex: 1;
-  min-width: 0;
   display: flex;
-  gap: 14px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.author-link {
+  width: 34px;
+  height: 34px;
 }
 
 .moment-meta {
-  flex: 1;
+  display: flex;
   min-width: 0;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .moment-title-row {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.moment-subline {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 6px;
-  font-size: 13px;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
 }
 
 .author-name {
-  border: 0;
-  background: transparent;
-  padding: 0;
+  overflow: hidden;
   color: var(--community-text);
-  font-weight: 700;
-  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.circle-badge {
+.author-name:hover {
+  color: var(--community-coral);
+}
+
+.moment-time,
+.moment-subline {
+  color: var(--community-text-faint);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.moment-subline {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moment-card__context {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--community-accent-soft);
-  color: var(--community-accent);
-  font-size: 12px;
-  max-width: min(100%, 220px);
+  gap: 4px;
+  margin-left: auto;
+  padding: 5px 8px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--community-yellow) 12%, var(--community-panel));
+  color: var(--community-yellow);
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.context-arrow {
+  font-size: 14px;
+}
+
+.delete-btn {
+  padding: 5px 3px;
+  color: var(--community-text-faint);
+  font-size: 11px;
+}
+
+.delete-btn:hover {
+  color: var(--community-coral);
 }
 
 .moment-body {
-  margin: 16px 0 14px;
   cursor: pointer;
+  padding-top: 14px;
 }
 
 .moment-content {
   margin: 0;
+  color: var(--community-text);
+  font-size: 14px;
+  line-height: 1.75;
   white-space: pre-wrap;
-  line-height: 1.9;
-  font-size: 15px;
+  word-break: break-word;
 }
 
 .moment-media {
-  margin-top: 14px;
   display: grid;
-  gap: 10px;
-  max-width: 760px;
+  gap: 6px;
+  margin-top: 14px;
+  max-width: 520px;
 }
 
 .moment-media.count-1 {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 380px);
 }
 
-.moment-media.count-2,
+.moment-media.count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .moment-media.count-3,
 .moment-media.count-4 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1375,189 +1598,1245 @@ onMounted(async () => {
 
 .moment-media__item {
   position: relative;
+  min-height: 104px;
   overflow: hidden;
-  border-radius: 18px;
-  background: var(--community-surface-muted);
-  min-height: 188px;
-  max-height: 220px;
+  border-radius: 9px;
+  background: var(--community-panel-soft);
 }
 
-.count-1 .moment-media__item {
-  min-height: 280px;
-  max-height: 420px;
+.moment-media.count-1 .moment-media__item {
+  min-height: 250px;
 }
 
-.count-3 .moment-media__item:first-child {
-  grid-column: 1 / -1;
-  min-height: 260px;
-  max-height: 300px;
+.moment-media__image {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  object-fit: cover;
+  transition: transform 260ms ease;
+}
+
+.moment-body:hover .moment-media__image {
+  transform: scale(1.025);
 }
 
 .moment-media__more {
   position: absolute;
-  inset: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15, 23, 42, 0.48);
+  right: 9px;
+  bottom: 9px;
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: rgba(20, 32, 51, 0.78);
   color: #fff;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .moment-footer {
-  justify-content: flex-start;
+  display: flex;
+  align-items: center;
   gap: 18px;
+  padding-top: 15px;
 }
 
-.text-action {
-  border: 0;
-  background: transparent;
+.moment-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--community-text-faint);
-  padding: 0;
-  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.text-action:hover {
-  color: var(--community-accent);
+.moment-action:hover,
+.moment-action--accent {
+  color: var(--community-coral);
+}
+
+.moment-action strong {
+  font-size: 12px;
 }
 
 .feed-loadmore {
-  padding: 18px 20px 14px;
   display: flex;
   justify-content: center;
+  padding: 8px 0 2px;
 }
 
-.feed-empty,
-.topic-empty {
-  padding: 40px 20px;
+.loadmore-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--community-line);
+  border-radius: 9px;
+  background: var(--community-panel);
+  color: var(--community-text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  transition: border-color 180ms ease, color 180ms ease, background-color 180ms ease;
+}
+
+.loadmore-btn:hover:not(:disabled) {
+  border-color: var(--community-coral);
+  background: color-mix(in srgb, var(--community-coral) 7%, var(--community-panel));
+  color: var(--community-coral);
+}
+
+.feed-state {
   display: flex;
+  min-height: 240px;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  color: var(--community-text-faint);
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--community-line-strong);
+  border-radius: var(--community-radius-sm);
+  color: var(--community-text-soft);
+  text-align: center;
 }
 
-.side-panel {
-  padding: 18px;
+.feed-state--loading {
+  flex-direction: row;
+  min-height: 180px;
+  border-style: solid;
+  font-size: 13px;
 }
 
-.side-panel--light {
-  background: linear-gradient(145deg, var(--community-accent-soft), transparent);
+.feed-state__loader {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--community-line);
+  border-top-color: var(--community-coral);
+  border-radius: 50%;
+  animation: community-spin 700ms linear infinite;
 }
 
-.side-panel--compact {
-  padding-bottom: 8px;
-}
-
-.highlight-list,
-.tips-list,
-.topic-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.highlight-item,
-.topic-item {
-  width: 100%;
-  border: 1px solid var(--community-border);
-  background: var(--community-surface-strong);
-  color: var(--community-text);
+.feed-state__sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 3px;
   border-radius: 14px;
-  padding: 12px 14px;
-  cursor: pointer;
-  text-align: left;
+  background: var(--community-panel-warm);
+  color: var(--community-yellow);
+  font-size: 22px;
 }
 
-.highlight-item {
+.feed-state strong {
+  color: var(--community-text);
+  font-size: 15px;
+}
+
+.feed-state > span:not(.feed-state__sticker):not(.feed-state__loader) {
+  color: var(--community-text-faint);
+  font-size: 12px;
+}
+
+.empty-action {
+  min-height: 34px;
+  margin-top: 8px;
+  padding: 0 13px;
+  font-size: 12px;
+}
+
+.community-pulse {
+  position: sticky;
+  top: 88px;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.highlight-item.active {
-  border-color: var(--community-accent-line);
-  background: var(--community-accent-soft);
+.pulse-section {
+  padding: 18px;
+  border: 1px solid var(--community-line);
+  border-radius: var(--community-radius);
+  background: var(--community-panel);
 }
 
-.highlight-item__copy {
-  min-width: 0;
+.pulse-section--hot {
+  border-top: 3px solid var(--community-yellow);
+}
+
+.pulse-heading {
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.pulse-heading__spark {
+  color: var(--community-yellow);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.hot-list,
+.topic-list {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.highlight-item__copy strong,
-.tip-item strong,
-.topic-item strong {
-  font-size: 14px;
+.hot-item,
+.topic-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  text-align: left;
+}
+
+.hot-item {
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: 9px;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.hot-item:hover,
+.hot-item.active {
+  background: var(--community-panel-soft);
+  transform: translateX(2px);
+}
+
+.hot-item__rank {
+  width: 19px;
+  color: var(--community-text-faint);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.hot-item__visual {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--community-coral) 12%, var(--community-panel));
+  color: var(--community-coral);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hot-item__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hot-item__copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hot-item__copy strong {
+  overflow: hidden;
+  color: var(--community-text);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-item__copy span {
+  color: var(--community-text-faint);
+  font-size: 10px;
+}
+
+.hot-item__arrow,
+.topic-item__arrow {
+  color: var(--community-text-faint);
+  font-size: 15px;
+}
+
+.hot-item:hover .hot-item__arrow,
+.hot-item.active .hot-item__arrow,
+.topic-item:hover .topic-item__arrow {
+  color: var(--community-coral);
 }
 
 .topic-item {
-  display: grid;
-  gap: 6px;
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 10px 25px 10px 9px;
+  border-left: 2px solid var(--community-line);
+  transition: border-color 180ms ease, background-color 180ms ease;
 }
 
-.topic-item span {
+.topic-item:hover {
+  border-left-color: var(--community-coral);
+  background: var(--community-panel-soft);
+}
+
+.topic-item__circle {
+  color: var(--community-mint);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.topic-item strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--community-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.topic-item__arrow {
+  position: absolute;
+  top: 11px;
+  right: 8px;
+}
+
+.topic-empty {
+  padding: 4px 2px;
+  color: var(--community-text-faint);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.pulse-note {
+  position: relative;
+  overflow: hidden;
+  padding: 20px 18px 17px;
+  border-radius: var(--community-radius);
+  background: var(--community-panel-warm);
+}
+
+.pulse-note__mark {
+  display: block;
+  height: 17px;
+  color: var(--community-yellow);
+  font-family: Georgia, serif;
+  font-size: 38px;
+  line-height: 0.8;
+}
+
+.pulse-note p {
+  max-width: 210px;
+  margin: 9px 0 14px;
+  color: var(--community-text);
   font-size: 13px;
-  line-height: 1.7;
+  font-weight: 700;
+  line-height: 1.65;
+}
+
+.pulse-note__line {
+  display: block;
+  width: 30px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--community-coral);
+}
+
+.pulse-note__caption {
+  display: block;
+  margin-top: 7px;
+  color: var(--community-text-faint);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+button:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--community-coral) 36%, transparent);
+  outline-offset: 2px;
+}
+
+@keyframes community-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1180px) {
-  .community-topbar,
-  .workspace {
-    grid-template-columns: 1fr;
+  .community-layout {
+    grid-template-columns: 196px minmax(0, 1fr) 250px;
+    gap: 18px;
   }
-}
 
-@media (max-width: 900px) {
   .community-main {
-    padding: 14px 14px 24px;
+    width: min(100% - 32px, 1120px);
   }
 
-  .composer-card__head,
-  .composer-footer,
-  .feed-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .hero-stats {
+    gap: 12px;
   }
 
-  .composer-target {
-    align-items: flex-start;
-  }
-
-  .moment-media.count-2,
-  .moment-media.count-3,
-  .moment-media.count-4 {
-    grid-template-columns: 1fr;
-  }
-
-  .count-3 .moment-media__item:first-child {
-    grid-column: auto;
-    min-height: 220px;
-    max-height: 280px;
+  .hero-stat {
+    gap: 4px;
   }
 }
 
-@media (max-width: 640px) {
-  .summary-strip,
-  .cta-actions,
-  .composer-actions,
-  .circle-nav {
+@media (max-width: 960px) {
+  .community-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .hero-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .community-layout {
+    grid-template-columns: 196px minmax(0, 1fr);
+  }
+
+  .community-pulse {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    position: static;
+  }
+
+  .pulse-note {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .community-main {
+    width: min(100% - 24px, 640px);
+    padding-top: 22px;
+    padding-bottom: 48px;
+  }
+
+  .community-hero {
+    padding: 6px 0 22px;
+  }
+
+  .community-hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-copy p {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 8px;
+  }
+
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .hero-stats__divider {
+    display: none;
+  }
+
+  .hero-publish {
+    min-height: 38px;
+    padding: 0 11px;
+  }
+
+  .community-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 18px;
+  }
+
+  .circle-rail {
+    position: static;
     width: 100%;
   }
 
-  .summary-strip,
-  .cta-actions,
-  .composer-actions {
-    flex-direction: column;
-    align-items: stretch;
+  .circle-rail__head {
+    align-items: center;
+    padding: 0 0 10px;
   }
 
-  .moment-author,
-  .moment-head {
+  .circle-rail__list {
+    display: flex;
+    flex-direction: row;
+    gap: 7px;
+    overflow-x: auto;
+    padding: 10px 0 4px;
+    scrollbar-width: none;
+  }
+
+  .circle-rail__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .circle-link {
+    display: inline-flex;
+    width: auto;
+    min-width: max-content;
+    min-height: 42px;
+    padding: 5px 10px 5px 6px;
+    border: 1px solid var(--community-line);
+    border-radius: 999px;
+    background: var(--community-panel);
+  }
+
+  .circle-link::before {
+    display: none;
+  }
+
+  .circle-link:hover,
+  .circle-link.active {
+    transform: none;
+  }
+
+  .circle-link__marker {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+  }
+
+  .circle-link__body {
+    gap: 0;
+  }
+
+  .circle-link__body span,
+  .circle-link__number {
+    display: none;
+  }
+
+  .circle-rail__note {
+    display: none;
+  }
+
+  .community-pulse {
+    display: flex;
     flex-direction: column;
+  }
+
+  .pulse-note {
+    order: 3;
+  }
+
+  .composer-card__head {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 19px 16px 12px;
+  }
+
+  .composer-target {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .composer-circle-picker {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .composer-input {
+    width: calc(100% - 32px);
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  .composer-footer {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px 16px;
+  }
+
+  .composer-tools,
+  .publish-btn {
+    width: 100%;
+  }
+
+  .composer-tools {
+    justify-content: space-between;
+  }
+
+  .publish-btn {
+    min-height: 40px;
+  }
+
+  .stream-toolbar {
+    padding-top: 22px;
+  }
+
+  .moment-card {
+    padding: 17px 15px 14px 37px;
+  }
+
+  .moment-card__timeline {
+    left: 16px;
+  }
+
+  .moment-card__timeline span {
+    top: 25px;
+  }
+
+  .moment-card__context {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .moment-media.count-1 {
+    grid-template-columns: 1fr;
+  }
+
+  .moment-media.count-1 .moment-media__item {
+    min-height: 210px;
+  }
+
+  .upload-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (max-width: 430px) {
+  .hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hero-publish {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .moment-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .moment-card__context {
+    margin-left: 4px;
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .community-page *,
+  .community-page *::before,
+  .community-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Second pass: forum-first hierarchy. The center feed carries the page; side rails stay quiet. */
+.community-main {
+  width: min(1400px, calc(100% - 64px));
+  padding-top: 30px;
+}
+
+.community-hero {
+  align-items: center;
+  padding: 8px 0 22px;
+}
+
+.hero-copy p {
+  margin-top: 8px;
+}
+
+.hero-stats {
+  gap: 20px;
+}
+
+.hero-publish {
+  min-height: 36px;
+  border: 1px solid var(--community-coral);
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--community-coral);
+}
+
+.hero-publish:hover {
+  background: color-mix(in srgb, var(--community-coral) 9%, transparent);
+  box-shadow: none;
+  transform: none;
+}
+
+.hero-publish__plus {
+  border-color: currentColor;
+}
+
+.community-layout {
+  grid-template-columns: 196px minmax(0, 1fr) 252px;
+  gap: 32px;
+}
+
+.circle-rail {
+  padding-right: 20px;
+  border-right: 1px solid var(--community-line);
+}
+
+.community-pulse {
+  padding-left: 20px;
+  border-left: 1px solid var(--community-line);
+}
+
+.circle-rail__head {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.circle-rail__head h2,
+.pulse-heading h2 {
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.circle-link {
+  min-height: 48px;
+  padding: 6px 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.circle-link:hover,
+.circle-link.active {
+  background: transparent;
+  transform: none;
+}
+
+.circle-link::before {
+  left: -21px;
+}
+
+.circle-link__marker {
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+
+.circle-link__marker--all {
+  background: transparent;
+}
+
+.circle-link:hover .circle-link__marker,
+.circle-link.active .circle-link__marker {
+  color: var(--community-coral);
+}
+
+.circle-rail__note {
+  margin: 10px 0 0;
+  padding: 14px 0 0;
+  border: 0;
+  border-top: 1px solid var(--community-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.composer-card {
+  border: 0;
+  border-bottom: 1px solid var(--community-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.composer-card__accent {
+  display: none;
+}
+
+.composer-card__head {
+  padding: 0 0 10px;
+}
+
+.composer-intro span {
+  font-size: 11px;
+}
+
+.composer-target {
+  font-size: 11px;
+}
+
+.composer-target button {
+  border-radius: 5px;
+  background: transparent;
+  color: var(--community-coral);
+}
+
+.composer-circle-picker {
+  padding: 0 0 9px;
+}
+
+.composer-input {
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  resize: vertical;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.composer-input:focus {
+  background: var(--community-panel);
+}
+
+.composer-footer {
+  padding: 10px 0 14px;
+}
+
+.publish-btn {
+  min-height: 34px;
+  padding: 0 18px;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+.stream-toolbar {
+  padding: 24px 0 11px;
+  border-bottom: 1px solid var(--community-line);
+}
+
+.stream-toolbar h2 {
+  font-size: 19px;
+}
+
+.moment-feed {
+  gap: 0;
+}
+
+.moment-card {
+  padding: 23px 0 21px 38px;
+  border: 0;
+  border-bottom: 1px solid var(--community-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.moment-card:hover {
+  border-color: var(--community-line);
+  box-shadow: none;
+  transform: none;
+}
+
+.moment-card__timeline {
+  left: 15px;
+}
+
+.moment-card__timeline span {
+  top: 31px;
+  width: 8px;
+  height: 8px;
+  border-width: 1px;
+}
+
+.moment-card__context {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--community-mint);
+  font-size: 11px;
+}
+
+.moment-card__context .context-arrow {
+  color: var(--community-text-faint);
+}
+
+.moment-footer {
+  padding-top: 12px;
+}
+
+.feed-state {
+  min-height: 220px;
+  border-width: 1px 0;
+  border-radius: 0;
+}
+
+.loadmore-btn {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+}
+
+.pulse-section {
+  padding: 0 0 18px;
+  border: 0;
+  border-bottom: 1px solid var(--community-line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.pulse-section--hot {
+  border-top: 0;
+}
+
+.pulse-section + .pulse-section {
+  padding-top: 18px;
+}
+
+.pulse-heading {
+  margin-bottom: 10px;
+}
+
+.hot-item {
+  padding: 9px 0;
+  border-radius: 0;
+}
+
+.hot-item:hover,
+.hot-item.active {
+  background: transparent;
+  transform: none;
+}
+
+.hot-item__visual {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+
+.topic-item {
+  border-radius: 0;
+}
+
+.pulse-note {
+  padding: 18px 0 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+@media (max-width: 1180px) {
+  .community-layout {
+    grid-template-columns: 184px minmax(0, 1fr) 238px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 960px) {
+  .community-layout {
+    grid-template-columns: 184px minmax(0, 1fr);
+  }
+
+  .community-pulse {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .community-main {
+    width: min(100% - 24px, 640px);
+    padding-top: 22px;
+  }
+
+  .circle-rail {
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .circle-link {
+    min-height: 42px;
+    padding: 5px 10px 5px 6px;
+    border: 1px solid var(--community-line);
+    border-radius: 999px;
+    background: var(--community-panel);
+  }
+
+  .circle-link::before {
+    display: none;
+  }
+
+  .circle-link.active {
+    border-color: color-mix(in srgb, var(--community-coral) 50%, var(--community-line));
+    background: color-mix(in srgb, var(--community-coral) 8%, var(--community-panel));
+  }
+
+  .composer-card__head {
+    padding-bottom: 9px;
+  }
+
+  .composer-input {
+    min-height: 56px;
+  }
+
+  .moment-card {
+    padding-top: 19px;
+    padding-bottom: 18px;
+  }
+
+  .moment-card__timeline {
+    left: 16px;
+  }
+}
+
+/* Independent desktop scroll regions: keep the side indexes available while the feed moves. */
+.community-page {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.community-main {
+  box-sizing: border-box;
+  height: calc(100vh - 68px);
+  margin-top: 68px;
+  padding-bottom: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.community-layout {
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.circle-rail,
+.community-stream,
+.community-pulse {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.circle-rail,
+.community-pulse {
+  position: static;
+}
+
+.feed-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 0;
+}
+
+.feed-search {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  width: min(100%, 560px);
+  min-height: 42px;
+  border: 1px solid var(--community-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--community-panel) 82%, transparent);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.feed-search:focus-within {
+  border-color: color-mix(in srgb, var(--community-coral) 62%, var(--community-line));
+  background: var(--community-panel);
+}
+
+.feed-search__icon {
+  flex: 0 0 auto;
+  padding-left: 13px;
+  color: var(--community-text-faint);
+  font-size: 21px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.feed-search input {
+  min-width: 0;
+  flex: 1;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  outline: 0;
+  color: var(--community-text);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+}
+
+.feed-search input::placeholder {
+  color: var(--community-text-faint);
+}
+
+.feed-search__clear,
+.feed-search__submit {
+  flex: 0 0 auto;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.feed-search__clear {
+  width: 28px;
+  height: 28px;
+  color: var(--community-text-faint);
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.feed-search__clear:hover {
+  color: var(--community-text);
+}
+
+.feed-search__submit {
+  align-self: stretch;
+  min-width: 58px;
+  margin: 4px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: #fff;
+  background: var(--community-coral);
+  font-size: 12px;
+  font-weight: 700;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.feed-search__submit:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.feed-search__state {
+  flex: 0 0 auto;
+  color: var(--community-text-faint);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* Keep the intro band compact so the forum columns get the majority of the viewport. */
+.community-main {
+  padding-top: clamp(12px, 1.8vh, 22px);
+  padding-bottom: 12px;
+}
+
+.community-hero {
+  gap: clamp(18px, 2.6vw, 34px);
+  padding: 4px 0 clamp(12px, 1.8vh, 18px);
+}
+
+.hero-kicker {
+  margin-bottom: 7px;
+}
+
+.community-hero h1 {
+  font-size: clamp(32px, 3.2vw, 40px);
+}
+
+.hero-copy p {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.hero-stats {
+  gap: clamp(12px, 1.5vw, 20px);
+}
+
+.hero-stat strong {
+  font-size: 18px;
+}
+
+.community-layout {
+  padding-top: clamp(14px, 1.8vh, 22px);
+}
+
+@media (max-height: 820px) and (min-width: 721px) {
+  .community-main {
+    padding-top: 10px;
+    padding-bottom: 8px;
+  }
+
+  .community-hero {
+    padding-bottom: 10px;
+  }
+
+  .community-hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-copy p {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .community-layout {
+    padding-top: 12px;
+  }
+}
+
+@media (max-width: 960px) {
+  .community-main {
+    height: calc(100vh - 68px);
+  }
+
+  .community-layout {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 720px) {
+  .community-page {
+    height: auto;
+    overflow: visible;
+  }
+
+  .community-main {
+    height: auto;
+    margin-top: 68px;
+    padding-top: 22px;
+    padding-bottom: 48px;
+    overflow: visible;
+    display: block;
+  }
+
+  .community-hero {
+    padding: 6px 0 22px;
+  }
+
+  .community-hero h1 {
+    font-size: 34px;
+  }
+
+  .hero-copy p {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  .community-layout {
+    height: auto;
+    overflow: visible;
+  }
+
+  .circle-rail,
+  .community-stream,
+  .community-pulse {
+    overflow: visible;
+    scrollbar-gutter: auto;
+  }
+
+  .feed-search-row {
+    display: block;
+    padding-top: 14px;
+  }
+
+  .feed-search {
+    width: 100%;
+  }
+
+  .feed-search__state {
+    display: block;
+    padding: 8px 2px 0;
   }
 }
 </style>

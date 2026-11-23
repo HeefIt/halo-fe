@@ -25,25 +25,26 @@
         <span v-if="errors.userName" class="error-message">{{ errors.userName }}</span>
       </div>
 
-      <div class="field-row">
-        <div class="field-group" :class="{ focused: focusedField === 'email', filled: registerForm.email, error: errors.email }">
-          <label class="field-label">邮箱</label>
-          <div class="field-box">
-            <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16v16H4z" />
-              <path d="m22 6-10 7L2 6" />
-            </svg>
-            <input
-              v-model="registerForm.email"
-              type="email"
-              autocomplete="email"
-              placeholder="输入常用邮箱"
-              @focus="focusedField = 'email'"
-              @blur="focusedField = ''; validateField('email')"
-            />
-          </div>
-          <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+      <div class="field-group field-row" :class="{ focused: focusedField === 'email', filled: registerForm.email, error: errors.email }">
+        <label for="register-email" class="field-label">邮箱</label>
+        <div class="field-box">
+          <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16v16H4z" />
+            <path d="m22 6-10 7L2 6" />
+          </svg>
+          <input
+            id="register-email"
+            v-model="registerForm.email"
+            type="email"
+            autocomplete="email"
+            placeholder="输入常用邮箱"
+            :aria-invalid="Boolean(errors.email)"
+            aria-describedby="register-email-error"
+            @focus="focusedField = 'email'"
+            @blur="focusedField = ''; validateField('email')"
+          />
         </div>
+        <span id="register-email-error" class="error-message">{{ errors.email }}</span>
 
         <button
           type="button"

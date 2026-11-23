@@ -18,7 +18,7 @@
           />
           <span class="logo-meta" ref="logoTextRef" :style="{ transform: logoTransform }">
             <span class="logo-text">halo coding do</span>
-            <span class="logo-caption">a tasteful place for curious developers</span>
+            <span class="logo-caption">开发者学习社区</span>
           </span>
         </div>
         
@@ -32,8 +32,8 @@
             </button>
             <div class="dropdown-content">
               <div class="dropdown-card">
-                <h4>题库，带点锋芒。</h4>
-                <p class="dropdown-stats">超过 <strong>1000+</strong> 道题，覆盖真实高频方向</p>
+                <h4>按专题练习</h4>
+                <p class="dropdown-stats">支持按<strong>分类和标签</strong>筛选题目</p>
                 <ul class="dropdown-list">
                   <li>后端基础与工程规范</li>
                   <li>JVM 与性能调优</li>
@@ -43,7 +43,7 @@
                   <li>系统设计、接口设计与算法</li>
                   <li>AI 应用、调试与项目实战</li>
                 </ul>
-                <button class="dropdown-cta" @click="$router.push('/login')">进去看看</button>
+                <button class="dropdown-cta" @click="$router.push('/login')">登录后练习</button>
               </div>
             </div>
           </div>
@@ -60,28 +60,28 @@
                 <span class="resource-icon">⚡</span>
                 <div>
                   <span class="resource-name">力扣 LeetCode</span>
-                  <span class="resource-desc">全球极客挚爱的技术成长平台</span>
+                  <span class="resource-desc">算法和数据结构练习</span>
                 </div>
               </a>
               <a href="https://www.nowcoder.com/" target="_blank" class="resource-link">
                 <span class="resource-icon">🎯</span>
                 <div>
                   <span class="resource-name">牛客网</span>
-                  <span class="resource-desc">专业IT求职备考平台</span>
+                  <span class="resource-desc">笔试练习与面试经验</span>
                 </div>
               </a>
               <a href="https://www.csdn.net/" target="_blank" class="resource-link">
                 <span class="resource-icon">📚</span>
                 <div>
                   <span class="resource-name">CSDN</span>
-                  <span class="resource-desc">中国专业IT社区</span>
+                  <span class="resource-desc">技术文章与开发笔记</span>
                 </div>
               </a>
               <a href="https://github.com/" target="_blank" class="resource-link">
                 <span class="resource-icon">💻</span>
                 <div>
                   <span class="resource-name">GitHub</span>
-                  <span class="resource-desc">全球最大的代码托管平台</span>
+                  <span class="resource-desc">开源项目与代码托管</span>
                 </div>
               </a>
             </div>
@@ -103,7 +103,7 @@
         
         <div class="nav-actions">
           <button class="btn-ghost" @click="$router.push('/login')">登录</button>
-          <button class="btn-primary" @click="$router.push('/register')">免费注册</button>
+          <button class="btn-primary" @click="$router.push('/register')">创建账号</button>
         </div>
       </div>
     </nav>
@@ -119,7 +119,7 @@
           <div class="hero-copy">
             <p class="hero-brand animate-fade-up">
               <span class="hero-brand__name">halo coding do</span>
-              <span class="hero-brand__caption">developer study flow</span>
+              <span class="hero-brand__caption">题库练习与技术交流</span>
             </p>
 
             <div class="hero-kicker animate-fade-up" style="animation-delay: 80ms">
@@ -130,31 +130,31 @@
             </div>
             
             <h1 class="hero-title animate-fade-up" style="animation-delay: 140ms">
-              <span class="title-line">把练习、表达和讨论</span>
-              <span class="title-line hero-title__accent">排进同一条开发者动线</span>
+              <span class="title-line">按专题练习</span>
+              <span class="title-line hero-title__accent">回看作答记录</span>
             </h1>
             
             <p class="hero-subtitle animate-fade-up" style="animation-delay: 220ms">
-              从第一道题开始，到一篇文章、一次追问、再到一场讨论，
-              路径不用再断开。
+              按分类和标签选择题目，查看判题结果和练习记录。
+              站内也提供技术博客、圈子讨论和 AI 练题助手。
             </p>
             
             <div class="hero-actions animate-fade-up" style="animation-delay: 300ms">
               <button class="btn-primary btn-lg hero-btn-primary" @click="$router.push('/register')">
-                创建账号开始
+                创建账号
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
               </button>
               <button class="btn-secondary btn-lg hero-btn-secondary" @click="$router.push('/home')">
-                先逛逛内容
+                登录进入站内
               </button>
             </div>
 
             <ul class="hero-notes animate-fade-up" style="animation-delay: 380ms">
-              <li>题目不是孤岛，后面直接接上写作与复盘。</li>
-              <li>AI 不只是问答入口，也能接住拆解和追问。</li>
-              <li>社区不是边角功能，讨论本身就是学习的一部分。</li>
+              <li>题库支持单选、多选、判断和简答。</li>
+              <li>作答后可查看参考答案与 AI 解析。</li>
+              <li>可以在博客发布题解，在圈子里交流问题。</li>
             </ul>
           </div>
 
@@ -165,33 +165,33 @@
             <div class="hero-stage__ring hero-stage__ring--inner"></div>
 
             <div class="hero-stage__core">
-              <span class="hero-stage__core-kicker">One flow</span>
-              <strong class="hero-stage__core-title">Practice to Voice</strong>
-              <span class="hero-stage__core-copy">for curious developers</span>
+              <span class="hero-stage__core-kicker">功能概览</span>
+              <strong class="hero-stage__core-title">学习社区</strong>
+              <span class="hero-stage__core-copy">练习、记录与交流</span>
             </div>
 
             <div class="hero-orbit hero-orbit--question">
               <span class="hero-orbit__eyebrow">Practice</span>
               <strong>题库</strong>
-              <p>从真实题目开场</p>
+              <p>按专题选题</p>
             </div>
 
             <div class="hero-orbit hero-orbit--blog">
               <span class="hero-orbit__eyebrow">Write</span>
               <strong>博客</strong>
-              <p>把判断写下来</p>
+              <p>阅读与发布文章</p>
             </div>
 
             <div class="hero-orbit hero-orbit--ai">
               <span class="hero-orbit__eyebrow">Ask</span>
               <strong>AI</strong>
-              <p>卡住时继续往前</p>
+              <p>查看题目解析</p>
             </div>
 
             <div class="hero-orbit hero-orbit--community">
               <span class="hero-orbit__eyebrow">Discuss</span>
               <strong>讨论</strong>
-              <p>把问题放回人群里</p>
+              <p>在圈子里交流</p>
             </div>
 
             <div class="hero-stage__axis hero-stage__axis--x"></div>
@@ -200,7 +200,6 @@
         </div>
 
         <div class="hero-scroll animate-fade-up" style="animation-delay: 460ms">
-          <span class="hero-scroll__label">向下看内容</span>
           <span class="hero-scroll__line"></span>
         </div>
       </section>
@@ -208,9 +207,9 @@
       <section class="features" ref="featuresRef">
         <div class="container">
           <div class="section-header animate-on-scroll">
-            <span class="section-tag">平台能力</span>
-            <h2 class="section-title">一个能练，也能写的地方</h2>
-            <p class="section-desc">题目、内容和讨论会互相接上。</p>
+            <span class="section-tag">平台功能</span>
+            <h2 class="section-title">练习、复盘与技术交流</h2>
+            <p class="section-desc">按需要选择题库、练习记录、AI 助手、博客或社区。</p>
           </div>
           
           <div class="features-grid" ref="featuresGridRef" @mousemove="handleFeaturesMouseMove" @mouseleave="handleFeaturesMouseLeave">
@@ -223,8 +222,8 @@
                   <path d="M8 7h8M8 11h8M8 15h4"/>
                 </svg>
               </div>
-              <h3 class="feature-title">题库够真</h3>
-              <p class="feature-desc">题目按真实方向组织，练起来更有上下文。</p>
+              <h3 class="feature-title">题库练习</h3>
+              <p class="feature-desc">按分类和标签选题，集中练习一个专题。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 200ms">
@@ -236,8 +235,8 @@
                   <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
               </div>
-              <h3 class="feature-title">AI 接得住</h3>
-              <p class="feature-desc">能拆思路，也能接住追问。</p>
+              <h3 class="feature-title">AI 练题助手</h3>
+              <p class="feature-desc">结合当前题目和作答，分析解题思路与选项。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 300ms">
@@ -248,8 +247,8 @@
                   <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
                 </svg>
               </div>
-              <h3 class="feature-title">排行不吵</h3>
-              <p class="feature-desc">让节奏和变化被看见，不只剩名次。</p>
+              <h3 class="feature-title">排行榜</h3>
+              <p class="feature-desc">按练习量或得分查看榜单，也可以查看个人排名。</p>
             </div>
             
             <div class="feature-card feature-card-wide animate-on-scroll" style="animation-delay: 400ms">
@@ -259,8 +258,8 @@
                   <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
                 </svg>
               </div>
-              <h3 class="feature-title">内容互相通气</h3>
-              <p class="feature-desc">内容、题库、AI 和排行能互相接上。</p>
+              <h3 class="feature-title">社区讨论</h3>
+              <p class="feature-desc">在圈子里发布技术问题、分享项目经验，也可以回复他人的动态。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 500ms">
@@ -273,8 +272,8 @@
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
               </div>
-              <h3 class="feature-title">博客值得认真写</h3>
-              <p class="feature-desc">把题解、经验和判断认真写下来。</p>
+              <h3 class="feature-title">技术博客</h3>
+              <p class="feature-desc">阅读或发布题解、开发笔记与项目复盘。</p>
             </div>
             
             <div class="feature-card animate-on-scroll" style="animation-delay: 600ms">
@@ -285,8 +284,8 @@
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
-              <h3 class="feature-title">反馈看得见</h3>
-              <p class="feature-desc">阅读、练习和互动都会留下痕迹。</p>
+              <h3 class="feature-title">练习记录</h3>
+              <p class="feature-desc">回看历次练习的作答、判题结果和用时。</p>
             </div>
           </div>
         </div>
@@ -296,26 +295,26 @@
         <div class="container">
           <div class="showcase-grid animate-on-scroll">
             <div class="showcase-content">
-              <span class="section-tag">使用体验</span>
-              <h2 class="showcase-title">做题、写作、对话，不用来回切页</h2>
-              <p class="showcase-desc">从内容到练习，再到追问，路径是连着的。</p>
+              <span class="section-tag">题目样例</span>
+              <h2 class="showcase-title">一次练习包含什么</h2>
+              <p class="showcase-desc">以接口设计单选题为例。正式练习时，提交答案后可以查看判题结果。</p>
               
               <ul class="showcase-list">
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>题库、内容和 AI 不是三套系统</span>
+                  <span>按分类和标签筛选题目</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>灵感来了能写，卡住了能问</span>
+                  <span>提交答案后查看判题结果</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>博客不是附件，是正式表达的一部分</span>
+                  <span>使用 AI 助手查看题目解析</span>
                 </li>
                 <li>
                   <span class="list-icon">✓</span>
-                  <span>反馈会给你节奏，但不会逼着你跑</span>
+                  <span>从练习记录查看历史作答</span>
                 </li>
               </ul>
             </div>
@@ -323,10 +322,10 @@
             <div class="showcase-visual">
               <div class="showcase-card">
                 <div class="showcase-card-header">
-                  <span class="showcase-badge badge-success">进阶</span>
-                  <span class="showcase-badge badge-primary">工程思维题</span>
+                  <span class="showcase-badge badge-success">单选题</span>
+                  <span class="showcase-badge badge-primary">接口设计</span>
                 </div>
-                <h4 class="showcase-question">高并发接口需要防止重复提交时，优先考虑哪种策略？</h4>
+                <h4 class="showcase-question">客户端超时重试时，服务端怎样避免同一请求被重复处理？</h4>
                 <div class="showcase-options">
                   <div class="showcase-option showcase-option-selected">
                     <span class="option-letter">A</span>
@@ -355,22 +354,22 @@
         <div class="container">
           <div class="blog-preview-grid animate-on-scroll">
             <div class="blog-preview-content">
-              <span class="section-tag">博客样例</span>
-              <h2 class="blog-preview-title">今天不想先做题，就先读点好内容</h2>
-              <p class="blog-preview-desc">这里不只放答案，也放观点和判断。</p>
+              <span class="section-tag">博客示例</span>
+              <h2 class="blog-preview-title">阅读和发布技术文章</h2>
+              <p class="blog-preview-desc">博客收录题解、项目复盘和开发随笔，也可以发布自己的文章。</p>
 
               <div class="blog-preview-points">
                 <div class="blog-point">
-                  <span class="blog-point-title">有观点</span>
-                  <span class="blog-point-text">不是资料搬运，而是带着判断和取舍去写。</span>
+                  <span class="blog-point-title">题解</span>
+                  <span class="blog-point-text">记录解题步骤、关键判断和适用条件。</span>
                 </div>
                 <div class="blog-point">
-                  <span class="blog-point-title">有结构</span>
-                  <span class="blog-point-text">从问题、方案到边界，读起来会很顺。</span>
+                  <span class="blog-point-title">项目复盘</span>
+                  <span class="blog-point-text">说明遇到的问题、尝试过的方案和验证结果。</span>
                 </div>
                 <div class="blog-point">
-                  <span class="blog-point-title">有余味</span>
-                  <span class="blog-point-text">看完不是结束，而是忍不住想补一句自己的看法。</span>
+                  <span class="blog-point-title">开发随笔</span>
+                  <span class="blog-point-text">记录工具用法、调试过程或界面调整。</span>
                 </div>
               </div>
             </div>
@@ -378,53 +377,53 @@
             <div class="blog-preview-visual">
               <article class="blog-sample-card">
                 <div class="blog-sample-head">
-                  <span class="blog-sample-badge">Featured Post</span>
-                  <span class="blog-sample-time">8 min read</span>
+                  <span class="blog-sample-badge">文章示例</span>
+                  <span class="blog-sample-time">架构设计</span>
                 </div>
-                <h3 class="blog-sample-title">当系统开始变复杂，先别急着上强度，先把边界写清楚</h3>
+                <h3 class="blog-sample-title">系统复杂度上升时，如何划分服务边界？</h3>
                 <p class="blog-sample-summary">
-                  很多“架构升级”看起来像技术跃迁，其实只是边界混乱的后遗症。先把责任、数据流和失败路径讲明白，再谈中间件和分布式，通常会优雅得多。
+                  从模块职责、数据流向和异常处理出发，说明哪些功能适合拆分成独立服务，哪些应留在一起。
                 </p>
                 <div class="blog-sample-tags">
                   <span>系统设计</span>
                   <span>接口边界</span>
-                  <span>工程判断</span>
+                  <span>服务拆分</span>
                 </div>
                 <div class="blog-sample-footer">
                   <div class="blog-sample-author">
-                    <div class="blog-author-avatar">H</div>
+                    <div class="blog-author-avatar">技</div>
                     <div class="blog-author-info">
-                      <strong>halo editorial</strong>
-                      <span>把复杂问题讲得不那么吓人</span>
+                      <strong>工程笔记</strong>
+                      <span>后端开发与架构设计</span>
                     </div>
                   </div>
-                  <button class="blog-sample-link" @click="$router.push('/blog')">去看更多文章</button>
+                  <button class="blog-sample-link" @click="$router.push('/blog')">浏览博客</button>
                 </div>
               </article>
 
               <article class="blog-sample-card blog-sample-card-playful">
                 <div class="blog-sample-head">
-                  <span class="blog-sample-badge blog-sample-badge-fun">Fun &amp; Life</span>
-                  <span class="blog-sample-time">5 min read</span>
+                  <span class="blog-sample-badge blog-sample-badge-fun">随笔示例</span>
+                  <span class="blog-sample-time">前端开发</span>
                 </div>
-                <h3 class="blog-sample-title">如果今天不想聊系统设计，也可以写写周末、咖啡和喜欢的小界面</h3>
+                <h3 class="blog-sample-title">一次按钮状态的调整记录</h3>
                 <p class="blog-sample-summary">
-                  社区不只放标准答案。最近喜欢的歌单、小店，或者一个反复改到满意的按钮，也值得记下来。
+                  对比按钮在默认、加载和禁用状态下的反馈，记录修改前的问题和最终的处理方式。
                 </p>
                 <div class="blog-sample-tags">
-                  <span>生活穿插</span>
-                  <span>轻松一点</span>
-                  <span>有趣记录</span>
+                  <span>交互设计</span>
+                  <span>按钮状态</span>
+                  <span>开发记录</span>
                 </div>
                 <div class="blog-sample-footer">
                   <div class="blog-sample-author">
-                    <div class="blog-author-avatar blog-author-avatar-fun">L</div>
+                    <div class="blog-author-avatar blog-author-avatar-fun">记</div>
                     <div class="blog-author-info">
-                      <strong>late night notes</strong>
-                      <span>把好看、好玩和好心情也写进社区</span>
+                      <strong>开发随笔</strong>
+                      <span>界面交互与实现记录</span>
                     </div>
                   </div>
-                  <button class="blog-sample-link blog-sample-link-fun" @click="$router.push('/blog')">去看这类文章</button>
+                  <button class="blog-sample-link blog-sample-link-fun" @click="$router.push('/blog')">浏览博客</button>
                 </div>
               </article>
             </div>
@@ -436,8 +435,8 @@
         <div class="container">
           <div class="cta-card">
             <div class="cta-content">
-              <h2 class="cta-title">准备好了，就进来看看</h2>
-              <p class="cta-desc">也许第一篇文章，或者第一道题，就从这里开始。</p>
+              <h2 class="cta-title">注册后开始练习</h2>
+              <p class="cta-desc">登录后可以选题练习，系统会保存作答记录。</p>
             </div>
             <div class="cta-action">
               <button class="btn-primary btn-lg btn-white" @click="$router.push('/register')">
@@ -468,17 +467,17 @@
       <div class="modal" @click.stop>
         <button class="modal-close" @click="showAbout = false">×</button>
         <h3 class="modal-title">关于 halo coding do</h3>
-        <p class="modal-text">halo coding do 是一个面向开发者的内容社区，题库、文章、AI 和讨论都在这里。</p>
+        <p class="modal-text">Halo Coding Do 是面向开发者的学习社区，提供题库、练习记录、技术博客、AI 助手和圈子讨论。</p>
         
-        <h4 class="modal-subtitle">我们的理念</h4>
-        <p class="modal-text">我们希望认真练习的人，也能顺手留下自己的表达。</p>
+        <h4 class="modal-subtitle">使用场景</h4>
+        <p class="modal-text">适用于技术知识复习、面试准备和项目经验交流。</p>
         
-        <h4 class="modal-subtitle">为什么选择我们</h4>
+        <h4 class="modal-subtitle">主要功能</h4>
         <ul class="modal-list">
-          <li><strong>好内容不散</strong>：题库、博客、AI、排行和计划不是碎片，而是一条完整链路</li>
-          <li><strong>好表达有位置</strong>：写法、观点、复盘和结论都会被认真承接</li>
-          <li><strong>好奇心有回声</strong>：能问、能写、能被看见，社区氛围会更轻盈</li>
-          <li><strong>技术味足够正</strong>：后端、系统、数据库、工程问题都在真实语境里展开</li>
+          <li><strong>题库练习</strong>：按专题选题，查看判题结果和历史作答。</li>
+          <li><strong>技术博客</strong>：阅读或发布题解、开发笔记和项目复盘。</li>
+          <li><strong>AI 助手</strong>：查看题目解析，或就技术问题展开对话。</li>
+          <li><strong>圈子讨论</strong>：发起讨论或回复他人的动态。</li>
         </ul>
       </div>
     </div>
@@ -487,7 +486,7 @@
       <div class="modal" @click.stop>
         <button class="modal-close" @click="showContact = false">×</button>
         <h3 class="modal-title">联系我们</h3>
-        <p class="modal-text">有问题或建议，欢迎联系我们。</p>
+        <p class="modal-text">使用问题、功能建议和合作咨询可通过以下方式联系。</p>
         
         <div class="contact-list">
           <div class="contact-item">
@@ -719,18 +718,18 @@ onUnmounted(() => {
 }
 
 .nav-inner {
-  max-width: 1280px;
-  margin: 0 auto;
   padding: 0 24px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  gap: clamp(12px, 2vw, 32px);
 }
 
 .logo {
   display: flex;
   align-items: center;
+  justify-self: start;
+  min-width: 0;
   gap: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -948,6 +947,7 @@ onUnmounted(() => {
 .nav-actions {
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: 12px;
 }
 
@@ -2166,8 +2166,50 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
-  .nav-links {
+  .nav-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-inline: 16px;
+    gap: 12px;
+  }
+
+  .nav-links,
+  .logo-caption {
     display: none;
+  }
+
+  .logo {
+    max-width: 100%;
+    gap: 4px;
+  }
+
+  .logo-mark {
+    flex-shrink: 0;
+    width: 32px;
+    height: 28px;
+  }
+
+  .logo-meta {
+    min-width: 0;
+  }
+
+  .logo-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: clamp(14px, 4vw, 16px);
+  }
+
+  .nav-actions {
+    gap: 8px;
+  }
+
+  .nav-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 12px;
+    white-space: nowrap;
   }
 
   .hero {

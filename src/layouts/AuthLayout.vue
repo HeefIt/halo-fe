@@ -299,12 +299,31 @@ const panelStyle = computed(() => {
 :deep(.field-row) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: end;
+  grid-template-areas:
+    "label label"
+    "input action"
+    "error error";
+  column-gap: 12px;
 }
 
-:deep(.field-row .field-group) {
-  min-width: 0;
+:deep(.field-row > .field-label) {
+  grid-area: label;
+}
+
+:deep(.field-row > .field-box) {
+  grid-area: input;
+}
+
+:deep(.field-row > .error-message) {
+  grid-area: error;
+  /* 校验提示出现或清除时，不挤动后续表单项。 */
+  min-height: 1.5em;
+}
+
+:deep(.field-row > .secondary-btn) {
+  grid-area: action;
+  width: 8.5em;
+  white-space: nowrap;
 }
 
 :deep(.field-icon) {
@@ -498,14 +517,12 @@ const panelStyle = computed(() => {
   font-weight: 700;
   cursor: pointer;
   transition:
-    transform var(--transition-fast),
     border-color var(--transition-fast),
     background-color var(--transition-fast),
     opacity var(--transition-fast);
 }
 
 :deep(.secondary-btn:hover:not(:disabled)) {
-  transform: translateY(-1px);
   border-color: rgba(52, 211, 153, 0.26);
   background: rgba(255, 255, 255, 0.08);
 }
@@ -615,10 +632,15 @@ const panelStyle = computed(() => {
   }
 
   :deep(.field-row) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "label"
+      "input"
+      "error"
+      "action";
   }
 
-  :deep(.secondary-btn) {
+  :deep(.field-row > .secondary-btn) {
     width: 100%;
     height: 56px;
   }

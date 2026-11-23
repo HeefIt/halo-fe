@@ -6,25 +6,26 @@
     :panel-width="520"
   >
     <form class="auth-form" @submit.prevent="handleResetPassword">
-      <div class="field-row">
-        <div class="field-group" :class="{ focused: focusedField === 'email', filled: form.email, error: errors.email }">
-          <label class="field-label">邮箱</label>
-          <div class="field-box">
-            <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16v16H4z" />
-              <path d="m22 6-10 7L2 6" />
-            </svg>
-            <input
-              v-model="form.email"
-              type="email"
-              autocomplete="email"
-              placeholder="输入注册邮箱"
-              @focus="focusedField = 'email'"
-              @blur="focusedField = ''; validateField('email')"
-            />
-          </div>
-          <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+      <div class="field-group field-row" :class="{ focused: focusedField === 'email', filled: form.email, error: errors.email }">
+        <label for="reset-email" class="field-label">邮箱</label>
+        <div class="field-box">
+          <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16v16H4z" />
+            <path d="m22 6-10 7L2 6" />
+          </svg>
+          <input
+            id="reset-email"
+            v-model="form.email"
+            type="email"
+            autocomplete="email"
+            placeholder="输入注册邮箱"
+            :aria-invalid="Boolean(errors.email)"
+            aria-describedby="reset-email-error"
+            @focus="focusedField = 'email'"
+            @blur="focusedField = ''; validateField('email')"
+          />
         </div>
+        <span id="reset-email-error" class="error-message">{{ errors.email }}</span>
 
         <button
           type="button"
