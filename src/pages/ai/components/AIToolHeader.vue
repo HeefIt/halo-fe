@@ -1,31 +1,25 @@
 <template>
   <header class="ai-tool-header">
-    <button class="ai-tool-header__brand" type="button" @click="router.push('/ai/chatbot')">
+    <RouterLink class="ai-tool-header__brand" to="/ai/chatbot">
       <span class="ai-tool-header__brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
           <rect x="4" y="4" width="6" height="6" rx="2"></rect>
           <rect x="14" y="4" width="6" height="6" rx="2"></rect>
           <rect x="4" y="14" width="6" height="6" rx="2"></rect>
-          <path d="M16 14h2a2 2 0 0 1 2 2v2"></path>
-          <path d="M14 18h6"></path>
+          <path d="M16 14h2a2 2 0 0 1 2 2v2M14 18h6"></path>
         </svg>
       </span>
-      <span class="ai-tool-header__brand-copy">
-        <span class="ai-tool-header__brand-kicker">AI ZONE</span>
-        <span class="ai-tool-header__current">{{ currentTitle }}</span>
-      </span>
-      <span v-if="badge" class="ai-tool-header__badge">{{ badge }}</span>
-    </button>
+      <span>AI-Zone</span>
+    </RouterLink>
 
-    <nav class="ai-tool-nav" aria-label="AI tools">
-      <button
+    <nav class="ai-tool-nav" aria-label="AI-Zone 工具">
+      <RouterLink
         v-for="item in toolItems"
         :key="item.path"
+        :to="item.path"
+        :aria-label="item.label"
         class="ai-tool-nav__item"
-        :class="{ active: route.path === item.path }"
-        :title="item.label"
-        type="button"
-        @click="router.push(item.path)"
+        exact-active-class="is-current"
       >
         <span class="ai-tool-nav__icon" aria-hidden="true">
           <svg v-if="item.icon === 'chat'" viewBox="0 0 24 24" fill="none">
@@ -64,40 +58,21 @@
             <path d="M9 14h6"></path>
           </svg>
         </span>
-        <span class="ai-tool-nav__label">{{ item.shortLabel }}</span>
-      </button>
+        <span>{{ item.shortLabel }}</span>
+      </RouterLink>
     </nav>
 
-    <button class="ai-tool-header__back" type="button" :title="backLabel" @click="handleBack">
+    <RouterLink class="ai-tool-header__back" to="/home">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M15 18 9 12l6-6"></path>
+        <path d="m15 18-6-6 6-6"></path>
       </svg>
-      <span>返回</span>
-    </button>
+      <span>返回首页</span>
+    </RouterLink>
   </header>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-
-const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  subtitle: {
-    type: String,
-    default: ''
-  },
-  badge: {
-    type: String,
-    default: ''
-  }
-})
-
-const route = useRoute()
-const router = useRouter()
+import { RouterLink } from 'vue-router'
 
 const toolItems = [
   { label: '通用对话', shortLabel: '对话', path: '/ai/chatbot', icon: 'chat' },
@@ -107,251 +82,130 @@ const toolItems = [
   { label: '学习搭子', shortLabel: '学习搭子', path: '/ai/halo-study-agent', icon: 'study-agent' },
   { label: '多模态解析', shortLabel: '多模态', path: '/ai/multimodal', icon: 'multi' }
 ]
-
-const activeItem = computed(() => toolItems.find(item => item.path === route.path))
-
-const currentTitle = computed(() => {
-  if (activeItem.value?.label) {
-    return activeItem.value.label
-  }
-  return props.title.replace(/\s*Agent\s*$/i, '').trim()
-})
-
-const backLabel = computed(() => '返回首页')
-
-const handleBack = () => {
-  router.push('/home')
-}
 </script>
 
 <style scoped>
 .ai-tool-header {
   display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas: 'brand nav back';
   align-items: center;
   gap: 12px;
-  padding: 8px 14px;
-  border: 1px solid var(--ai-border, var(--internal-panel-border));
-  background:
-    linear-gradient(90deg, rgba(96, 165, 250, 0.05), transparent 22%),
-    var(--ai-surface, var(--internal-panel-bg));
-  border-radius: 14px;
-}
-
-.ai-tool-header__brand,
-.ai-tool-header__back,
-.ai-tool-nav__item {
-  border: none;
-  cursor: pointer;
-}
-
-.ai-tool-header__brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
   min-width: 0;
-  padding: 0;
-  padding-right: 20px;
-  background: transparent;
-  text-align: left;
+  padding: 7px 12px;
+  border: 1px solid var(--internal-panel-border);
+  border-radius: var(--radius-lg);
+  background: var(--internal-panel-bg);
 }
 
-.ai-tool-header__brand-mark {
+.ai-tool-header a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 11px;
-  background: var(--ai-accent-soft, var(--color-accent-light));
-  color: var(--ai-accent, var(--color-accent));
-  box-shadow: inset 0 0 0 1px var(--ai-accent-line, var(--color-accent-subtle));
-  flex: 0 0 auto;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.ai-tool-header__brand-mark svg,
-.ai-tool-nav__icon svg,
-.ai-tool-header__back svg {
-  width: 18px;
-  height: 18px;
+.ai-tool-header a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.ai-tool-header svg {
+  display: block;
+  width: 17px;
+  height: 17px;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.ai-tool-header__brand-copy {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex-wrap: wrap;
+.ai-tool-header__brand {
+  grid-area: brand;
+  justify-self: start;
+  color: var(--text-1);
+  font-size: 15px;
+  font-weight: 720;
 }
 
-.ai-tool-header__brand-kicker {
-  color: var(--ai-text-faint, var(--text-3));
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.ai-tool-header__current {
-  color: var(--ai-text, var(--text-1));
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  white-space: nowrap;
-}
-
-.ai-tool-header__badge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--ai-surface-alt, var(--internal-panel-bg-alt));
-  color: var(--ai-text-soft, var(--text-2));
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.ai-tool-header__brand-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
 }
 
 .ai-tool-nav {
+  grid-area: nav;
   display: flex;
-  justify-content: flex-start;
-  padding-left: 24px;
-  gap: 6px;
+  gap: 2px;
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.ai-tool-nav::-webkit-scrollbar {
-  display: none;
-}
-
-.ai-tool-nav__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
+.ai-tool-nav__item,
+.ai-tool-header__back {
+  min-height: 36px;
   padding: 0 10px;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--ai-text-soft, var(--text-2));
-  white-space: nowrap;
-  flex: 0 0 auto;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.ai-tool-nav__item:hover {
-  background: var(--ai-surface-alt, var(--internal-panel-bg-alt));
-  color: var(--ai-text, var(--text-1));
-}
-
-.ai-tool-nav__item.active {
-  background: var(--ai-accent-soft, var(--color-accent-light));
-  color: var(--ai-accent, var(--color-accent));
-  box-shadow: inset 0 0 0 1px var(--ai-accent-line, var(--color-accent-subtle));
-}
-
-.ai-tool-nav__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  color: currentColor;
-}
-
-.ai-tool-nav__label {
-  font-size: 12px;
-  font-weight: 700;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .ai-tool-header__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 34px;
-  padding: 0 10px;
-  border-radius: 10px;
-  background: var(--ai-surface-alt, var(--internal-panel-bg-alt));
-  color: var(--ai-text-soft, var(--text-2));
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    transform var(--transition-fast);
+  grid-area: back;
+  justify-self: end;
 }
 
+.ai-tool-nav__item:hover,
 .ai-tool-header__back:hover {
-  background: var(--ai-surface-hover, var(--internal-panel-bg-hover));
-  color: var(--ai-text, var(--text-1));
-  transform: translateX(-1px);
+  background: var(--internal-panel-bg-hover);
+  color: var(--text-1);
 }
 
-.ai-tool-header__back span {
-  font-size: 12px;
-  font-weight: 700;
+.ai-tool-nav__item.is-current {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 860px) {
   .ai-tool-header {
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "brand back"
-      "nav nav";
-    row-gap: 10px;
-  }
-
-  .ai-tool-header__brand {
-    grid-area: brand;
+    grid-template-areas: 'brand back' 'nav nav';
+    gap: 4px 8px;
+    padding: 6px 8px;
   }
 
   .ai-tool-nav {
-    grid-area: nav;
-    justify-content: flex-start;
-  }
-
-  .ai-tool-header__back {
-    grid-area: back;
-    justify-self: end;
-  }
-}
-
-@media (max-width: 768px) {
-  .ai-tool-header {
-    padding: 9px 10px;
-    gap: 8px;
-  }
-
-  .ai-tool-header__brand-mark {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-  }
-
-  .ai-tool-header__current {
-    font-size: 17px;
-  }
-
-  .ai-tool-header__badge {
-    display: none;
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    padding: 2px;
   }
 
   .ai-tool-nav__item {
-    min-height: 32px;
-    padding: 0 9px;
+    flex: 1 0 auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .ai-tool-nav {
+    gap: 0;
   }
 
-  .ai-tool-nav__label,
-  .ai-tool-header__back span {
-    font-size: 11px;
+  .ai-tool-nav__item {
+    min-height: 34px;
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  .ai-tool-nav__icon {
+    display: none;
   }
 }
 </style>

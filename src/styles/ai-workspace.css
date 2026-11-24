@@ -1,0 +1,109 @@
+/* Keep the same content width on tools that need page scrolling. */
+html:has(.ai-zone) {
+  scrollbar-gutter: stable both-edges;
+}
+
+.ai-zone {
+  min-height: 100dvh;
+  background: var(--app-bg);
+}
+
+.ai-zone__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 1400px;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: 10px 16px 14px;
+}
+
+.ai-workbench {
+  --workbench-padding: clamp(16px, 3vw, 32px);
+  --ai-accent: var(--color-accent);
+  --ai-accent-line: var(--color-accent-subtle);
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--internal-panel-border);
+  border-radius: var(--radius-lg);
+  background: var(--internal-panel-bg);
+  color: var(--text-1);
+}
+
+.ai-workbench :where(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.ai-workbench__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border: 1px solid var(--internal-panel-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--internal-panel-bg);
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.ai-workbench__button:hover:not(:disabled) {
+  background: var(--internal-panel-bg-hover);
+}
+
+.ai-workbench__button--primary {
+  border-color: transparent;
+  background: var(--color-accent);
+  color: var(--app-bg-elevated);
+}
+
+.ai-workbench__button--primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.ai-workbench__button:disabled {
+  border-color: var(--internal-panel-border);
+  background: var(--internal-panel-bg-alt);
+  color: var(--text-2);
+  cursor: default;
+  opacity: 0.55;
+}
+
+.ai-workbench__control {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--internal-panel-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--internal-panel-bg);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ai-workbench__control::placeholder {
+  color: var(--text-2);
+}
+
+.ai-workbench__control:disabled {
+  opacity: 0.65;
+}
+
+@media (max-width: 768px) {
+  .ai-zone__main {
+    gap: 8px;
+    padding: 8px 10px 10px;
+  }
+
+  .ai-workbench__control {
+    font-size: 16px;
+  }
+}
