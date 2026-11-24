@@ -1,191 +1,193 @@
 <template>
-  <div class="customer-service-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
-    <main class="service-main">
-      <AIToolHeader
-        title="智能客服"
-        badge="站内导航"
-      />
+  <div class="ai-zone app-shell app-shell--internal">
+    <main class="ai-zone__main">
+      <AIToolHeader />
 
-      <section class="service-workspace">
-        <aside class="service-sidebar">
-          <section class="service-sidebar__toolbar">
-            <div class="service-sidebar__toolbar-head">
-              <strong>Guide</strong>
-            </div>
+      <div class="ai-workbench service-workbench">
+        <aside class="service-guide" :class="{ 'is-expanded': isGuideOpen }" aria-label="站内帮助目录">
+          <div class="service-guide__heading">
+            <h2>常见问题</h2>
+            <p>选一个问题，或直接打开对应页面。</p>
+          </div>
+          <button
+            class="service-guide__toggle"
+            type="button"
+            :aria-expanded="isGuideOpen"
+            aria-controls="service-topics"
+            @click="isGuideOpen = !isGuideOpen"
+          >
+            <el-icon aria-hidden="true"><Collection /></el-icon>
+            浏览常见问题
+            <el-icon class="service-chevron" aria-hidden="true"><ArrowDown /></el-icon>
+          </button>
 
-            <div class="service-sidebar__meta">
-              <span class="sidebar-mini-pill">{{ quickQuestions.length }} 快捷输入</span>
-              <span class="sidebar-mini-pill">内存会话</span>
-            </div>
-          </section>
-
-          <div class="service-sidebar__scroll">
-            <section class="sidebar-block sidebar-block--prompts sidebar-block--prompts-full">
-              <div class="sidebar-title-row">
-                <strong>快捷输入</strong>
-                <span>{{ quickQuestions.length }}</span>
-              </div>
-
-              <div class="prompt-list">
+          <div id="service-topics" class="service-guide__body">
+            <section v-for="topic in helpTopics" :key="topic.id" class="service-topic">
+              <h3>
                 <button
-                  v-for="question in quickQuestions"
-                  :key="question"
-                  class="prompt-button"
-                  :class="{ active: inputMessage === question }"
+                  class="service-topic__toggle"
                   type="button"
-                  :title="question"
-                  @click="usePrompt(question)"
+                  :aria-expanded="activeTopic === topic.id"
+                  :aria-controls="`service-topic-${topic.id}`"
+                  @click="toggleTopic(topic.id)"
                 >
-                  {{ question }}
+                  <el-icon aria-hidden="true"><component :is="topic.icon" /></el-icon>
+                  {{ topic.title }}
+                  <el-icon class="service-chevron" aria-hidden="true"><ArrowDown /></el-icon>
                 </button>
+              </h3>
+              <div v-show="activeTopic === topic.id" :id="`service-topic-${topic.id}`" class="service-topic__body">
+                <ul class="service-questions">
+                  <li v-for="question in topic.questions" :key="question">
+                    <button type="button" :disabled="store.isReplying" @click="usePrompt(question)">{{ question }}</button>
+                  </li>
+                </ul>
+                <div v-if="topic.links?.length" class="service-shortcuts" :aria-label="`${topic.title}快捷入口`">
+                  <span>直接前往</span>
+                  <RouterLink v-for="link in topic.links" :key="link.to" :to="link.to">{{ link.label }}</RouterLink>
+                </div>
               </div>
             </section>
           </div>
         </aside>
 
-        <section class="service-stage">
-          <div class="service-stage__topbar">
-            <div class="topbar-copy">
-              <span class="topbar-label">当前会话</span>
-              <strong>站内咨询</strong>
+        <section class="service-stage" aria-labelledby="service-title">
+          <header class="service-stage__heading">
+            <div>
+              <h1 id="service-title">站内咨询</h1>
+              <p>问功能在哪里、怎么用，或查自己的学习记录。</p>
             </div>
-
-            <div class="topbar-meta">
-              <span class="meta-pill">站内数据</span>
-              <span class="meta-pill" :class="{ active: streamingEnabled }">
-                {{ streamingEnabled ? '流式回复' : '同步回复' }}
-              </span>
-            </div>
-          </div>
-
-          <div ref="chatHistoryRef" class="service-messages">
-            <article
-              v-for="(message, index) in store.messages"
-              :key="`${message.role}-${index}-${formatTime(message.timestamp)}`"
-              class="message-card"
-              :class="message.role"
+            <button
+              class="ai-workbench__button service-reset"
+              type="button"
+              :disabled="store.isReplying || store.messages.length <= 1"
+              @click="clearChat"
             >
-              <div class="message-card__avatar">
-                <div v-if="message.role === 'user'" class="avatar avatar--user">
-                  {{ userInitial }}
-                </div>
-                <div v-else class="avatar avatar--service">
-                  CS
+              重置咨询
+            </button>
+          </header>
+
+          <div ref="chatHistoryRef" class="service-thread" tabindex="0" role="region" aria-label="咨询记录">
+            <div class="service-column">
+              <div v-if="store.messages.length <= 1" class="service-welcome">
+                <el-icon aria-hidden="true"><Service /></el-icon>
+                <div>
+                  <h2>需要帮忙找什么？</h2>
+                  <p>可以从常见问题里选一个问法，也可以直接说你想完成什么。</p>
                 </div>
               </div>
 
-              <div class="message-card__body">
-                <div class="message-card__head">
-                  <strong>{{ message.role === 'user' ? '你' : '智能客服' }}</strong>
+              <article
+                v-for="(message, index) in store.messages.slice(1)"
+                :key="`${message.role}-${index}`"
+                class="service-entry"
+                :class="{ 'service-entry--user': message.role === 'user' }"
+              >
+                <header class="service-entry__byline">
+                  <strong>{{ message.role === 'user' ? '你' : 'Halo 客服' }}</strong>
                   <span>{{ formatTime(message.timestamp) }}</span>
-                </div>
-
+                </header>
                 <div
-                  class="message-card__reply ai-markdown"
-                  v-html="formatMessage(message.content)"
+                  class="service-entry__text ai-markdown"
+                  v-html="renderAiMarkdown(message.content)"
+                  @click="followInternalLink"
                 ></div>
-
                 <AIMessageActions
-                  v-if="message.role === 'assistant' && !isLoading"
+                  v-if="message.role === 'assistant' && !store.isReplying"
                   :content="message.content || ''"
-                  :message-index="index"
+                  :message-index="index + 1"
                   @regenerate="handleRegenerate"
                 />
-              </div>
-            </article>
+              </article>
 
-            <div v-if="isLoading" class="loading-bar">
-              <span></span>
-              <span></span>
-              <span></span>
+              <p v-if="store.isReplying && store.messages.at(-1)?.role === 'user'" class="service-reply-status" role="status">客服正在回复…</p>
+              <div v-if="replyError" class="service-reply-error">
+                <p role="alert">{{ replyError }}</p>
+                <button class="ai-workbench__button" type="button" :disabled="store.isReplying" @click="retryLastQuestion">重试这条问题</button>
+              </div>
             </div>
           </div>
 
           <div class="service-composer">
-            <div class="composer-toolbar">
-              <label class="option-switch">
-                <input v-model="streamingEnabled" type="checkbox">
-                <span>流式回复</span>
-              </label>
-
-              <div class="composer-actions">
-                <button
-                  class="ghost-button"
-                  type="button"
-                  :disabled="isLoading || store.messages.length <= 1"
-                  @click="clearChat"
-                >
-                  清空会话
-                </button>
-                <button
-                  class="primary-button"
-                  type="button"
-                  :disabled="!inputMessage.trim() || isLoading"
-                  @click="sendMessage"
-                >
-                  发送
+            <form class="service-column" @submit.prevent="sendMessage">
+              <textarea
+                ref="inputRef"
+                v-model="inputMessage"
+                class="ai-workbench__control"
+                rows="2"
+                :disabled="store.isReplying"
+                aria-label="输入你的咨询问题"
+                placeholder="例如：在哪里查看之前的刷题记录？"
+                @keydown="handleInputKeydown"
+              ></textarea>
+              <div class="service-composer__tools">
+                <label>
+                  <input v-model="streamingEnabled" type="checkbox" :disabled="store.isReplying">
+                  流式回复
+                </label>
+                <button class="ai-workbench__button ai-workbench__button--primary" type="submit" :disabled="!inputMessage.trim() || store.isReplying">
+                  发送咨询
                 </button>
               </div>
-            </div>
-
-            <div class="composer-input">
-              <textarea
-                v-model="inputMessage"
-                rows="2"
-                :disabled="isLoading"
-                placeholder="例如：帮我看看最近的刷题情况"
-                @keydown.enter.exact.prevent="sendMessage"
-              ></textarea>
-            </div>
+            </form>
           </div>
         </section>
-      </section>
+      </div>
     </main>
   </div>
 </template>
 
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/stores/modules/user'
-import { useThemeStore } from '@/stores/modules/theme'
+import { ArrowDown, Collection, Compass, DataAnalysis, Reading, Service, Sunny } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
+import { RouterLink, useRouter } from 'vue-router'
 import { useCustomerServiceStore } from '@/stores/modules/customerService'
 import { customerServiceChat, customerServiceChatStream } from '@/api/modules/ai/chat'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
 import AIToolHeader from './components/AIToolHeader.vue'
 import AIMessageActions from './components/AIMessageActions.vue'
 
-const userStore = useUserStore()
-const themeStore = useThemeStore()
 const store = useCustomerServiceStore()
+const router = useRouter()
 
-const quickPromptGroups = [
+const helpTopics = [
   {
-    title: '我的数据',
-    questions: [
-      '帮我看看我最近的刷题汇总',
-      '我这周在排行榜上的情况怎么样？',
-      '我的个人主页现在会展示哪些内容？'
-    ]
-  },
-  {
-    title: '站内入口',
+    id: 'navigation', title: '站内入口', icon: Compass,
     questions: [
       '如何修改个人资料和头像？',
       '想发一条社区动态应该去哪里？',
       '如果我想看排行榜和社区，入口分别在哪？'
+    ],
+    links: [
+      { label: '个人资料', to: '/profile' },
+      { label: '社区', to: '/community' },
+      { label: '排行榜', to: '/ranking' }
     ]
   },
   {
-    title: '内容与推荐',
+    id: 'activity', title: '我的学习数据', icon: DataAnalysis,
+    questions: [
+      '帮我看看我最近的刷题汇总',
+      '我这周在排行榜上的情况怎么样？',
+      '我的个人主页现在会展示哪些内容？'
+    ],
+    links: [
+      { label: '练习记录', to: '/practice-history' },
+      { label: '排行榜', to: '/ranking' }
+    ]
+  },
+  {
+    id: 'reading', title: '文章与推荐', icon: Reading,
     questions: [
       '推荐几篇最近比较热门的博客文章',
       '帮我找一下前端相关的博客文章',
       '博客里最近更新了什么内容？'
-    ]
+    ],
+    links: [{ label: '博客列表', to: '/blog/list' }]
   },
   {
-    title: '实时信息',
+    id: 'live', title: '实时信息', icon: Sunny,
     questions: [
       '帮我查一下上海现在的天气',
       '北京到上海大概有多远？',
@@ -194,772 +196,483 @@ const quickPromptGroups = [
   }
 ]
 
-const isLoading = ref(false)
+const activeTopic = ref('navigation')
+const isGuideOpen = ref(false)
+const inputRef = ref(null)
 const chatHistoryRef = ref(null)
-
-const userInitial = computed(() => userStore.userName?.charAt(0)?.toUpperCase() || 'U')
-const quickQuestions = computed(() => quickPromptGroups.flatMap(group => group.questions))
+const replyError = ref('')
 
 const inputMessage = computed({
   get: () => store.draftMessage,
-  set: (value) => store.setDraftMessage(value)
+  set: value => store.setDraftMessage(value)
 })
 
 const streamingEnabled = computed({
   get: () => store.useStreaming,
-  set: (value) => store.setStreaming(value)
+  set: value => store.setStreaming(value)
 })
 
-const usePrompt = (question) => {
-  store.setDraftMessage(question)
+const toggleTopic = (topicId) => {
+  activeTopic.value = activeTopic.value === topicId ? '' : topicId
 }
 
-const sendMessage = async () => {
-  if (!inputMessage.value.trim() || isLoading.value) {
+const usePrompt = async (question) => {
+  if (store.isReplying) return
+  inputMessage.value = question
+  isGuideOpen.value = false
+  await nextTick()
+  inputRef.value?.focus()
+}
+
+const followInternalLink = (event) => {
+  if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+  const link = event.target.closest?.('a[href]')
+  if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return
+
+  let url
+  try {
+    url = new URL(link.href)
+  } catch {
     return
   }
+  if (url.origin !== window.location.origin || url.protocol !== window.location.protocol) return
+  if (url.pathname === window.location.pathname && url.search === window.location.search) return
 
-  const userMessage = inputMessage.value.trim()
-  store.appendMessage({
-    role: 'user',
-    content: userMessage,
-    timestamp: new Date()
-  })
-  store.setDraftMessage('')
-  scrollToBottom()
-  isLoading.value = true
+  const destination = `${url.pathname}${url.search}${url.hash}`
+  if (!router.resolve(destination).matched.length) return
+  event.preventDefault()
+  return router.push(destination)
+}
+
+const handleInputKeydown = (event) => {
+  if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return
+  event.preventDefault()
+  sendMessage()
+}
+
+const sendMessage = () => {
+  const question = inputMessage.value.trim()
+  if (!question || store.isReplying) return
+  store.appendMessage({ role: 'user', content: question })
+  inputMessage.value = ''
+  scrollToBottom(true)
+  requestReply(question)
+}
+
+const requestReply = async (question) => {
+  const version = store.beginReply()
+  if (version === null) return
+  replyError.value = ''
 
   try {
     if (streamingEnabled.value) {
-      let assistantReply = ''
-
-      await customerServiceChatStream(
-        userMessage,
-        null,
-        (data) => {
-          const incrementalContent =
-            typeof data === 'object'
-              ? data.reply || data.content || ''
-              : typeof data === 'string'
-                ? data
-                : ''
-
-          assistantReply += incrementalContent
-          store.updateLastAssistantMessage(assistantReply)
-          scrollToBottom()
-        },
-        (error) => {
-          console.error('客服消息发送失败:', error)
-          ElMessage.error('消息发送失败，请稍后重试')
-          isLoading.value = false
-        },
-        () => {
-          isLoading.value = false
-          scrollToBottom()
-        }
-      )
-      return
-    }
-
-    const response = await customerServiceChat(userMessage, null)
-    if (response.data?.reply) {
-      store.appendMessage({
-        role: 'assistant',
-        content: response.data.reply,
-        timestamp: new Date()
+      let reply = ''
+      let streamError = null
+      await customerServiceChatStream(question, null, (chunk) => {
+        if (!store.isActiveReply(version)) return
+        reply += typeof chunk === 'string' ? chunk : (chunk?.reply || chunk?.content || '')
+        if (reply) store.updateLastAssistantMessage(reply)
+      }, (error) => {
+        streamError = error
       })
+      if (streamError) throw streamError
+      if (!reply.trim()) throw new Error('客服没有返回内容。')
+    } else {
+      const response = await customerServiceChat(question, null)
+      if (!store.isActiveReply(version)) return
+      const reply = response.data?.reply
+      if (response.success === false || typeof reply !== 'string' || !reply.trim()) {
+        throw new Error(response.message || '客服没有返回内容。')
+      }
+      store.appendMessage({ role: 'assistant', content: reply })
     }
   } catch (error) {
-    console.error('发送消息失败:', error)
-    ElMessage.error('发送消息失败，请稍后重试')
+    if (store.isActiveReply(version)) {
+      console.error('客服回复失败:', error)
+      replyError.value = '没有收到完整回复，可以重试这条问题。'
+    }
   } finally {
-    isLoading.value = false
+    store.finishReply(version)
     scrollToBottom()
   }
 }
 
-const clearChat = () => {
-  store.resetConversation()
-  ElMessage.success('会话已重置')
-  scrollToBottom()
+const handleRegenerate = (messageIndex) => {
+  if (store.isReplying || messageIndex <= 1) return
+  const question = store.messages[messageIndex - 1]
+  if (question?.role !== 'user' || !question.content?.trim()) return
+  store.messages.splice(messageIndex)
+  scrollToBottom(true)
+  requestReply(question.content.trim())
 }
 
-const handleRegenerate = async (messageIndex) => {
-  if (isLoading.value) return
+const retryLastQuestion = () => {
+  const index = store.messages.findLastIndex(message => message.role === 'user')
+  if (index > 0) handleRegenerate(index + 1)
+}
 
-  const messages = store.messages
-  if (messageIndex <= 0 || messageIndex >= messages.length) return
-
-  const userMessage = messages[messageIndex - 1]
-  if (!userMessage || userMessage.role !== 'user' || !userMessage.content?.trim()) {
-    ElMessage.warning('无法找到对应的用户消息')
+const clearChat = async () => {
+  if (store.isReplying) return
+  try {
+    await ElMessageBox.confirm('重置后，本次咨询的消息将被清空。', '重置咨询', {
+      confirmButtonText: '重置咨询',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+  } catch {
     return
   }
-
-  const userContent = userMessage.content.trim()
-  store.messages.splice(messageIndex)
-  scrollToBottom()
-
-  isLoading.value = true
-
-  try {
-    if (streamingEnabled.value) {
-      let assistantReply = ''
-
-      await customerServiceChatStream(
-        userContent,
-        null,
-        (data) => {
-          const incrementalContent =
-            typeof data === 'object'
-              ? data.reply || data.content || ''
-              : typeof data === 'string'
-                ? data
-                : ''
-
-          assistantReply += incrementalContent
-          store.updateLastAssistantMessage(assistantReply)
-          scrollToBottom()
-        },
-        (error) => {
-          console.error('客服消息发送失败:', error)
-          ElMessage.error('重新生成失败')
-          isLoading.value = false
-        },
-        () => {
-          isLoading.value = false
-          scrollToBottom()
-        }
-      )
-    } else {
-      const response = await customerServiceChat(userContent, null)
-      if (response.data?.reply) {
-        store.appendMessage({
-          role: 'assistant',
-          content: response.data.reply,
-          timestamp: new Date()
-        })
-      }
-    }
-  } catch (error) {
-    console.error('重新生成失败:', error)
-    ElMessage.error('重新生成失败')
-  } finally {
-    isLoading.value = false
-    scrollToBottom()
-  }
+  if (store.isReplying) return
+  store.resetConversation()
+  replyError.value = ''
+  scrollToBottom(true)
 }
-
-const formatMessage = (content) => renderAiMarkdown(content)
 
 const formatTime = (timestamp) => {
-  if (!timestamp) {
-    return ''
-  }
-
-  return new Date(timestamp).toLocaleTimeString('zh-CN', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
-const scrollToBottom = () => {
-  nextTick(() => {
-    if (chatHistoryRef.value) {
-      chatHistoryRef.value.scrollTop = chatHistoryRef.value.scrollHeight
-    }
-  })
+const scrollToBottom = (force = false) => {
+  const thread = chatHistoryRef.value
+  if (!thread) return
+  if (!force && thread.scrollHeight - thread.clientHeight - thread.scrollTop > 64) return
+  nextTick(() => { thread.scrollTop = thread.scrollHeight })
 }
 
-watch(
-  () => store.messages.length,
-  () => {
-    scrollToBottom()
-  }
-)
+watch([() => store.messages.length, () => store.messages.at(-1)?.content], () => scrollToBottom())
 
 onMounted(() => {
   store.ensureInitialized()
-  scrollToBottom()
+  scrollToBottom(true)
 })
 </script>
 
 <style scoped>
-.customer-service-page {
-  height: 100dvh;
-  min-height: 100dvh;
-  --ai-accent: #0f766e;
-  --ai-accent-soft: rgba(15, 118, 110, 0.08);
-  --ai-accent-line: rgba(15, 118, 110, 0.16);
-  --ai-surface: rgba(255, 255, 255, 0.92);
-  --ai-surface-strong: #ffffff;
-  --ai-surface-alt: rgba(248, 250, 252, 0.96);
-  --ai-border: rgba(15, 23, 42, 0.08);
-  --ai-text: var(--color-text);
-  --ai-text-soft: var(--color-text-secondary);
-  --ai-text-faint: var(--color-text-muted);
-  background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.08), transparent 24%),
-    linear-gradient(180deg, #f7fafc 0%, #f3f6f8 100%);
-  overflow: hidden;
+.service-workbench {
+  grid-template-columns: 290px minmax(0, 1fr);
 }
 
-.customer-service-page.is-dark {
-  --ai-accent: #5eead4;
-  --ai-accent-soft: rgba(94, 234, 212, 0.12);
-  --ai-accent-line: rgba(94, 234, 212, 0.2);
-  --ai-surface: rgba(15, 23, 42, 0.94);
-  --ai-surface-strong: rgba(9, 17, 28, 0.94);
-  --ai-surface-alt: rgba(16, 26, 45, 0.92);
-  --ai-border: rgba(148, 163, 184, 0.14);
-  --ai-text: var(--text-1);
-  --ai-text-soft: var(--text-2);
-  --ai-text-faint: var(--text-3);
-  background:
-    radial-gradient(circle at top left, rgba(94, 234, 212, 0.1), transparent 26%),
-    linear-gradient(180deg, #07101b 0%, #09111c 100%);
-}
-
-.service-main {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  height: 100dvh;
-  min-height: 0;
+.service-guide {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
-  padding: 10px 16px 14px;
-}
-
-.service-workspace {
-  display: grid;
-  grid-template-columns: 292px minmax(0, 1fr);
-  gap: 12px;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.service-sidebar,
-.service-stage {
-  min-height: 0;
-}
-
-.service-sidebar {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
   min-width: 0;
-}
-
-.service-sidebar__toolbar,
-.sidebar-block,
-.service-stage,
-.service-stage__topbar,
-.service-composer {
-  border: 1px solid var(--ai-border);
-  background: var(--ai-surface);
-  border-radius: 12px;
-}
-
-.service-sidebar__toolbar,
-.sidebar-block {
-  padding: 12px;
-}
-
-.service-sidebar__toolbar {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.service-sidebar__toolbar-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.service-sidebar__toolbar-head strong {
-  color: var(--ai-accent);
-  font-size: 15px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  text-shadow: 0 0 18px rgba(15, 118, 110, 0.16);
-}
-
-.service-sidebar__meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.sidebar-mini-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 9px;
-  border: 1px solid var(--ai-border);
-  border-radius: 999px;
-  background: var(--ai-surface-alt);
-  color: var(--ai-text-soft);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.service-sidebar__scroll {
   min-height: 0;
-  overflow: hidden;
-  display: block;
+  border-right: 1px solid var(--internal-panel-border);
+  background: var(--internal-panel-bg-alt);
 }
 
-.sidebar-block--prompts-full {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+.service-guide__heading {
+  padding: 20px 16px 12px;
 }
 
-.sidebar-title-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  color: var(--ai-text-soft);
-  font-size: 11px;
+.service-guide__heading h2,
+.service-stage__heading h1 {
+  margin: 0 0 4px;
+  font-size: 21px;
+  line-height: 1.35;
 }
 
-.sidebar-title-row strong {
-  color: var(--ai-accent);
-  font-size: 12px;
-  letter-spacing: 0.03em;
+.service-guide__heading p,
+.service-stage__heading p {
+  color: var(--text-2);
+  font-size: 13px;
 }
 
-.prompt-list,
-.session-list {
-  display: grid;
-  gap: 6px;
-  margin-top: 10px;
-  min-width: 0;
-  overflow-x: hidden;
-}
-
-.prompt-list {
+.service-guide__body {
   min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-  padding-right: 2px;
+  padding: 4px 10px 12px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 
-.prompt-button,
-.session-item {
+.service-guide__toggle {
+  display: none;
+}
+
+.service-topic + .service-topic {
+  border-top: 1px solid var(--internal-panel-border);
+}
+
+.service-topic__toggle,
+.service-guide__toggle {
+  align-items: center;
+  gap: 9px;
   width: 100%;
-  padding: 9px 10px;
-  border: 1px solid var(--ai-border);
-  background: var(--ai-surface-alt);
-  border-radius: 10px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 650;
   text-align: left;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-.prompt-button,
-.session-item__title {
-  color: var(--ai-text);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.prompt-button {
-  min-height: 38px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.prompt-button.active,
-.session-item.active {
-  border-color: var(--ai-accent-line);
-  background: var(--ai-accent-soft);
-}
-
-.session-item {
-  min-height: 52px;
-}
-
-.session-item__title {
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.session-item__meta {
+.service-topic__toggle {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-  color: var(--ai-text-faint);
-  font-size: 10px;
 }
 
-.empty-sidebar {
-  margin-top: 12px;
-  color: var(--ai-text-faint);
+.service-topic__toggle .el-icon:first-child,
+.service-guide__toggle .el-icon:first-child {
+  font-size: 16px;
+}
+
+.service-topic__toggle:hover,
+.service-guide__toggle:hover {
+  background: var(--internal-panel-bg-hover);
+}
+
+.service-topic__toggle[aria-expanded='true'] {
+  color: var(--color-accent);
+}
+
+.service-chevron {
+  flex: none;
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+[aria-expanded='true'] > .service-chevron {
+  transform: rotate(180deg);
+}
+
+.service-topic__body {
+  padding: 0 4px 12px;
+}
+
+.service-questions {
+  padding: 0;
+  list-style: none;
+}
+
+.service-questions button {
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px 6px 15px;
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.service-questions button:hover:not(:disabled) {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.service-questions button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.service-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 8px 4px 0 15px;
+  color: var(--text-2);
   font-size: 12px;
-  line-height: 1.6;
+}
+
+.service-shortcuts a {
+  padding-block: 4px;
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .service-stage {
-  min-width: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 10px;
-  padding: 10px;
-  overflow: hidden;
-}
-
-.service-stage__topbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  padding: 7px 10px;
-  background: var(--ai-surface-alt);
-}
-
-.topbar-copy {
-  display: grid;
   min-width: 0;
-  gap: 2px;
+  min-height: 0;
 }
 
-.topbar-label {
-  color: var(--ai-text-faint);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.service-stage__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 16px var(--workbench-padding);
+  border-bottom: 1px solid var(--internal-panel-border);
 }
 
-.topbar-copy strong {
-  color: var(--ai-text);
-  font-size: 12px;
-  letter-spacing: -0.01em;
+.service-reset {
+  flex: none;
 }
 
-.topbar-meta {
+.service-thread {
+  min-height: 0;
+  padding: 18px var(--workbench-padding);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.service-thread:focus-visible {
+  outline-offset: -2px;
+}
+
+.service-column {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+
+.service-welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-left: 3px solid var(--color-accent-subtle);
+  background: var(--internal-panel-bg-alt);
+}
+
+.service-welcome .el-icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-accent);
+  font-size: 22px;
+}
+
+.service-welcome h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.service-welcome p,
+.service-reply-status {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.service-entry + .service-entry {
+  margin-top: 16px;
+}
+
+.service-entry--user {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--internal-panel-bg-alt);
+}
+
+.service-entry__byline {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--color-accent);
+  font-size: 13px;
+}
+
+.service-entry--user .service-entry__byline {
+  color: var(--text-1);
+}
+
+.service-entry__byline span {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.service-entry__text {
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.service-entry :deep(.action-btn) {
+  color: var(--text-2);
+}
+
+.service-reply-status,
+.service-reply-error {
+  margin-top: 12px;
+}
+
+.service-reply-error {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-}
-
-.meta-pill {
-  display: inline-flex;
   align-items: center;
-  min-height: 22px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--ai-surface-alt);
-  color: var(--ai-text-soft);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.meta-pill.active {
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-}
-
-.service-messages {
-  min-height: 0;
-  overflow-y: auto;
-  padding: 12px;
-  display: grid;
-  gap: 12px;
-  border: 1px solid var(--ai-border);
-  background: linear-gradient(180deg, rgba(15, 118, 110, 0.03), transparent 18%), var(--ai-surface);
-  border-radius: 12px;
-}
-
-.message-card {
-  display: flex;
-  gap: 10px;
-  max-width: min(76%, 820px);
-}
-
-.message-card.user {
-  flex-direction: row-reverse;
-  justify-self: end;
-  max-width: min(76%, 820px);
-}
-
-.message-card.assistant {
-  justify-self: start;
-  max-width: min(84%, 960px);
-}
-
-.message-card.assistant .message-card__body {
-  border-color: var(--ai-accent-line);
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.04);
-}
-
-.message-card__avatar {
-  padding-top: 2px;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.avatar--user {
-  background: var(--ai-surface-alt);
-  color: var(--ai-text);
-}
-
-.avatar--service {
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-}
-
-.message-card__body {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
-  padding: 12px 14px;
-  border: 1px solid var(--ai-border);
-  background: var(--ai-surface-strong);
-  border-radius: 12px;
-  min-width: 0;
-  width: fit-content;
-  max-width: 100%;
-}
-
-.message-card.user .message-card__body {
-  background: var(--ai-surface-alt);
-}
-
-.message-card__head {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  color: var(--ai-text-faint);
-  font-size: 11px;
-}
-
-.message-card__head strong {
-  color: var(--ai-text);
-  font-size: 12px;
-}
-
-.message-card__reply {
-  color: var(--ai-text);
-  font-size: 14px;
-  line-height: 1.75;
-  word-break: break-word;
-}
-
-.message-card__body :deep(.ai-message-actions) {
-  margin-top: 10px;
-}
-
-.message-card__body :deep(.action-btn) {
-  color: var(--ai-text-faint);
-}
-
-.message-card__body :deep(.action-btn:hover:not(:disabled)) {
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-}
-
-.loading-bar {
-  display: inline-flex;
-  gap: 8px;
-  padding: 0 4px 12px;
-  justify-self: start;
-}
-
-.loading-bar span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ai-accent);
-  animation: pulse 1.2s infinite ease-in-out;
-}
-
-.loading-bar span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.loading-bar span:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-@keyframes pulse {
-  0%, 80%, 100% {
-    transform: scale(0.7);
-    opacity: 0.4;
-  }
-
-  40% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  color: var(--color-error);
+  font-size: 13px;
 }
 
 .service-composer {
-  display: grid;
-  gap: 10px;
-  padding: 10px 12px;
-  background: linear-gradient(180deg, var(--ai-surface), var(--ai-surface-alt));
+  padding: 10px var(--workbench-padding) 14px;
+  border-top: 1px solid var(--internal-panel-border);
+  background: var(--internal-panel-bg-alt);
 }
 
-.composer-toolbar {
+.service-composer textarea {
+  display: block;
+  max-height: min(20dvh, 150px);
+  min-height: 50px;
+  field-sizing: content;
+  resize: none;
+}
+
+.service-composer__tools {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-}
-
-.composer-actions {
-  display: flex;
   gap: 8px;
-  align-items: center;
+  margin-top: 8px;
 }
 
-.option-switch {
+.service-composer__tools label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--ai-text-soft);
-  font-size: 11px;
-  font-weight: 700;
+  color: var(--text-2);
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.option-switch input {
-  accent-color: var(--ai-accent);
+.service-composer__tools input {
+  accent-color: var(--color-accent);
 }
 
-.composer-input textarea {
-  width: 100%;
-  min-height: 58px;
-  resize: none;
-  border: 1px solid var(--ai-border);
-  border-radius: 10px;
-  background: var(--ai-surface-alt);
-  color: var(--ai-text);
-  padding: 12px 14px;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.65;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.composer-input textarea:focus {
-  border-color: var(--ai-accent-line);
-  box-shadow: 0 0 0 4px var(--ai-accent-soft);
-}
-
-.composer-input textarea::placeholder {
-  color: var(--ai-text-faint);
-}
-
-.primary-button,
-.ghost-button {
-  min-height: 34px;
-  border-radius: 9px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.primary-button {
-  min-width: 84px;
-  border: 1px solid transparent;
-  background: var(--ai-accent);
-  color: #ffffff;
-}
-
-.ghost-button {
-  border: 1px solid var(--ai-border);
-  background: transparent;
-  color: var(--ai-text);
-  padding: 0 14px;
-}
-
-.service-sidebar__scroll::-webkit-scrollbar,
-.prompt-list::-webkit-scrollbar,
-.session-list::-webkit-scrollbar,
-.service-messages::-webkit-scrollbar {
-  width: 6px;
-}
-
-.service-sidebar__scroll::-webkit-scrollbar-thumb,
-.prompt-list::-webkit-scrollbar-thumb,
-.session-list::-webkit-scrollbar-thumb,
-.service-messages::-webkit-scrollbar-thumb {
-  background: rgba(15, 118, 110, 0.18);
-  border-radius: 999px;
-}
-
-@media (max-width: 1160px) {
-  .service-workspace {
-    grid-template-columns: 276px minmax(0, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .service-main {
-    padding: 8px 10px 10px;
+@media (max-width: 860px) {
+  .service-workbench {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
-  .service-workspace {
-    grid-template-columns: 1fr;
-    grid-template-rows: 300px minmax(0, 1fr);
+  .service-guide {
+    grid-template-rows: auto auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--internal-panel-border);
   }
 
-  .service-stage__topbar,
-  .composer-toolbar {
-    align-items: stretch;
-    flex-direction: column;
+  .service-guide__heading,
+  .service-guide:not(.is-expanded) .service-guide__body {
+    display: none;
   }
 
-  .topbar-meta {
-    justify-content: flex-start;
+  .service-guide__toggle {
+    display: flex;
+    width: auto;
+    margin: 2px 8px;
   }
 
-.message-card,
-.message-card.assistant,
-.message-card.user {
-  max-width: 100%;
-}
-
-.message-card.assistant .message-card__body {
-  max-width: 85%;
-}
-}
-
-@media (max-width: 640px) {
-  .service-workspace {
-    grid-template-rows: 268px minmax(0, 1fr);
+  .service-guide__body {
+    max-height: min(300px, 30dvh);
   }
 
-  .service-sidebar__toolbar,
-  .sidebar-block,
-  .service-stage,
-  .service-messages,
-  .service-composer {
-    padding-left: 10px;
-    padding-right: 10px;
+  .service-stage__heading {
+    padding-block: 10px;
   }
 
-  .service-stage {
-    padding: 8px;
+  .service-stage__heading h1 {
+    font-size: 18px;
+  }
+
+  .service-thread {
+    padding-block: 12px;
   }
 }
 </style>

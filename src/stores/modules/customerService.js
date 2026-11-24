@@ -19,6 +19,21 @@ export const useCustomerServiceStore = defineStore('customerService', () => {
   const messages = ref([])
   const useStreaming = ref(true)
   const draftMessage = ref('')
+  const isReplying = ref(false)
+  let replyVersion = 0
+
+  const beginReply = () => {
+    if (isReplying.value) return null
+    isReplying.value = true
+    replyVersion++
+    return replyVersion
+  }
+
+  const isActiveReply = version => isReplying.value && version === replyVersion
+
+  const finishReply = (version) => {
+    if (isActiveReply(version)) isReplying.value = false
+  }
 
   /**
    * 初始化欢迎语。
@@ -86,6 +101,8 @@ export const useCustomerServiceStore = defineStore('customerService', () => {
    * 供退出登录等场景使用。
    */
   const clearStore = () => {
+    replyVersion++
+    isReplying.value = false
     messages.value = []
     draftMessage.value = ''
     useStreaming.value = true
@@ -113,6 +130,10 @@ export const useCustomerServiceStore = defineStore('customerService', () => {
     messages,
     useStreaming,
     draftMessage,
+    isReplying,
+    beginReply,
+    isActiveReply,
+    finishReply,
     ensureInitialized,
     appendMessage,
     updateLastAssistantMessage,

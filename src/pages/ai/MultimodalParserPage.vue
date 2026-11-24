@@ -1,125 +1,128 @@
 <template>
-  <div class="multimodal-page app-shell app-shell--internal" :class="{ 'is-dark': themeStore.isDark }">
-    <main class="multimodal-main">
-<AIToolHeader
-        title="多模态解析"
-        badge="图文解析"
-      />
+  <div class="ai-zone app-shell app-shell--internal">
+    <main class="ai-zone__main multimodal-main">
+      <AIToolHeader />
 
-      <section class="workspace">
-        <section class="upload-stage">
-          <div class="section-head">
+      <section class="ai-workbench visual-workbench" aria-label="多模态解析">
+        <section class="visual-input" aria-labelledby="visual-input-title">
+          <header class="visual-heading">
             <div>
-              <span class="section-kicker">INPUT</span>
-              <h2>上传图片</h2>
+              <h1 id="visual-input-title">原图预览</h1>
+              <p>添加本地图片，或载入一张示例。</p>
             </div>
-            <span class="section-note">JPG / PNG / GIF / WebP</span>
-          </div>
+          </header>
 
-          <div
-            class="upload-zone"
-            :class="{ dragging: isDragging, 'has-image': imageUrl }"
-            @dragover.prevent="handleDragOver"
-            @dragleave="handleDragLeave"
-            @drop.prevent="handleDrop"
-            @click="triggerFileInput"
-          >
-            <input type="file" ref="fileInput" @change="handleFileSelect" accept="image/*" hidden />
-
-            <div v-if="!imageUrl" class="upload-placeholder">
-              <div class="upload-icon">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-              </div>
-              <h3>拖拽或点击上传</h3>
-            </div>
-
-            <div v-else class="image-preview">
-              <img :src="imageUrl" alt="预览图片" />
-              <button class="overlay-btn" @click.stop="clearImage">移除图片</button>
-            </div>
-          </div>
-
-          <div v-if="selectedFile" class="file-strip">
-            <div class="file-item">
-              <span>文件名</span>
-              <strong>{{ selectedFile.name }}</strong>
-            </div>
-            <div class="file-item">
-              <span>大小</span>
-              <strong>{{ formatFileSize(selectedFile.size) }}</strong>
-            </div>
-            <div class="file-item">
-              <span>类型</span>
-              <strong>{{ selectedFile.type }}</strong>
-            </div>
-          </div>
-
-          <div class="demo-strip">
-            <div class="demo-list">
-              <button v-for="demo in demoImages" :key="demo.id" class="demo-btn" @click="loadDemoImage(demo)">
-                <span class="demo-badge">{{ demo.name.charAt(0) }}</span>
-                <span>{{ demo.name }}</span>
+          <div class="visual-input__body">
+            <input ref="fileInput" type="file" accept="image/*" hidden @change="handleFileSelect">
+            <div
+              class="visual-canvas"
+              :class="{ 'is-dragging': isDragging, 'has-image': selectedImage }"
+              @dragover.prevent="isDragging = true"
+              @dragleave="handleDragLeave"
+              @drop.prevent="handleDrop"
+            >
+              <img
+                v-if="selectedImage"
+                :key="selectedImage.url"
+                class="visual-image"
+                :src="selectedImage.url"
+                :alt="selectedImage.example ? `示例：${selectedImage.example.label}` : `本地图片预览：${selectedImage.file.name}`"
+                @error="handlePreviewError"
+              >
+              <button v-else class="visual-upload" type="button" @click="openFilePicker">
+                <el-icon aria-hidden="true"><UploadFilled /></el-icon>
+                <strong>选择图片</strong>
+                <span>也可拖到这里，最大 10 MB</span>
               </button>
             </div>
+
+            <div v-if="selectedImage" class="visual-file">
+              <div class="visual-file__name">
+                <strong :title="imageName">{{ imageName }}</strong>
+                <span v-if="selectedImage.example">示例图片</span>
+                <span v-else>本地预览 · {{ formatFileSize(selectedImage.file.size) }}</span>
+              </div>
+              <div class="visual-actions">
+                <button class="ai-workbench__button" type="button" @click="openFilePicker">更换图片</button>
+                <button class="ai-workbench__button" type="button" @click="removeImage">移除</button>
+              </div>
+            </div>
+            <p v-if="fileError" class="visual-file-error" role="alert">{{ fileError }}</p>
+
+            <section class="visual-examples" aria-labelledby="visual-example-title">
+              <h2 id="visual-example-title">试用示例</h2>
+              <div class="visual-actions">
+                <button
+                  v-for="example in imageExamples"
+                  :key="example.mode"
+                  class="ai-workbench__button"
+                  type="button"
+                  :aria-pressed="selectedImage?.example === example"
+                  @click="loadExample(example)"
+                >
+                  {{ example.label }}
+                </button>
+              </div>
+            </section>
           </div>
         </section>
 
-        <section class="analysis-stage">
-          <div class="section-head">
+        <section class="visual-analysis" aria-labelledby="visual-settings-title">
+          <header class="visual-heading">
             <div>
-              <span class="section-kicker">OUTPUT</span>
-              <h2>解析设置</h2>
+              <h2 id="visual-settings-title">解析设置</h2>
+              <p id="visual-explanation">当前仅演示：图片不上传，结果不读取原图。</p>
             </div>
-            <button class="analyze-btn" :disabled="!imageUrl || isAnalyzing" @click="startAnalysis">
-              <span v-if="!isAnalyzing">开始解析</span>
-              <span v-else>解析中...</span>
+            <span class="visual-mode-label">演示模式</span>
+          </header>
+
+          <div class="visual-settings">
+            <fieldset class="visual-modes">
+              <legend>解析方式</legend>
+              <div class="visual-actions">
+                <label v-for="mode in analysisModes" :key="mode.id" class="visual-mode">
+                  <input v-model="selectedMode" type="radio" name="analysis-mode" :value="mode.id">
+                  <span>{{ mode.label }}</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <details class="visual-prompt">
+              <summary>补充要求 <span>演示不使用此内容</span></summary>
+              <textarea
+                v-model="customPrompt"
+                class="ai-workbench__control"
+                rows="2"
+                aria-label="补充要求（不参与演示）"
+                placeholder="例如：按题干、选项、解析的顺序整理。"
+              ></textarea>
+            </details>
+
+            <button
+              class="ai-workbench__button ai-workbench__button--primary"
+              type="button"
+              :disabled="!selectedImage"
+              aria-describedby="visual-explanation"
+              @click="showExampleResult"
+            >
+              查看演示结果
+              <el-icon aria-hidden="true"><ArrowRight /></el-icon>
             </button>
           </div>
 
-          <div class="analysis-stage__body">
-            <div class="mode-list">
-              <button
-                v-for="mode in analysisModes"
-                :key="mode.id"
-                class="mode-btn"
-                :class="{ active: selectedMode === mode.id }"
-                @click="selectedMode = mode.id"
-              >
-                <component :is="mode.icon" />
-                <span>{{ mode.label }}</span>
-              </button>
+          <section ref="resultSection" class="visual-output" aria-labelledby="visual-result-title">
+            <header class="visual-output__heading">
+              <h3 id="visual-result-title" ref="resultHeading" tabindex="-1">演示结果</h3>
+              <div v-if="analysisResult" class="visual-actions">
+                <button class="ai-workbench__button" type="button" @click="copyResult">复制结果</button>
+                <button class="ai-workbench__button" type="button" @click="clearResult">清空</button>
+              </div>
+            </header>
+            <div class="visual-output__body">
+              <div v-if="analysisResult" class="visual-result ai-markdown" v-html="renderAiMarkdown(analysisResult)"></div>
+              <p v-else>{{ selectedImage ? '选择一种解析方式，再查看该方式的固定示例。' : '添加图片或载入示例后，可以查看演示结果。' }}</p>
             </div>
-
-            <label class="prompt-field">
-              <span>补充</span>
-              <textarea v-model="customPrompt" rows="4" placeholder="例如：提取重点、格式化输出、标注题干与答案。" />
-            </label>
-
-<div v-if="analysisResult" class="result-shell">
-               <div class="result-header">
-                 <h3>解析结果</h3>
-                 <div class="result-actions">
-                   <button class="ghost-btn" @click="copyResult">复制</button>
-                   <button class="ghost-btn" @click="clearResult">清空</button>
-                 </div>
-               </div>
-               <div class="result-content ai-markdown" v-html="formatResult(analysisResult)"></div>
-               <div class="result-footer">
-                 <AIMessageActions
-                   :content="analysisResult || ''"
-                 />
-               </div>
-             </div>
-
-            <div v-else class="result-empty">
-              <div class="empty-mark">AI</div>
-              <h3>等待解析</h3>
-            </div>
-          </div>
+          </section>
         </section>
       </section>
     </main>
@@ -127,526 +130,421 @@
 </template>
 
 <script setup>
-import { ref, h } from 'vue'
+import { computed, nextTick, onUnmounted, ref, shallowRef, watch } from 'vue'
+import { ArrowRight, UploadFilled } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { renderAiMarkdown } from '@/utils/aiMarkdown'
-import { useThemeStore } from '@/stores/modules/theme'
 import AIToolHeader from './components/AIToolHeader.vue'
-import AIMessageActions from './components/AIMessageActions.vue'
+import { createExampleImageUrl, getExampleOutput, imageExamples } from './multimodalExamples'
 
-const themeStore = useThemeStore()
+const MAX_FILE_SIZE = 10 * 1024 * 1024
 const fileInput = ref(null)
-const selectedFile = ref(null)
-const imageUrl = ref('')
+const resultSection = ref(null)
+const resultHeading = ref(null)
+const selectedImage = shallowRef(null)
 const isDragging = ref(false)
-const isAnalyzing = ref(false)
+const fileError = ref('')
 const analysisResult = ref('')
 const customPrompt = ref('')
 const selectedMode = ref('general')
 
-const demoImages = [
-  { id: 1, name: 'Java题目', type: 'question', mockResult: `## 题目识别结果\n\n### 题目内容\n**请简述Java中ArrayList和LinkedList的区别？**\n\n### 识别的选项\n- A. ArrayList基于数组实现，LinkedList基于链表实现\n- B. ArrayList查询效率高，LinkedList增删效率高\n- C. 两者都是线程安全的\n- D. ArrayList内存占用更小\n\n### 正确答案\n**A、B**\n\n### 知识点解析\n1. **底层数据结构**\n   - ArrayList：基于动态数组实现\n   - LinkedList：基于双向链表实现\n\n2. **时间复杂度对比**\n   | 操作 | ArrayList | LinkedList |\n   |------|-----------|------------|\n   | 查询 | O(1) | O(n) |\n   | 插入 | O(n) | O(1) |\n   | 删除 | O(n) | O(1) |` },
-  { id: 2, name: '代码截图', type: 'code', mockResult: `## 代码识别结果\n\n### 识别的语言\n**Java**\n\n### 代码内容\n\n\`\`\`java\npublic class Singleton {\n    private static volatile Singleton instance;\n\n    private Singleton() {}\n\n    public static Singleton getInstance() {\n        if (instance == null) {\n            synchronized (Singleton.class) {\n                if (instance == null) {\n                    instance = new Singleton();\n                }\n            }\n        }\n        return instance;\n    }\n}\n\`\`\`\n\n### 代码分析\n这是一个**双重检查锁定（DCL）单例模式**实现。` },
-  { id: 3, name: '文本识别', type: 'ocr', mockResult: `## OCR 文字识别结果\n\n### 识别的文字内容\n\n**Spring Boot 自动配置原理**\n\nSpring Boot 的自动配置主要依赖 @EnableAutoConfiguration、spring.factories 和条件注解机制。` }
-]
-
 const analysisModes = [
-  { id: 'general', label: '通用识别', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('circle', { cx: 12, cy: 12, r: 10 }), h('line', { x1: 12, y1: 16, x2: 12, y2: 12 }), h('line', { x1: 12, y1: 8, x2: '12.01', y2: 8 })]) },
-  { id: 'ocr', label: 'OCR文字', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }), h('polyline', { points: '14 2 14 8 20 8' }), h('line', { x1: 16, y1: 13, x2: 8, y2: 13 })]) },
-  { id: 'question', label: '题目解析', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('circle', { cx: 12, cy: 12, r: 10 }), h('path', { d: 'M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3' }), h('line', { x1: 12, y1: 17, x2: '12.01', y2: 17 })]) },
-  { id: 'code', label: '代码识别', icon: h('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 }, [h('polyline', { points: '16 18 22 12 16 6' }), h('polyline', { points: '8 6 2 12 8 18' })]) }
+  { id: 'general', label: '通用识别' },
+  { id: 'ocr', label: '文字提取' },
+  { id: 'question', label: '题目解析' },
+  { id: 'code', label: '代码识别' }
 ]
 
-const triggerFileInput = () => { fileInput.value?.click() }
-const handleDragOver = () => { isDragging.value = true }
-const handleDragLeave = () => { isDragging.value = false }
+const imageName = computed(() => selectedImage.value?.file?.name || selectedImage.value?.example?.label || '')
+const openFilePicker = () => fileInput.value?.click()
+const clearResult = () => { analysisResult.value = '' }
 
-const handleDrop = (e) => {
-  isDragging.value = false
-  const files = e.dataTransfer.files
-  if (files.length > 0) processFile(files[0])
-}
-
-const handleFileSelect = (e) => {
-  const files = e.target.files
-  if (files.length > 0) processFile(files[0])
+const replaceImage = (image) => {
+  if (selectedImage.value?.file) URL.revokeObjectURL(selectedImage.value.url)
+  selectedImage.value = image
+  fileError.value = ''
+  clearResult()
 }
 
 const processFile = (file) => {
   if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件')
+    fileError.value = '请选择图片文件。'
     return
   }
-  if (file.size > 10 * 1024 * 1024) {
-    ElMessage.error('图片大小不能超过 10MB')
+  if (file.size > MAX_FILE_SIZE) {
+    fileError.value = '图片超过 10 MB，请换一张较小的图片。'
     return
   }
-  selectedFile.value = file
-  imageUrl.value = URL.createObjectURL(file)
-  analysisResult.value = ''
+  replaceImage({ file, url: URL.createObjectURL(file) })
 }
 
-const clearImage = () => {
-  selectedFile.value = null
-  imageUrl.value = ''
-  analysisResult.value = ''
-  if (fileInput.value) fileInput.value.value = ''
+const handleFileSelect = (event) => {
+  const input = event.target
+  if (input.files.length) processFile(input.files[0])
+  input.value = ''
 }
 
-const formatFileSize = (bytes) => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+const handleDragLeave = (event) => {
+  if (!event.currentTarget.contains(event.relatedTarget)) isDragging.value = false
 }
 
-const loadDemoImage = (demo) => {
-  selectedFile.value = {
-    name: `${demo.name}.png`,
-    size: Math.floor(Math.random() * 500000) + 100000,
-    type: 'image/png'
-  }
-  imageUrl.value = `data:image/svg+xml,${encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
-      <rect fill="#e2e8f0" width="400" height="300"/>
-      <rect x="32" y="28" width="336" height="244" rx="18" fill="#f8fafc" stroke="#cbd5e1"/>
-      <text x="200" y="138" text-anchor="middle" fill="#155e75" font-size="48" font-weight="bold">${demo.name.charAt(0)}</text>
-      <text x="200" y="176" text-anchor="middle" fill="#334155" font-size="16">${demo.name}</text>
-      <text x="200" y="205" text-anchor="middle" fill="#64748b" font-size="12">演示图片</text>
-    </svg>
-  `)}`
-  analysisResult.value = ''
-  selectedMode.value = demo.type
+const handleDrop = (event) => {
+  isDragging.value = false
+  const [file] = event.dataTransfer.files
+  if (file) processFile(file)
 }
 
-const startAnalysis = async () => {
-  if (!selectedFile.value || isAnalyzing.value) return
-  isAnalyzing.value = true
-  analysisResult.value = ''
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    const demo = demoImages.find(d => d.type === selectedMode.value) || demoImages[0]
-    analysisResult.value = demo.mockResult
-    ElMessage.success('解析完成')
-  } catch (error) {
-    console.error('解析失败:', error)
-    ElMessage.error('解析失败: ' + error.message)
-    analysisResult.value = '解析失败，请稍后重试。'
-  } finally {
-    isAnalyzing.value = false
-  }
+const removeImage = () => replaceImage(null)
+
+const handlePreviewError = () => {
+  removeImage()
+  fileError.value = '无法预览这张图片，请换一张。'
 }
 
-const formatResult = (content) => renderAiMarkdown(content)
+const loadExample = (example) => {
+  replaceImage({ example, url: createExampleImageUrl(example) })
+  selectedMode.value = example.mode
+}
+
+const showExampleResult = async () => {
+  if (!selectedImage.value) return
+  analysisResult.value = getExampleOutput(selectedMode.value)
+  await nextTick()
+  resultHeading.value?.focus({ preventScroll: true })
+  resultSection.value?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
+}
 
 const copyResult = async () => {
   if (!analysisResult.value) return
   try {
     await navigator.clipboard.writeText(analysisResult.value)
-    ElMessage.success('已复制到剪贴板')
-  } catch (error) {
-    ElMessage.error('复制失败')
+    ElMessage.success('已复制演示结果')
+  } catch {
+    ElMessage.error('复制失败，可手动选中结果复制。')
   }
 }
 
-const clearResult = () => { analysisResult.value = '' }
+const formatFileSize = (size) => {
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
+}
+
+watch(selectedMode, clearResult)
+onUnmounted(removeImage)
 </script>
 
 <style scoped>
-.multimodal-page {
-  --ai-accent: #155e75;
-  --ai-accent-soft: rgba(21, 94, 117, 0.08);
-  --ai-accent-line: rgba(21, 94, 117, 0.18);
-  --ai-bg: var(--app-bg);
-  --ai-surface: var(--internal-panel-bg);
-  --ai-surface-alt: var(--internal-panel-bg-alt);
-  --ai-muted: var(--internal-panel-bg-hover);
-  --ai-border: var(--internal-panel-border);
-  --ai-border-strong: var(--internal-panel-border-strong);
-  --ai-text: var(--color-text);
-  --ai-text-soft: var(--color-text-secondary);
-  --ai-text-faint: var(--color-text-muted);
-  height: 100dvh;
-  min-height: 100dvh;
-  background: var(--ai-bg);
-  overflow: hidden;
+.visual-workbench {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
 }
 
-.multimodal-page.is-dark {
-  --ai-accent: #67e8f9;
-  --ai-accent-soft: rgba(103, 232, 249, 0.12);
-  --ai-accent-line: rgba(103, 232, 249, 0.22);
-}
-
-.multimodal-main {
-  max-width: 1380px;
-  margin: 0 auto;
-  padding: 10px 16px 14px;
+.visual-input,
+.visual-analysis {
   display: grid;
+  min-width: 0;
+  min-height: 0;
+}
+
+.visual-input {
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 12px;
-  height: 100dvh;
-  min-height: 0;
+  border-right: 1px solid var(--internal-panel-border);
+  background: var(--internal-panel-bg-alt);
 }
 
-.workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
-  gap: 16px;
-  min-height: 0;
-}
-
-.upload-stage,
-.analysis-stage {
-  border: 1px solid var(--ai-border);
-  border-radius: 16px;
-  background: var(--ai-surface);
-  min-height: 0;
-}
-
-.upload-stage {
-  padding: 18px;
-  display: grid;
-  align-content: start;
-  gap: 16px;
-}
-
-.analysis-stage {
-  padding: 18px;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 16px;
-}
-
-.analysis-stage__body {
-  min-height: 0;
-  display: grid;
+.visual-analysis {
   grid-template-rows: auto auto minmax(0, 1fr);
-  gap: 16px;
 }
 
-.section-head {
+.visual-heading {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
+  padding: 18px var(--workbench-padding) 14px;
+  border-bottom: 1px solid var(--internal-panel-border);
 }
 
-.section-kicker {
-  display: inline-block;
-  color: var(--ai-text-faint);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+.visual-heading h1,
+.visual-heading h2 {
+  margin: 0 0 4px;
+  font-size: 21px;
+  line-height: 1.35;
 }
 
-.section-head h2,
-.section-head h3 {
-  margin: 4px 0 0;
-  color: var(--ai-text);
-  line-height: 1.1;
+.visual-heading p {
+  color: var(--text-2);
+  font-size: 13px;
 }
 
-.section-note {
-  color: var(--ai-text-faint);
+.visual-mode-label {
+  flex: none;
+  padding: 3px 8px;
+  border: 1px solid var(--color-accent-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
   font-size: 12px;
+  font-weight: 650;
 }
 
-.upload-zone {
-  min-height: 360px;
-  border: 1px dashed var(--ai-border-strong);
-  border-radius: 14px;
-  background: var(--ai-surface-alt);
-  position: relative;
-  overflow: hidden;
-  cursor: pointer;
+.visual-input__body {
+  min-height: 0;
+  padding: var(--workbench-padding);
+  overflow: auto;
+  scrollbar-width: thin;
 }
 
-.upload-zone.dragging,
-.upload-zone.has-image {
-  border-color: var(--ai-accent-line);
-  background: var(--ai-accent-soft);
+.visual-canvas {
+  display: grid;
+  min-height: 210px;
+  height: min(44dvh, 430px);
+  padding: 12px;
+  place-items: center;
+  border: 1px dashed var(--internal-panel-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--internal-panel-bg);
 }
 
-.upload-placeholder,
-.result-empty {
-  min-height: 100%;
+.visual-canvas.has-image {
+  border-style: solid;
+  background: var(--internal-panel-bg-hover);
+}
+
+.visual-canvas.is-dragging,
+.visual-canvas:has(.visual-upload:hover) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.visual-upload {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.upload-icon,
-.empty-mark {
-  width: 64px;
-  height: 64px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 18px;
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-}
-
-.upload-placeholder h3,
-.result-empty h3 {
-  margin-top: 14px;
-  color: var(--ai-text);
-  font-size: 24px;
-}
-
-.image-preview,
-.image-preview img {
   width: 100%;
   height: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
 }
 
-.image-preview img {
+.visual-upload .el-icon {
+  margin-bottom: 6px;
+  color: var(--color-accent);
+  font-size: 32px;
+}
+
+.visual-upload strong {
+  font-size: 16px;
+}
+
+.visual-upload span,
+.visual-file__name span {
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.visual-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   object-fit: contain;
 }
 
-.overlay-btn,
-.analyze-btn,
-.ghost-btn,
-.demo-btn,
-.mode-btn {
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.overlay-btn {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  min-height: 34px;
-  padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.72);
-  color: #fff;
-}
-
-.file-strip {
-  display: grid;
-  gap: 12px;
-}
-
-.file-strip {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.file-item {
-  padding: 12px 14px;
-  border: 1px solid var(--ai-border);
-  border-radius: 12px;
-  background: var(--ai-surface-alt);
-}
-
-.file-item span {
-  color: var(--ai-text-faint);
-  font-size: 12px;
-}
-
-.file-item strong {
-  display: block;
-  margin-top: 6px;
-  color: var(--ai-text);
-  font-size: 13px;
-}
-
-.demo-list,
-.mode-list,
-.result-actions {
+.visual-file {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
-}
-
-.demo-btn,
-.mode-btn,
-.ghost-btn {
-  min-height: 36px;
-  padding: 0 12px;
-  border: 1px solid var(--ai-border);
-  border-radius: 10px;
-  background: var(--ai-surface-alt);
-  color: var(--ai-text-soft);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.demo-btn,
-.mode-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.demo-badge {
-  width: 22px;
-  height: 22px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.mode-btn.active,
-.analyze-btn,
-.ghost-btn:hover,
-.demo-btn:hover {
-  border-color: var(--ai-accent-line);
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
-}
-
-.analyze-btn {
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid var(--ai-accent-line);
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.analyze-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.prompt-field {
-  display: grid;
-  gap: 8px;
-}
-
-.prompt-field span {
-  color: var(--ai-text-soft);
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.demo-strip {
-  padding-top: 2px;
-}
-
-.prompt-field textarea {
-  width: 100%;
-  border: 1px solid var(--ai-border);
-  border-radius: 12px;
-  background: var(--ai-surface-alt);
-  color: var(--ai-text);
-  padding: 14px;
-  resize: none;
-  outline: none;
-  font: inherit;
-  line-height: 1.7;
-}
-
-.prompt-field textarea:focus {
-  border-color: var(--ai-accent-line);
-  box-shadow: 0 0 0 3px var(--ai-accent-soft);
-}
-
-.result-shell,
-.result-empty {
-  min-height: 0;
-  border: 1px solid var(--ai-border);
-  border-radius: 14px;
-  background: var(--ai-surface-alt);
-}
-
-.result-shell {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-}
-
-.result-empty {
-  display: flex;
-  flex-direction: column;
-}
-
-.result-header {
-  display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 14px 0;
+  gap: 8px;
+  margin-top: 10px;
 }
 
-.result-header h3 {
-  color: var(--ai-text);
+.visual-file__name {
+  display: grid;
+  flex: 1 1 120px;
+  min-width: 0;
 }
 
-.result-content {
-  padding: 14px;
-  overflow-y: auto;
-  color: var(--ai-text);
+.visual-file__name strong {
+  overflow: hidden;
   font-size: 14px;
-  line-height: 1.8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.result-footer {
-  padding: 0 14px 14px;
-}
-
-.result-footer :deep(.ai-message-actions) {
+.visual-file-error {
   margin-top: 8px;
+  color: var(--color-error);
+  font-size: 13px;
 }
 
-.result-footer :deep(.action-btn) {
-  color: var(--ai-text-faint);
+.visual-examples {
+  margin-top: 18px;
 }
 
-.result-footer :deep(.action-btn:hover:not(:disabled)) {
-  background: var(--ai-accent-soft);
-  color: var(--ai-accent);
+.visual-examples h2,
+.visual-modes legend {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
-.result-content::-webkit-scrollbar {
-  width: 6px;
+.visual-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
-.result-content::-webkit-scrollbar-thumb {
-  background: rgba(21, 94, 117, 0.18);
-  border-radius: 999px;
+.visual-examples button[aria-pressed='true'] {
+  border-color: var(--color-accent-subtle);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
 }
 
-@media (max-width: 1024px) {
-  .multimodal-page,
+.visual-settings {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 14px var(--workbench-padding);
+}
+
+.visual-modes {
+  min-width: 0;
+  border: 0;
+}
+
+.visual-mode {
+  position: relative;
+}
+
+.visual-mode input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+}
+
+.visual-mode span {
+  display: block;
+  padding: 7px 9px;
+  border: 1px solid var(--internal-panel-border-strong);
+  border-radius: var(--radius-md);
+  color: var(--text-1);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.visual-mode span:hover {
+  background: var(--internal-panel-bg-hover);
+}
+
+.visual-mode input:checked + span {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  font-weight: 650;
+}
+
+.visual-mode input:focus-visible + span {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.visual-prompt {
+  width: 100%;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.visual-prompt summary {
+  width: fit-content;
+  min-height: 32px;
+  padding: 5px 2px;
+  cursor: pointer;
+}
+
+.visual-prompt summary span {
+  margin-left: 4px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.visual-prompt textarea {
+  max-height: 110px;
+  margin-top: 6px;
+  resize: vertical;
+}
+
+.visual-output {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  border-top: 1px solid var(--internal-panel-border);
+}
+
+.visual-output__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-height: 56px;
+  padding: 8px var(--workbench-padding);
+  background: var(--internal-panel-bg-alt);
+}
+
+.visual-output__heading h3 {
+  font-size: 16px;
+}
+
+.visual-output__body {
+  min-width: 0;
+  min-height: 0;
+  padding: 14px var(--workbench-padding) 24px;
+  overflow: auto;
+  scrollbar-width: thin;
+  overflow-wrap: anywhere;
+}
+
+.visual-output__body > p {
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.visual-result {
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+@media (max-width: 860px) {
   .multimodal-main {
     height: auto;
     min-height: 100dvh;
   }
 
-  .workspace,
-  .file-strip {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .multimodal-main {
-    padding: 8px 10px 10px;
+  .visual-workbench {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .upload-stage,
-  .analysis-stage {
-    padding: 14px;
+  .visual-input {
+    border-right: 0;
+    border-bottom: 1px solid var(--internal-panel-border);
   }
 
-  .upload-zone {
-    min-height: 280px;
+  .visual-input__body,
+  .visual-output__body {
+    overflow: visible;
   }
 
-  .section-head,
-  .result-header {
-    flex-direction: column;
-    align-items: stretch;
+  .visual-canvas {
+    height: min(30dvh, 290px);
+    min-height: 180px;
   }
 }
 </style>
